@@ -1,0 +1,60 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+source=$1
+
+if [ -z "$source" ]; then
+  echo "usage: $0 <path/to/source>"
+  exit 1
+fi
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+payload=$(mktemp $TMPDIR/cf-cli-resource-request.XXXXXX)
+
+cat > $payload <&0
+
+api=$(jq -r '.source.api // ""' < $payload)
+skip_cert_check=$(jq -r '.source.skip_cert_check // ""' < $payload)
+username=$(jq -r '.source.username // ""' < $payload)
+password=$(jq -r '.source.password // ""' < $payload)
+command=$(jq -r '.params.command // ""' < $payload)
+
+if [ -z "$api" ]; then
+  echo "invalid payload (missing api)"
+  exit 1
+fi
+
+if [ -z "$username" ]; then
+  echo "invalid payload (missing username)"
+  exit 1
+fi
+
+if [ -z "$password" ]; then
+  echo "invalid payload (missing password)"
+  exit 1
+fi
+
+if [ -z "$command" ]; then
+  echo "invalid payload (missing command)"
+  exit 1
+fi
+
+#cd $source
+
+cf $command
+
+# todo: metadata
+jq -n \
+--arg timestamp $(date +%s) \
+'{
+  version: {
+    timestamp: $timestamp
+  }
+}') >&3
