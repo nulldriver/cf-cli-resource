@@ -6,6 +6,8 @@ set -e
 exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 
+source $(dirname $0)/cf-functions.sh
+
 source=$1
 
 if [ -z "$source" ]; then
@@ -24,7 +26,7 @@ api=$(jq -r '.source.api // ""' < $payload)
 skip_cert_check=$(jq -r '.source.skip_cert_check // ""' < $payload)
 username=$(jq -r '.source.username // ""' < $payload)
 password=$(jq -r '.source.password // ""' < $payload)
-command=$(jq -r '.params.command // ""' < $payload)
+params=$(jq -r '.params // ""' < $payload)
 
 if [ -z "$api" ]; then
   echo "invalid payload (missing api)"
@@ -41,14 +43,48 @@ if [ -z "$password" ]; then
   exit 1
 fi
 
-if [ -z "$command" ]; then
-  echo "invalid payload (missing command)"
-  exit 1
-fi
-
 #cd $source
 
-cf $command
+cf_login $api "$username" "$password" $skip_cert_check
+
+commands=$(echo $params | jq -r 'keys_unsorted[]')
+
+for command in $commands; do
+  if [ "create_org" = "$command" ]; then
+    org=$(echo $params | jq -r '.create_org.org')
+    cf_target_org $org true
+  elif [ "delete_org" = "$command" ]; then
+    org=$(echo $params | jq -r '.delete_org.org')
+    cf_delete_org $org
+  elif [ "create_space" = "$command" ]; then
+    org=$(echo $params | jq -r '.create_space.org')
+    space=$(echo $params | jq -r '.create_space.space')
+    cf_target_org $org true
+    cf_target_space $space true
+  elif [ "delete_space" = "$command" ]; then
+    org=$(echo $params | jq -r '.delete_space.org')
+    space=$(echo $params | jq -r '.delete_space.space')
+    cf_delete_space $space $org
+  elif [ "create_service" = "$command" ]; then
+    org=$(echo $params | jq -r '.create_service.org')
+    space=$(echo $params | jq -r '.create_service.space')
+    service=$(echo $params | jq -r '.create_service.service')
+    plan=$(echo $params | jq -r '.create_service.plan')
+    service_instance=$(echo $params | jq -r '.create_service.service_instance')
+    configuration=$(echo $params | jq -r '.create_service.configuration // "{}"')
+    tags=$(echo $params | jq -r '.create_service.tags // ""')
+    cf_target_org "$org"
+    cf_target_space "$space"
+    cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+  elif [ "delete_service" = "$command" ]; then
+    org=$(echo $params | jq -r '.delete_service.org')
+    space=$(echo $params | jq -r '.delete_service.space')
+    service_instance=$(echo $params | jq -r '.delete_service.service_instance')
+    cf_target_org "$org"
+    cf_target_space "$space"
+    cf_delete_service "$service_instance"
+  fi
+done
 
 # todo: metadata
 jq -n \
@@ -57,4 +93,4 @@ jq -n \
   version: {
     timestamp: $timestamp
   }
-}') >&3
+}' >&3
