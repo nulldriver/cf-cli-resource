@@ -50,6 +50,7 @@ cf_login $api "$username" "$password" $skip_cert_check
 commands=$(echo $params | jq -r 'keys_unsorted[]')
 
 for command in $commands; do
+  echo "Executing: $command"
   if [ "create_org" = "$command" ]; then
     org=$(echo $params | jq -r '.create_org.org')
     cf_create_org "$org"
