@@ -12,54 +12,76 @@ function cf_login() {
 
   cf api $api_endpoint $cf_skip_ssl_validation
 
-  cf auth $cf_user $cf_pass
+  cf auth "$cf_user" "$cf_pass"
+}
+
+function cf_target() {
+  local org=$1
+  local space=$2
+  if [ -n "$space" ]; then
+    cf target -o "$org" -s "$space"
+  else
+    cf target -o "$org"
+  fi
+}
+
+function cf_get_org_guid() {
+  local org=$1
+  cf curl "/v2/organizations" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$org" | jq -r '.resources[].metadata.guid'
 }
 
 function cf_org_exists() {
   local org=$1
-  cf curl /v2/organizations | jq -e --arg name "$org" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  [ -n "$(cf_get_org_guid $org)" ]
 }
 
-function cf_target_org() {
+function cf_create_org() {
   local org=$1
-  local create=$2
+  cf create-org "$org"
+}
 
-  if [ "$create" = "true" ] && ! (cf orgs | grep -q ^$org$); then
-    cf create-org $org
+function cf_create_org_if_not_exists() {
+  local org=$1
+  if ! (cf_org_exists "$org"); then
+    cf_create_org "$org"
   fi
-
-  cf target -o $org
 }
 
 function cf_delete_org() {
-  cf delete-org -f "$1"
+  cf delete-org "$1" -f
+}
+
+function cf_get_space_guid() {
+  local org=$1
+  local space=$2
+  local org_guid=$(cf_get_org_guid "$org")
+  cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
 }
 
 function cf_space_exists() {
   local org=$1
-  cf curl /v2/spaces | jq -e --arg name "$org" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  local space=$2
+  [ -n "$(cf_get_space_guid $org $space)" ]
 }
 
-function cf_target_space() {
-  local space=$1
-  local create=$2
+function cf_create_space() {
+  local org=$1
+  local space=$2
+  cf create-space "$space" -o "$org"
+}
 
-  if [ "$create" = "true" ] && ! (cf spaces | grep -q ^$space$); then
-    cf create-space $space
+function cf_create_space_if_not_exists() {
+  local org=$1
+  local space=$2
+  if ! (cf_space_exists "$org" "$space"); then
+    cf_create_space "$org" "$space"
   fi
-
-  cf target -s $space
 }
 
 function cf_delete_space() {
-  local space=$1
-  local org=$2
-
-  if [ -n "$org" ]; then
-    cf delete-space -f "$space" -o "$org"
-  else
-    cf delete-space -f "$space"
-  fi
+  local org=$1
+  local space=$2
+  cf delete-space "$space" -o "$org" -f
 }
 
 function cf_service_exists() {
@@ -78,7 +100,7 @@ function cf_create_service() {
 
 function cf_delete_service() {
   local service_instance=$1
-  cf delete-service -f "$service_instance"
+  cf delete-service "$service_instance" -f
 }
 
 function cf_wait_for_service_instance() {
@@ -108,4 +130,21 @@ function cf_wait_for_service_instance() {
     fi
     sleep 5
   done
+}
+
+function cf_push() {
+  local manifest=$1
+  cf push -f "$manifest"
+}
+
+function cf_push_autopilot() {
+  local org=$1
+  local space=$2
+  local manifest=$1
+  local current_app_name=$2
+  if [ -z "$current_app_name" ]; then
+    cf push -f "$manifest"
+  else
+    cf zero-downtime-push "$current_app_name" -f "$manifest"
+  fi
 }

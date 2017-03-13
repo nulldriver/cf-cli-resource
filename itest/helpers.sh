@@ -48,5 +48,5 @@ put_with_params() {
       password: $password
     },
     params: $params
-  }' | ${resource_dir}/out "$2" | tee /dev/stderr
+  }' | ${resource_dir}/out "$6" | tee /dev/stderr
 }
