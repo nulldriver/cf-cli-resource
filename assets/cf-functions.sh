@@ -132,9 +132,24 @@ function cf_wait_for_service_instance() {
   done
 }
 
+function cf_bind_service() {
+  local app_name=$1
+  local service_instance=$2
+  local configuration=$3
+  cf bind-service "$app_name" "$service_instance" -c "$configuration"
+}
+
+function cf_is_app_bound_to_service() {
+  local app_name=$1
+  local service_instance=$2
+  local app_guid=$(cf app "$app_name" --guid)
+  local si_guid=$(cf service "$service_instance" --guid)
+  cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
+}
+
 function cf_push() {
-  local manifest=$1
-  cf push -f "$manifest"
+  local args=$1
+  cf push $args
 }
 
 function cf_push_autopilot() {
@@ -147,6 +162,23 @@ function cf_push_autopilot() {
   else
     cf push -f "$manifest"
   fi
+}
+
+function cf_start() {
+  local app_name=$1
+  local staging_timeout=$2
+  local startup_timeout=$3
+  if [ "$staging_timeout" -gt "0" ]; then
+    export CF_STAGING_TIMEOUT=$staging_timeout
+  fi
+  if [ "$startup_timeout" -gt "0" ]; then
+    export CF_STARTUP_TIMEOUT=$startup_timeout
+  fi
+
+  cf start "$app_name"
+
+  unset CF_STAGING_TIMEOUT
+  unset CF_STARTUP_TIMEOUT
 }
 
 function cf_delete() {

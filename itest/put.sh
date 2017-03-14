@@ -7,12 +7,13 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
+testprefix=cfclitest
 timestamp=$(date +%s)
-org=org-$timestamp
-space=space-$timestamp
-mysql_si=db-$timestamp
-rabbitmq_si=rabbitmq-$timestamp
-app_name=static-$timestamp
+org=$testprefix-org-$timestamp
+space=$testprefix-space-$timestamp
+mysql_si=$testprefix-db-$timestamp
+rabbitmq_si=$testprefix-rabbitmq-$timestamp
+app_name=$testprefix-app-$timestamp
 
 source=$(jq -n \
 '{
@@ -118,7 +119,7 @@ it_can_create_a_rabbitmq_service() {
   cf_service_exists "$rabbitmq_si"
 }
 
-it_can_push_an_app_with_manifest() {
+it_can_push_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   create_static_app "$app_name" "$working_dir"
@@ -129,6 +130,62 @@ it_can_push_an_app_with_manifest() {
   --arg app_name "$app_name" \
   '{
     push: {
+      org: $org,
+      space: $space,
+      name: $app_name,
+      hostname: $app_name,
+      path: "static-app/content",
+      manifest: "static-app/manifest.yml",
+      no_start: "true"
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  #curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+}
+
+it_can_start_an_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    start: {
+      org: $org,
+      space: $space,
+      name: $app_name,
+      staging_timeout: 15,
+      startup_timeout: 5
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+}
+
+it_can_zero_downtime_push() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  create_static_app "$app_name" "$working_dir"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    zero_downtime_push: {
       org: $org,
       space: $space,
       manifest: "static-app/manifest.yml",
@@ -143,6 +200,62 @@ it_can_push_an_app_with_manifest() {
   '
 
   curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+}
+
+it_can_bind_mysql_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$mysql_si
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    bind_service: {
+      org: $org,
+      space: $space,
+      app_name: $app_name,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_bound_to_service "$app_name" "$service_instance"
+}
+
+it_can_bind_rabbitmq_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$rabbitmq_si
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    bind_service: {
+      org: $org,
+      space: $space,
+      app_name: $app_name,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
 it_can_delete_an_app_with_manifest() {
@@ -260,11 +373,23 @@ it_can_delete_an_org() {
   ! cf_org_exists "$space"
 }
 
+cleanup_failed_tests() {
+  orgs=$(cf orgs | grep "$testprefix-org")
+  for org in $orgs; do
+    cf delete-org "$org" -f
+  done
+}
+
+#run cleanup_failed_tests
 run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_mysql_service
 run it_can_create_a_rabbitmq_service
-run it_can_push_an_app_with_manifest
+run it_can_push_an_app
+run it_can_bind_mysql_service
+run it_can_bind_rabbitmq_service
+run it_can_start_an_app
+run it_can_zero_downtime_push
 run it_can_delete_an_app_with_manifest
 run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
