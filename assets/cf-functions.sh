@@ -10,7 +10,7 @@ function cf_login() {
     cf_skip_ssl_validation="--skip-ssl-validation"
   fi
 
-  cf api $api_endpoint $cf_skip_ssl_validation
+  cf api "$api_endpoint" "$cf_skip_ssl_validation"
 
   cf auth "$cf_user" "$cf_pass"
 }
@@ -107,12 +107,12 @@ function cf_wait_for_service_instance() {
   local service_instance=$1
   local timeout=${2:-300}
 
-  local guid=$(cf service $service_instance --guid)
+  local guid=$(cf service "$service_instance" --guid)
 
   local start=$(date +%s)
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
-    local state=$(cf curl /v2/service_instances/$guid | jq -r .entity.last_operation.state)
+    local state=$(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
       echo "Service $service_instance is ready"
