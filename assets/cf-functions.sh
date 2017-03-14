@@ -152,15 +152,13 @@ function cf_push() {
   cf push $args
 }
 
-function cf_push_autopilot() {
-  local org=$1
-  local space=$2
-  local manifest=$1
+function cf_zero_downtime_push() {
+  local args=$1
   local current_app_name=$2
   if [ -n "$current_app_name" ]; then
-    cf zero-downtime-push "$current_app_name" -f "$manifest"
+    cf zero-downtime-push "$current_app_name" $args
   else
-    cf push -f "$manifest"
+    cf push $args
   fi
 }
 

@@ -84,7 +84,7 @@ for command in $commands; do
   elif [ "push" = "$command" ]; then
     org=$(echo $params | jq -r '.push.org //empty')
     space=$(echo $params | jq -r '.push.space //empty')
-    app_name=$(echo $params | jq -r '.push.name //empty')
+    app_name=$(echo $params | jq -r '.push.app_name //empty')
     hostname=$(echo $params | jq -r '.push.hostname //empty')
     memory=$(echo $params | jq -r '.push.memory //empty')
     disk_quota=$(echo $params | jq -r '.push.disk_quota //empty')
@@ -111,13 +111,18 @@ for command in $commands; do
     org=$(echo $params | jq -r '.zero_downtime_push.org //empty')
     space=$(echo $params | jq -r '.zero_downtime_push.space //empty')
     manifest=$(echo $params | jq -r '.zero_downtime_push.manifest //empty')
+    path=$(echo $params | jq -r '.zero_downtime_push.path //empty')
     current_app_name=$(echo $params | jq -r '.zero_downtime_push.current_app_name //empty')
+
+    args="-f $manifest"
+    [ -n "$path" ]       && args="$args -p $path"
+
     cf_target "$org" "$space"
-    cf_push_autopilot "$manifest" "$current_app_name"
+    cf_zero_downtime_push "$args" "$current_app_name"
   elif [ "start" = "$command" ]; then
     org=$(echo $params | jq -r '.start.org //empty')
     space=$(echo $params | jq -r '.start.space //empty')
-    app_name=$(echo $params | jq -r '.start.name //empty')
+    app_name=$(echo $params | jq -r '.start.app_name //empty')
     staging_timeout=$(echo $params | jq -r '.start.staging_timeout //"0"')
     startup_timeout=$(echo $params | jq -r '.start.startup_timeout //"0"')
     cf_target "$org" "$space"

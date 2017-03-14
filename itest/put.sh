@@ -132,7 +132,7 @@ it_can_push_an_app() {
     push: {
       org: $org,
       space: $space,
-      name: $app_name,
+      app_name: $app_name,
       hostname: $app_name,
       path: "static-app/content",
       manifest: "static-app/manifest.yml",
@@ -160,7 +160,7 @@ it_can_start_an_app() {
     start: {
       org: $org,
       space: $space,
-      name: $app_name,
+      app_name: $app_name,
       staging_timeout: 15,
       startup_timeout: 5
     }
@@ -258,7 +258,7 @@ it_can_bind_rabbitmq_service() {
   cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
-it_can_delete_an_app_with_manifest() {
+it_can_delete_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
@@ -390,7 +390,7 @@ run it_can_bind_mysql_service
 run it_can_bind_rabbitmq_service
 run it_can_start_an_app
 run it_can_zero_downtime_push
-run it_can_delete_an_app_with_manifest
+run it_can_delete_an_app
 run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
