@@ -26,7 +26,7 @@ fi
 source $resource_dir/cf-functions.sh
 
 run() {
-  export TMPDIR=$(mktemp -d ${TMPDIR_ROOT}/cf-cli-tests.XXXXXX)
+  export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
 
   echo -e 'running \e[33m'"$@"$'\e[0m...'
   eval "$@" 2>&1 | sed -e 's/^/  /g'
@@ -34,19 +34,7 @@ run() {
 }
 
 put_with_params() {
-  jq -n \
-  --arg api "$1" \
-  --arg skip_cert_check "$2" \
-  --arg username "$3" \
-  --arg password "$4" \
-  --argjson params "$5" \
-  '{
-    source: {
-      api: $api,
-      skip_cert_check: $skip_cert_check,
-      username: $username,
-      password: $password
-    },
-    params: $params
-  }' | ${resource_dir}/out "$6" | tee /dev/stderr
+  local config=$1
+  local working_dir=$2
+  echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
 }

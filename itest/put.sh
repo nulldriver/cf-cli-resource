@@ -16,8 +16,18 @@ org=org-$timestamp
 space=space-$timestamp
 mysql_si=db-$timestamp
 
+source=$(jq -n \
+'{
+  source: {
+    api: "https://api.local.pcfdev.io",
+    skip_cert_check: "true",
+    username: "admin",
+    password: "admin",
+  }
+}')
+
 it_can_create_an_org() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org $org \
@@ -27,7 +37,9 @@ it_can_create_an_org() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
@@ -35,7 +47,7 @@ it_can_create_an_org() {
 }
 
 it_can_create_a_space() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org $org \
@@ -47,7 +59,9 @@ it_can_create_a_space() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
@@ -55,7 +69,7 @@ it_can_create_a_space() {
 }
 
 it_can_create_a_mysql_service() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -71,7 +85,9 @@ it_can_create_a_mysql_service() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
@@ -79,9 +95,9 @@ it_can_create_a_mysql_service() {
 }
 
 it_can_push_an_app_with_manifest() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  cp -R $test_dir/fixtures/static-app $src/.
+  cp -R $test_dir/fixtures/static-app $working_dir/.
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -95,14 +111,16 @@ it_can_push_an_app_with_manifest() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
   curl --output /dev/null --silent --head --fail http://static-app.local.pcfdev.io/
 }
 
 it_can_delete_a_mysql_service() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -116,7 +134,9 @@ it_can_delete_a_mysql_service() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
@@ -124,7 +144,7 @@ it_can_delete_a_mysql_service() {
 }
 
 it_can_delete_a_space() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org $org \
@@ -136,7 +156,9 @@ it_can_delete_a_space() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
@@ -144,7 +166,7 @@ it_can_delete_a_space() {
 }
 
 it_can_delete_an_org() {
-  local src=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org $org \
@@ -154,7 +176,9 @@ it_can_delete_an_org() {
     }
   }')
 
-  put_with_params $api $skip_cert_check "$username" "$password" "$params" "$src" | jq -e '
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
 
