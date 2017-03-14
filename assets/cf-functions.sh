@@ -142,9 +142,19 @@ function cf_push_autopilot() {
   local space=$2
   local manifest=$1
   local current_app_name=$2
-  if [ -z "$current_app_name" ]; then
-    cf push -f "$manifest"
-  else
+  if [ -n "$current_app_name" ]; then
     cf zero-downtime-push "$current_app_name" -f "$manifest"
+  else
+    cf push -f "$manifest"
+  fi
+}
+
+function cf_delete() {
+  local app_name=$1
+  local delete_mapped_routes=$2
+  if [ -n "$delete_mapped_routes" ]; then
+    cf delete "$app_name" -f -r
+  else
+    cf delete "$app_name" -f
   fi
 }

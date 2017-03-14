@@ -112,7 +112,32 @@ it_can_push_an_app_with_manifest() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
+
   curl --output /dev/null --silent --head --fail http://static-app.local.pcfdev.io/
+}
+
+it_can_delete_an_app_with_manifest() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  '{
+    delete: {
+      org: $org,
+      space: $space,
+      app_name: "static-app",
+      delete_mapped_routes: "true"
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! curl --output /dev/null --silent --head --fail http://static-app.local.pcfdev.io/
 }
 
 it_can_delete_a_mysql_service() {
@@ -185,6 +210,7 @@ run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_mysql_service
 run it_can_push_an_app_with_manifest
+run it_can_delete_an_app_with_manifest
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
 run it_can_delete_an_org

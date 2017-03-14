@@ -88,6 +88,13 @@ for command in $commands; do
     current_app_name=$(echo $params | jq -r '.push.current_app_name')
     cf_target "$org" "$space"
     cf_push_autopilot "$manifest" "$current_app_name"
+  elif [ "delete" = "$command" ]; then
+    org=$(echo $params | jq -r '.delete.org')
+    space=$(echo $params | jq -r '.delete.space')
+    app_name=$(echo $params | jq -r '.delete.app_name')
+    delete_mapped_routes=$(echo $params | jq -r '.delete.delete_mapped_routes')
+    cf_target "$org" "$space"
+    cf_delete "$app_name" "$delete_mapped_routes"
   fi
 done
 
