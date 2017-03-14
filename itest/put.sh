@@ -7,10 +7,6 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
-api=https://api.local.pcfdev.io
-skip_cert_check=true
-username=admin
-password=admin
 timestamp=$(date +%s)
 org=org-$timestamp
 space=space-$timestamp
