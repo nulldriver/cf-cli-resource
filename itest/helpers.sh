@@ -33,6 +33,26 @@ run() {
   echo ""
 }
 
+create_static_app() {
+  local app_name=$1
+  local working_dir=$2
+
+  mkdir -p "$working_dir/static-app/content"
+
+  echo "Hello" > "$working_dir/static-app/content/index.html"
+
+  cat <<EOF >"$working_dir/static-app/manifest.yml"
+---
+applications:
+- name: $app_name
+  memory: 64M
+  disk_quota: 64M
+  instances: 1
+  path: content
+  buildpack: staticfile_buildpack
+EOF
+}
+
 put_with_params() {
   local config=$1
   local working_dir=$2

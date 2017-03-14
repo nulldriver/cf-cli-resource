@@ -11,6 +11,8 @@ timestamp=$(date +%s)
 org=org-$timestamp
 space=space-$timestamp
 mysql_si=db-$timestamp
+rabbitmq_si=rabbitmq-$timestamp
+app_name=static-$timestamp
 
 source=$(jq -n \
 '{
@@ -90,20 +92,20 @@ it_can_create_a_mysql_service() {
   cf_service_exists "$mysql_si"
 }
 
-it_can_push_an_app_with_manifest() {
+it_can_create_a_rabbitmq_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  cp -R $test_dir/fixtures/static-app $working_dir/.
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
+  --arg service_instance "$rabbitmq_si" \
   '{
-    push: {
+    create_service: {
       org: $org,
       space: $space,
-      manifest: "static-app/manifest.yml",
-      current_app_name: "static-app"
+      service: "p-rabbitmq",
+      plan: "standard",
+      service_instance: $service_instance
     }
   }')
 
@@ -113,7 +115,34 @@ it_can_push_an_app_with_manifest() {
     .version | keys == ["timestamp"]
   '
 
-  curl --output /dev/null --silent --head --fail http://static-app.local.pcfdev.io/
+  cf_service_exists "$rabbitmq_si"
+}
+
+it_can_push_an_app_with_manifest() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  create_static_app "$app_name" "$working_dir"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    push: {
+      org: $org,
+      space: $space,
+      manifest: "static-app/manifest.yml",
+      current_app_name: $app_name
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
 }
 
 it_can_delete_an_app_with_manifest() {
@@ -122,11 +151,12 @@ it_can_delete_an_app_with_manifest() {
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     delete: {
       org: $org,
       space: $space,
-      app_name: "static-app",
+      app_name: $app_name,
       delete_mapped_routes: "true"
     }
   }')
@@ -137,7 +167,7 @@ it_can_delete_an_app_with_manifest() {
     .version | keys == ["timestamp"]
   '
 
-  ! curl --output /dev/null --silent --head --fail http://static-app.local.pcfdev.io/
+  ! curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
 }
 
 it_can_delete_a_mysql_service() {
@@ -162,6 +192,30 @@ it_can_delete_a_mysql_service() {
   '
 
   ! cf_service_exists "$mysql_si"
+}
+
+it_can_delete_a_rabbitmq_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$rabbitmq_si" \
+  '{
+    delete_service: {
+      org: $org,
+      space: $space,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$rabbitmq_si"
 }
 
 it_can_delete_a_space() {
@@ -209,8 +263,10 @@ it_can_delete_an_org() {
 run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_mysql_service
+run it_can_create_a_rabbitmq_service
 run it_can_push_an_app_with_manifest
 run it_can_delete_an_app_with_manifest
+run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
 run it_can_delete_an_org
