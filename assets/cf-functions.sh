@@ -156,6 +156,7 @@ function cf_zero_downtime_push() {
   local args=$1
   local current_app_name=$2
   if [ -n "$current_app_name" ]; then
+    echo cf zero-downtime-push "$current_app_name" $args
     cf zero-downtime-push "$current_app_name" $args
   else
     cf push $args
