@@ -26,12 +26,27 @@ jobs:
   serial_groups: [version]
   plan:
   - aggregate:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
     - get: cf-cli-resource-image-rc
       passed: [build]
       params: {save: true}
     - get: version
       passed: [build]
       params: {bump: final}
+    - get: pipeline-tasks
+  - task: generate-github-release
+    file: pipeline-tasks/generate-github-release/task.yml
+    output_mapping: {task-output: generate-github-release-output}
+  - task: generate-commitish
+    file: pipeline-tasks/generate-commitish/task.yml
+    output_mapping: {task-output: generate-commitish-output}
+  - put: github-release
+    params:
+      name: generate-github-release-output/release-name
+      tag: generate-github-release-output/release-tag
+      commitish: generate-commitish-output/commitish
   - put: version
     params: {file: version/version}
   - put: cf-cli-resource-image-final
@@ -112,3 +127,16 @@ resources:
     token: {{tracker-api-token}}
     project_id: {{tracker-project-id}}
     tracker_url: {{tracker-url}}
+
+- name: pipeline-tasks
+  type: git
+  source:
+    uri: {{pipeline-tasks-git-uri}}
+    branch: {{pipeline-tasks-git-branch}}
+
+- name: github-release
+  type: github-release
+  source:
+    access_token: {{github-release-access-token}}
+    repository: cf-cli-resource
+    user: patrickcrocker
