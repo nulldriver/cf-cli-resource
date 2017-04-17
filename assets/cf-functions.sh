@@ -105,11 +105,12 @@ function cf_delete_service() {
 
 function cf_wait_for_service_instance() {
   local service_instance=$1
-  local timeout=${2:-300}
+  local timeout=${2:-600}
 
   local guid=$(cf service "$service_instance" --guid)
-
   local start=$(date +%s)
+
+  echo "Waiting for service: $service_instance"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
     local state=$(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
@@ -118,7 +119,8 @@ function cf_wait_for_service_instance() {
       echo "Service $service_instance is ready"
       return
     elif [ "$state" = "failed" ]; then
-      echo "Service $service_instance failed to provision"
+      echo "Service $service_instance failed to provision:"
+      cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description
       exit 1
     fi
 
@@ -156,7 +158,6 @@ function cf_zero_downtime_push() {
   local args=$1
   local current_app_name=$2
   if [ -n "$current_app_name" ]; then
-    echo cf zero-downtime-push "$current_app_name" $args
     cf zero-downtime-push "$current_app_name" $args
   else
     cf push $args

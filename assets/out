@@ -73,8 +73,20 @@ for command in $commands; do
     service_instance=$(echo $params | jq -r '.create_service.service_instance //empty')
     configuration=$(echo $params | jq -r '.create_service.configuration //"{}"')
     tags=$(echo $params | jq -r '.create_service.tags //empty')
+    timeout=$(echo $params | jq -r '.create_service.timeout //empty')
+    wait=$(echo $params | jq -r '.create_service.wait_for_service //"false"')
     cf_target "$org" "$space"
     cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+    if [ "true" = "$wait" ]; then
+      cf_wait_for_service_instance "$service_instance" "$timeout"
+    fi
+  elif [ "wait_for_service" = "$command" ]; then
+    org=$(echo $params | jq -r '.wait_for_service.org //empty')
+    space=$(echo $params | jq -r '.wait_for_service.space //empty')
+    service_instance=$(echo $params | jq -r '.wait_for_service.service_instance //empty')
+    timeout=$(echo $params | jq -r '.wait_for_service.timeout //empty')
+    cf_target "$org" "$space"
+    cf_wait_for_service_instance "$service_instance" "$timeout"
   elif [ "delete_service" = "$command" ]; then
     org=$(echo $params | jq -r '.delete_service.org //empty')
     space=$(echo $params | jq -r '.delete_service.space //empty')

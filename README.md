@@ -106,6 +106,8 @@ Create a service instance
 * `service_instance`: *Required.* The name to give the service instance
 * `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 * `tags`: *Optional.* User provided tags
+* `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
+* `wait_for_service`: *Optional.* Wait for the asynchronous service to start. Defaults to `false`.
 
 ```
   - put: cf-create-service
@@ -114,11 +116,33 @@ Create a service instance
       create_service:
         org: myorg,
         space: myspace,
-        service: p-mysql,
-        plan: 512mb,
-        service_instance: mydb,
-        configuration: '{"ram_gb":4}',
-        tags: 'list, of, tags'
+        service: p-config-server,
+        plan: standard,
+        service_instance: my-config-server,
+        configuration: '{"count":3}',
+        tags: 'list, of, tags',
+        timeout: 300,
+        wait_for_service: true
+```
+
+#### wait_for_service
+
+Wait for a service instance to start
+
+* `org`: *Required.* The organization to target
+* `space`: *Required.* The space to target
+* `service_instance`: *Required.* The service instance to wait for
+* `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
+
+```
+  - put: cf-wait-for-service
+    resource: cf-env
+    params:
+      wait_for_service:
+        org: myorg,
+        space: myspace,
+        service_instance: my-config-server,
+        timeout: 300
 ```
 
 #### delete_service
@@ -136,7 +160,7 @@ Delete a service instance
       delete_service:
         org: myorg,
         space: myspace,
-        service_instance: mydb
+        service_instance: my-config-server
 ```
 
 #### bind_service

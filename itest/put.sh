@@ -13,8 +13,12 @@ org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
 mysql_si=$testprefix-db-$timestamp
 rabbitmq_si=$testprefix-rabbitmq-$timestamp
+service_registry_si=$testprefix-service_registry-$timestamp
+config_server_si=$testprefix-config_server-$timestamp
+circuit_breaker_dashboard_si=$testprefix-circuit_breaker_dashboard-$timestamp
 app_name=$testprefix-app-$timestamp
 
+# cf dev start -s all
 source=$(jq -n \
 '{
   source: {
@@ -117,6 +121,116 @@ it_can_create_a_rabbitmq_service() {
   '
 
   cf_service_exists "$rabbitmq_si"
+}
+
+it_can_create_a_service_registry() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_registry_si" \
+  --arg configuration '{"count": 1}' \
+  '{
+    create_service: {
+      org: $org,
+      space: $space,
+      service: "p-service-registry",
+      plan: "standard",
+      service_instance: $service_instance,
+      configuration: $configuration,
+      wait_for_service: true
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$service_registry_si"
+}
+
+it_can_create_a_config_server() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$config_server_si" \
+  --arg configuration '{"count": 1, "git": {"uri": "https://github.com/patrickcrocker/cf-SpringBootTrader-config.git"}}' \
+  '{
+    create_service: {
+      org: $org,
+      space: $space,
+      service: "p-config-server",
+      plan: "standard",
+      service_instance: $service_instance,
+      configuration: $configuration,
+      wait_for_service: true
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$config_server_si"
+}
+
+it_can_create_a_circuit_breaker_dashboard() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$circuit_breaker_dashboard_si" \
+  --arg configuration '{"count": 1}' \
+  '{
+    create_service: {
+      org: $org,
+      space: $space,
+      service: "p-circuit-breaker-dashboard",
+      plan: "standard",
+      service_instance: $service_instance,
+      configuration: $configuration
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$circuit_breaker_dashboard_si"
+}
+
+it_can_wait_for_circuit_breaker_dashboard() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$circuit_breaker_dashboard_si" \
+  '{
+    wait_for_service: {
+      org: $org,
+      space: $space,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$circuit_breaker_dashboard_si"
 }
 
 it_can_push_an_app() {
@@ -331,6 +445,78 @@ it_can_delete_a_rabbitmq_service() {
   ! cf_service_exists "$rabbitmq_si"
 }
 
+it_can_delete_a_circuit_breaker_dashboard() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$circuit_breaker_dashboard_si" \
+  '{
+    delete_service: {
+      org: $org,
+      space: $space,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$circuit_breaker_dashboard_si"
+}
+
+it_can_delete_a_config_server() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$config_server_si" \
+  '{
+    delete_service: {
+      org: $org,
+      space: $space,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$config_server_si"
+}
+
+it_can_delete_a_service_registry() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_registry_si" \
+  '{
+    delete_service: {
+      org: $org,
+      space: $space,
+      service_instance: $service_instance
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$service_registry_si"
+}
+
 it_can_delete_a_space() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -374,23 +560,32 @@ it_can_delete_an_org() {
 }
 
 cleanup_failed_tests() {
-  orgs=$(cf orgs | grep "$testprefix-org")
+  orgs=$(cf orgs | grep "$testprefix-org" || true)
   for org in $orgs; do
     cf delete-org "$org" -f
   done
 }
 
-#run cleanup_failed_tests
+run cleanup_failed_tests
 run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_mysql_service
 run it_can_create_a_rabbitmq_service
+run it_can_create_a_service_registry
+run it_can_create_a_config_server
+run it_can_create_a_circuit_breaker_dashboard
+# run again to prove that it won't error out if it already exists
+run it_can_create_a_circuit_breaker_dashboard
+run it_can_wait_for_circuit_breaker_dashboard
 run it_can_push_an_app
 run it_can_bind_mysql_service
 run it_can_bind_rabbitmq_service
 run it_can_start_an_app
 run it_can_zero_downtime_push
 run it_can_delete_an_app
+run it_can_delete_a_circuit_breaker_dashboard
+run it_can_delete_a_config_server
+run it_can_delete_a_service_registry
 run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
