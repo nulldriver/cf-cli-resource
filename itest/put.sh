@@ -563,27 +563,43 @@ it_can_delete_an_org() {
   ! cf_org_exists "$space"
 }
 
-it_can_use_alt_syntax() {
+it_can_use_command_syntax() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
-  --arg space "$space" \
+  '{
+    command: "create-org",
+    org: $org
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_org_exists "$org"
+}
+
+it_can_use_commands_syntax() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
   --arg service_instance "$mysql_si" \
-  '[
-    {
-      command: "create-org",
-    },
-    {
-      command: "create-space",
-    },
-    {
-      command: "create-service",
-      service: "p-mysql",
-      plan: "512mb",
-      service_instance: $service_instance
-    }
-  ]')
+  '{
+    commands: [
+      {
+        command: "create-space",
+      },
+      {
+        command: "create-service",
+        service: "p-mysql",
+        plan: "512mb",
+        service_instance: $service_instance
+      }
+    ]
+  }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
 
@@ -625,5 +641,6 @@ run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
 run it_can_delete_an_org
-run it_can_use_alt_syntax
+run it_can_use_command_syntax
+run it_can_use_commands_syntax
 run it_can_delete_an_org

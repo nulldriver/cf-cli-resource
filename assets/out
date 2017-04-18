@@ -50,8 +50,12 @@ cd $working_dir
 cf_login $api "$username" "$password" $skip_cert_check
 
 old_syntax=false
-if echo $params | jq -e 'type=="array"' >/dev/null; then
-  commands=$(echo $params | jq -r '.[].command')
+if echo $params | jq -e 'has("commands")' >/dev/null; then
+  commands=$(echo $params | jq -r '.commands[].command')
+elif echo $params | jq -e 'has("command")' >/dev/null; then
+  # make the single command now plural
+  params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
+  commands=$(echo $params | jq -r '.commands[].command')
 else
   commands=$(echo $params | jq -r 'keys_unsorted[]')
   old_syntax=true
@@ -64,7 +68,7 @@ for command in $commands; do
     # convert underscores to hyphens in command names
     command=${command//_/-}
   else
-    options=$(echo $params | jq --arg command $command '.[] | select(.command == $command)')
+    options=$(echo $params | jq --arg command $command '.commands[] | select(.command == $command)')
   fi
 
   echo "Executing: $command"
