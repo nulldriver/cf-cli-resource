@@ -22,11 +22,13 @@ payload=$(mktemp $TMPDIR/cf-cli-resource-request.XXXXXX)
 
 cat > $payload <&0
 
-api=$(jq -r '.source.api // ""' < $payload)
-skip_cert_check=$(jq -r '.source.skip_cert_check // ""' < $payload)
-username=$(jq -r '.source.username // ""' < $payload)
-password=$(jq -r '.source.password // ""' < $payload)
-params=$(jq -r '.params // ""' < $payload)
+api=$(jq -r '.source.api //empty' < $payload)
+skip_cert_check=$(jq -r '.source.skip_cert_check //empty' < $payload)
+username=$(jq -r '.source.username //empty' < $payload)
+password=$(jq -r '.source.password //empty' < $payload)
+source_org=$(jq -r '.source.org //empty' < $payload)
+source_space=$(jq -r '.source.space //empty' < $payload)
+params=$(jq -r '.params //empty' < $payload)
 
 if [ -z "$api" ]; then
   echo "invalid payload (missing api)"
@@ -47,64 +49,72 @@ cd $working_dir
 
 cf_login $api "$username" "$password" $skip_cert_check
 
-commands=$(echo $params | jq -r 'keys_unsorted[]')
+old_syntax=false
+if echo $params | jq -e 'type=="array"' >/dev/null; then
+  commands=$(echo $params | jq -r '.[].command')
+else
+  commands=$(echo $params | jq -r 'keys_unsorted[]')
+  old_syntax=true
+fi
 
 for command in $commands; do
+
+  if $old_syntax ; then
+    options=$(echo $params | jq --arg command $command '.[$command]')
+    # convert underscores to hyphens in command names
+    command=${command//_/-}
+  else
+    options=$(echo $params | jq --arg command $command '.[] | select(.command == $command)')
+  fi
+
   echo "Executing: $command"
-  if [ "create_org" = "$command" ]; then
-    org=$(echo $params | jq -r '.create_org.org //empty')
+
+  org=$(echo $options | jq -r '.org //empty')
+  [ -z "$org" ] && org=$source_org
+
+  space=$(echo $options | jq -r '.space //empty')
+  [ -z "$space" ] && space=$source_space
+
+  if [ "create-org" = "$command" ]; then
     cf_create_org "$org"
-  elif [ "delete_org" = "$command" ]; then
-    org=$(echo $params | jq -r '.delete_org.org //empty')
+  elif [ "delete-org" = "$command" ]; then
     cf_delete_org "$org"
-  elif [ "create_space" = "$command" ]; then
-    org=$(echo $params | jq -r '.create_space.org //empty')
-    space=$(echo $params | jq -r '.create_space.space //empty')
+  elif [ "create-space" = "$command" ]; then
     cf_create_space "$org" "$space"
-  elif [ "delete_space" = "$command" ]; then
-    org=$(echo $params | jq -r '.delete_space.org //empty')
-    space=$(echo $params | jq -r '.delete_space.space //empty')
+  elif [ "delete-space" = "$command" ]; then
     cf_delete_space "$org" "$space"
-  elif [ "create_service" = "$command" ]; then
-    org=$(echo $params | jq -r '.create_service.org //empty')
-    space=$(echo $params | jq -r '.create_service.space //empty')
-    service=$(echo $params | jq -r '.create_service.service //empty')
-    plan=$(echo $params | jq -r '.create_service.plan //empty')
-    service_instance=$(echo $params | jq -r '.create_service.service_instance //empty')
-    configuration=$(echo $params | jq -r '.create_service.configuration //"{}"')
-    tags=$(echo $params | jq -r '.create_service.tags //empty')
-    timeout=$(echo $params | jq -r '.create_service.timeout //empty')
-    wait=$(echo $params | jq -r '.create_service.wait_for_service //"false"')
+  elif [ "create-service" = "$command" ]; then
+    service=$(echo $options | jq -r '.service //empty')
+    plan=$(echo $options | jq -r '.plan //empty')
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    configuration=$(echo $options | jq -r '.configuration //"{}"')
+    tags=$(echo $options | jq -r '.tags //empty')
+    timeout=$(echo $options | jq -r '.timeout //empty')
+    wait=$(echo $options | jq -r '.wait_for_service //"false"')
     cf_target "$org" "$space"
     cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
     if [ "true" = "$wait" ]; then
       cf_wait_for_service_instance "$service_instance" "$timeout"
     fi
-  elif [ "wait_for_service" = "$command" ]; then
-    org=$(echo $params | jq -r '.wait_for_service.org //empty')
-    space=$(echo $params | jq -r '.wait_for_service.space //empty')
-    service_instance=$(echo $params | jq -r '.wait_for_service.service_instance //empty')
-    timeout=$(echo $params | jq -r '.wait_for_service.timeout //empty')
+  elif [ "wait-for-service" = "$command" ]; then
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    timeout=$(echo $options | jq -r '.timeout //empty')
     cf_target "$org" "$space"
     cf_wait_for_service_instance "$service_instance" "$timeout"
-  elif [ "delete_service" = "$command" ]; then
-    org=$(echo $params | jq -r '.delete_service.org //empty')
-    space=$(echo $params | jq -r '.delete_service.space //empty')
-    service_instance=$(echo $params | jq -r '.delete_service.service_instance //empty')
+  elif [ "delete-service" = "$command" ]; then
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
     cf_target "$org" "$space"
     cf_delete_service "$service_instance"
   elif [ "push" = "$command" ]; then
-    org=$(echo $params | jq -r '.push.org //empty')
-    space=$(echo $params | jq -r '.push.space //empty')
-    app_name=$(echo $params | jq -r '.push.app_name //empty')
-    hostname=$(echo $params | jq -r '.push.hostname //empty')
-    memory=$(echo $params | jq -r '.push.memory //empty')
-    disk_quota=$(echo $params | jq -r '.push.disk_quota //empty')
-    instances=$(echo $params | jq -r '.push.instances //empty')
-    path=$(echo $params | jq -r '.push.path //empty')
-    buildpack=$(echo $params | jq -r '.push.buildpack //empty')
-    no_start=$(echo $params | jq -r '.push.no_start //empty')
-    manifest=$(echo $params | jq -r '.push.manifest //empty')
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    hostname=$(echo $options | jq -r '.hostname //empty')
+    memory=$(echo $options | jq -r '.memory //empty')
+    disk_quota=$(echo $options | jq -r '.disk_quota //empty')
+    instances=$(echo $options | jq -r '.instances //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    no_start=$(echo $options | jq -r '.no_start //empty')
+    manifest=$(echo $options | jq -r '.manifest //empty')
 
     args=
     [ -n "$app_name" ]   && args="$args $app_name"
@@ -119,12 +129,10 @@ for command in $commands; do
 
     cf_target "$org" "$space"
     cf_push "$args"
-  elif [ "zero_downtime_push" = "$command" ]; then
-    org=$(echo $params | jq -r '.zero_downtime_push.org //empty')
-    space=$(echo $params | jq -r '.zero_downtime_push.space //empty')
-    manifest=$(echo $params | jq -r '.zero_downtime_push.manifest //empty')
-    path=$(echo $params | jq -r '.zero_downtime_push.path //empty')
-    current_app_name=$(echo $params | jq -r '.zero_downtime_push.current_app_name //empty')
+  elif [ "zero-downtime-push" = "$command" ]; then
+    manifest=$(echo $options | jq -r '.manifest //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    current_app_name=$(echo $options | jq -r '.current_app_name //empty')
 
     args="-f $manifest"
     [ -n "$path" ]       && args="$args -p $path"
@@ -132,28 +140,25 @@ for command in $commands; do
     cf_target "$org" "$space"
     cf_zero_downtime_push "$args" "$current_app_name"
   elif [ "start" = "$command" ]; then
-    org=$(echo $params | jq -r '.start.org //empty')
-    space=$(echo $params | jq -r '.start.space //empty')
-    app_name=$(echo $params | jq -r '.start.app_name //empty')
-    staging_timeout=$(echo $params | jq -r '.start.staging_timeout //"0"')
-    startup_timeout=$(echo $params | jq -r '.start.startup_timeout //"0"')
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    staging_timeout=$(echo $options | jq -r '.staging_timeout //"0"')
+    startup_timeout=$(echo $options | jq -r '.startup_timeout //"0"')
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
   elif [ "delete" = "$command" ]; then
-    org=$(echo $params | jq -r '.delete.org //empty')
-    space=$(echo $params | jq -r '.delete.space //empty')
-    app_name=$(echo $params | jq -r '.delete.app_name //empty')
-    delete_mapped_routes=$(echo $params | jq -r '.delete.delete_mapped_routes //empty')
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    delete_mapped_routes=$(echo $options | jq -r '.delete_mapped_routes //empty')
     cf_target "$org" "$space"
     cf_delete "$app_name" "$delete_mapped_routes"
-  elif [ "bind_service" = "$command" ]; then
-    org=$(echo $params | jq -r '.bind_service.org //empty')
-    space=$(echo $params | jq -r '.bind_service.space //empty')
-    app_name=$(echo $params | jq -r '.bind_service.app_name //empty')
-    service_instance=$(echo $params | jq -r '.bind_service.service_instance //empty')
-    configuration=$(echo $params | jq -r '.bind_service.configuration // "{}" //empty')
+  elif [ "bind-service" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    configuration=$(echo $options | jq -r '.configuration // "{}" //empty')
     cf_target "$org" "$space"
     cf_bind_service "$app_name" "$service_instance" "$configuration"
+  else
+    echo "invalid payload (unknown command: $command)"
+    exit 1
   fi
 done
 

@@ -20,12 +20,16 @@ app_name=$testprefix-app-$timestamp
 
 # cf dev start -s all
 source=$(jq -n \
+--arg org "$org" \
+--arg space "$space" \
 '{
   source: {
     api: "https://api.local.pcfdev.io",
     skip_cert_check: "true",
     username: "admin",
     password: "admin",
+    org: $org,
+    space: $space
   }
 }')
 
@@ -33,7 +37,7 @@ it_can_create_an_org() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org $org \
+  --arg org "$org" \
   '{
     create_org: {
       org: $org
@@ -53,8 +57,8 @@ it_can_create_a_space() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org $org \
-  --arg space $space \
+  --arg org "$org" \
+  --arg space "$space" \
   '{
     create_space: {
       org: $org,
@@ -521,8 +525,8 @@ it_can_delete_a_space() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org $org \
-  --arg space $space \
+  --arg org "$org" \
+  --arg space "$space" \
   '{
     delete_space: {
       org: $org,
@@ -543,7 +547,7 @@ it_can_delete_an_org() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org $org \
+  --arg org "$org" \
   '{
     delete_org: {
       org: $org
@@ -557,6 +561,37 @@ it_can_delete_an_org() {
   '
 
   ! cf_org_exists "$space"
+}
+
+it_can_use_alt_syntax() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$mysql_si" \
+  '[
+    {
+      command: "create-org",
+    },
+    {
+      command: "create-space",
+    },
+    {
+      command: "create-service",
+      service: "p-mysql",
+      plan: "512mb",
+      service_instance: $service_instance
+    }
+  ]')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_space_exists "$org" "$space"
 }
 
 cleanup_failed_tests() {
@@ -589,4 +624,6 @@ run it_can_delete_a_service_registry
 run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
+run it_can_delete_an_org
+run it_can_use_alt_syntax
 run it_can_delete_an_org
