@@ -137,9 +137,22 @@ for command in $commands; do
     manifest=$(echo $options | jq -r '.manifest //empty')
     path=$(echo $options | jq -r '.path //empty')
     current_app_name=$(echo $options | jq -r '.current_app_name //empty')
+    environment_variables=$(echo $options | jq -r '.environment_variables //empty')
+
+    if [ ! -f "$manifest" ]; then
+      echo "invalid payload (manifest is not a file: $manifest)"
+      exit 1
+    fi
+
+    # add pipeline defined environment variables to the manifest
+    for key in $(echo $environment_variables | jq -r 'keys[]');
+    do
+      value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
+      yaml w -i $manifest "env.$key" "$value"
+    done
 
     args="-f $manifest"
-    [ -n "$path" ]       && args="$args -p $path"
+    [ -n "$path" ] && args="$args -p $path"
 
     cf_target "$org" "$space"
     cf_zero_downtime_push "$args" "$current_app_name"

@@ -1,3 +1,3 @@
-FROM patrickcrocker/lotc:1.0.2
+FROM patrickcrocker/lotc:1.0.3
 
 ADD assets/ /opt/resource/

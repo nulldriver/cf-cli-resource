@@ -264,7 +264,7 @@ it_can_push_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  #curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+  cf app "$app_name" --guid
 }
 
 it_can_start_an_app() {
@@ -303,11 +303,12 @@ it_can_zero_downtime_push() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   '{
-    zero_downtime_push: {
-      org: $org,
-      space: $space,
-      manifest: "static-app/manifest.yml",
-      current_app_name: $app_name
+    command: "zero-downtime-push",
+    manifest: "static-app/manifest.yml",
+    current_app_name: $app_name,
+    environment_variables: {
+      key: "value",
+      key2: "value2"
     }
   }')
 

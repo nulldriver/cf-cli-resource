@@ -267,6 +267,7 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
 * `manifest`: *Required.* Path to a application manifest file.
 * `path`: *Optional.* Path to the application to push. If this isn't set then it will be read from the manifest instead.
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
+* `environment_variables`: *Optional.*  Environment variable key/value pairs to add to the manifest.
 
 ```
   - put: cf-zero-downtime-push
@@ -275,7 +276,10 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
       command: zero-downtime-push,
       manifest: path/to/manifest.yml,
       path: path/to/myapp-*.jar,
-      current_app_name: myapp-ui
+      current_app_name: myapp-ui,
+      environment_variables:
+        key: value
+        key2: value2
 ```
 
 #### start
