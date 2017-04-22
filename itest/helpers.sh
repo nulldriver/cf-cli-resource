@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -e -u
-
+set -eu
 set -o pipefail
 
 export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
