@@ -1,7 +1,8 @@
 #!/bin/bash
 # vim: set ft=sh
 
-set -e
+set -eu
+set -o pipefail
 
 exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
@@ -71,8 +72,6 @@ for command in $commands; do
     options=$(echo $params | jq --arg command $command '.commands[] | select(.command == $command)')
   fi
 
-  echo "Executing: $command"
-
   org=$(echo $options | jq -r '.org //empty')
   [ -z "$org" ] && org=$source_org
 
@@ -80,12 +79,16 @@ for command in $commands; do
   [ -z "$space" ] && space=$source_space
 
   if [ "create-org" = "$command" ]; then
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$org"
     cf_create_org "$org"
   elif [ "delete-org" = "$command" ]; then
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$org"
     cf_delete_org "$org"
   elif [ "create-space" = "$command" ]; then
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$space"
     cf_create_space "$org" "$space"
   elif [ "delete-space" = "$command" ]; then
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$space"
     cf_delete_space "$org" "$space"
   elif [ "create-service" = "$command" ]; then
     service=$(echo $options | jq -r '.service //empty')
@@ -95,6 +98,7 @@ for command in $commands; do
     tags=$(echo $options | jq -r '.tags //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$service_instance"
     cf_target "$org" "$space"
     cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
     if [ "true" = "$wait" ]; then
@@ -103,10 +107,12 @@ for command in $commands; do
   elif [ "wait-for-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$service_instance"
     cf_target "$org" "$space"
     cf_wait_for_service_instance "$service_instance" "$timeout"
   elif [ "delete-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$service_instance"
     cf_target "$org" "$space"
     cf_delete_service "$service_instance"
   elif [ "push" = "$command" ]; then
@@ -131,6 +137,7 @@ for command in $commands; do
     [ -n "$manifest" ]   && args="$args -f $manifest"
     [ -n "$no_start" ]   && args="$args --no-start"
 
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$app_name"
     cf_target "$org" "$space"
     cf_push "$args"
   elif [ "zero-downtime-push" = "$command" ]; then
@@ -154,23 +161,27 @@ for command in $commands; do
     args="-f $manifest"
     [ -n "$path" ] && args="$args -p $path"
 
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$current_app_name"
     cf_target "$org" "$space"
     cf_zero_downtime_push "$args" "$current_app_name"
   elif [ "start" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //"0"')
     startup_timeout=$(echo $options | jq -r '.startup_timeout //"0"')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$app_name"
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
   elif [ "delete" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     delete_mapped_routes=$(echo $options | jq -r '.delete_mapped_routes //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$app_name"
     cf_target "$org" "$space"
     cf_delete "$app_name" "$delete_mapped_routes"
   elif [ "bind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     configuration=$(echo $options | jq -r '.configuration // "{}" //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$app_name"
     cf_target "$org" "$space"
     cf_bind_service "$app_name" "$service_instance" "$configuration"
   else
