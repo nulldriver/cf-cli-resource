@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -e
+set -eu
+set -o pipefail
 
 test_dir=$(dirname $0)
 
@@ -264,7 +265,7 @@ it_can_push_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf app "$app_name" --guid
+  cf_is_app_stopped "$app_name"
 }
 
 it_can_start_an_app() {
@@ -290,7 +291,7 @@ it_can_start_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+  cf_is_app_started "$app_name"
 }
 
 it_can_zero_downtime_push() {
@@ -318,7 +319,7 @@ it_can_zero_downtime_push() {
     .version | keys == ["timestamp"]
   '
 
-  curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+  cf_is_app_started "$app_name"
 }
 
 it_can_bind_mysql_service() {
@@ -399,7 +400,7 @@ it_can_delete_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  ! curl --output /dev/null --silent --head --fail http://$app_name.local.pcfdev.io/
+  ! cf_app_exists "$app_name"
 }
 
 it_can_delete_a_mysql_service() {
@@ -561,7 +562,7 @@ it_can_delete_an_org() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_org_exists "$space"
+  ! cf_org_exists "$org"
 }
 
 it_can_use_command_syntax() {

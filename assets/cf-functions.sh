@@ -190,3 +190,21 @@ function cf_delete() {
     cf delete "$app_name" -f
   fi
 }
+
+function cf_is_app_started() {
+  local app_name=$1
+  guid=$(cf app "$app_name" --guid)
+  cf curl /v2/apps/$guid | jq -e '.entity.state == "STARTED"' >/dev/null
+}
+
+function cf_is_app_stopped() {
+  local app_name=$1
+  guid=$(cf app "$app_name" --guid)
+  cf curl /v2/apps/$guid | jq -e '.entity.state == "STOPPED"' >/dev/null
+}
+
+function cf_app_exists() {
+  local app_name=$1
+  cf app "$app_name" --guid >/dev/null 2>&1
+  return $?
+}
