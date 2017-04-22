@@ -1,7 +1,7 @@
 #!/bin/bash
 # vim: set ft=sh
 
-set -e
+set -eu
 set -o pipefail
 
 exec 3>&1 # make stdout available as fd 3 for the result
@@ -19,7 +19,7 @@ fi
 # for jq
 PATH=/usr/local/bin:$PATH
 
-echo "TMPDIR=$TMPDIR"
+TMPDIR=${TMPDIR:-/tmp}
 payload=$(mktemp $TMPDIR/cf-cli-resource-request.XXXXXX)
 
 cat > $payload <&0
