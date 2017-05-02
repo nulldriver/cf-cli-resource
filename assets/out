@@ -164,7 +164,12 @@ for command in $commands; do
     do
       value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
       # alternative till fixed: https://github.com/mikefarah/yaml/issues/10
-      echo "env.$key: $value" >>$instructions
+      if [[ "$value" == [* || "$value" == {* ]]; then
+        # Env vars are only strings, so quote the value if it starts with a sequence or map
+        echo "env.$key: '"$value"'" >>$instructions
+      else
+        echo "env.$key: $value" >>$instructions
+      fi
     done
 
     if [ -f "$instructions" ]; then
