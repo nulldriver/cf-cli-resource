@@ -163,19 +163,17 @@ for command in $commands; do
     for key in $(echo $environment_variables | jq -r 'keys[]');
     do
       value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-      # alternative till fixed: https://github.com/mikefarah/yaml/issues/10
+      # valid inline yaml (flow style) so quote the value if it starts with a sequence or map
       if [[ "$value" == [* || "$value" == {* ]]; then
-        # valid inline yaml (flow style) so quote the value if it starts with a sequence or map
-        echo "env.$key: '"$value"'" >>$instructions
+        echo "env.$key: '$value'" >>"$instructions"
       else
-        echo "env.$key: $value" >>$instructions
+        echo "env.$key: $value" >>"$instructions"
       fi
     done
 
     if [ -f "$instructions" ]; then
-      cp "$manifest" "$manifest.original"
-      yaml w -s $instructions $manifest.original > $manifest
-      cat $manifest
+      mv "$manifest" "$manifest.original"
+      yaml w -s "$instructions" "$manifest.original" > "$manifest"
     fi
 
     args="-f $manifest"
