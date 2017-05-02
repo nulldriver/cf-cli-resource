@@ -160,13 +160,13 @@ Create a service instance
   - put: cf-create-service
     resource: cf-env
     params:
-      command: create-service,
-      service: p-config-server,
-      plan: standard,
-      service_instance: my-config-server,
-      configuration: '{"count":3}',
-      tags: 'list, of, tags',
-      timeout: 300,
+      command: create-service
+      service: p-config-server
+      plan: standard
+      service_instance: my-config-server
+      configuration: '{"count":3}'
+      tags: 'list, of, tags'
+      timeout: 300
       wait_for_service: true
 ```
 
@@ -183,8 +183,8 @@ Wait for a service instance to start
   - put: cf-wait-for-service
     resource: cf-env
     params:
-      command: wait-for-service,
-      service_instance: my-config-server,
+      command: wait-for-service
+      service_instance: my-config-server
       timeout: 300
 ```
 
@@ -200,7 +200,7 @@ Delete a service instance
   - put: cf-delete-service
     resource: cf-env
     params:
-      command: delete-service,
+      command: delete-service
       service_instance: my-config-server
 ```
 
@@ -218,10 +218,10 @@ Bind a service instance to an app
   - put: cf-bind-service
     resource: cf-env
     params:
-      command: bind-service,
+      command: bind-service
       app_name: myapp-ui
-      service_instance: mydb,
-      configuration: '{"permissions":"read-only"}',
+      service_instance: mydb
+      configuration: '{"permissions":"read-only"}'
 ```
 
 #### push
@@ -246,15 +246,15 @@ Push a new app or sync changes to an existing app
   - put: cf-push
     resource: cf-env
     params:
-      command: push,
-      app_name: myapp-ui,
-      hostname: myapp,
-      memory: 512M,
-      disk_quota: 1G,
-      instances: 1,
-      path: path/to/myapp-*.jar,
-      buildpack: java_buildpack,
-      manifest: path/to/manifest.yml,
+      command: push
+      app_name: myapp-ui
+      hostname: myapp
+      memory: 512M
+      disk_quota: 1G
+      instances: 1
+      path: path/to/myapp-*.jar
+      buildpack: java_buildpack
+      manifest: path/to/manifest.yml
       no_start: true
 ```
 
@@ -273,10 +273,10 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
   - put: cf-zero-downtime-push
     resource: cf-env
     params:
-      command: zero-downtime-push,
-      manifest: path/to/manifest.yml,
-      path: path/to/myapp-*.jar,
-      current_app_name: myapp-ui,
+      command: zero-downtime-push
+      manifest: path/to/manifest.yml
+      path: path/to/myapp-*.jar
+      current_app_name: myapp-ui
       environment_variables:
         key: value
         key2: value2
@@ -296,9 +296,9 @@ Start an app
   - put: cf-start
     resource: cf-env
     params:
-      command: start,
-      app_name: myapp-ui,
-      staging_timeout: 15,
+      command: start
+      app_name: myapp-ui
+      staging_timeout: 15
       startup_timeout: 5
 ```
 
@@ -315,7 +315,7 @@ Delete an app
   - put: cf-delete
     resource: cf-env
     params:
-      command: delete,
-      app_name: myapp-ui,
+      command: delete
+      app_name: myapp-ui
       delete_mapped_routes: true
 ```
