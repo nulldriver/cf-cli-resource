@@ -24,6 +24,11 @@ payload=$(mktemp $TMPDIR/cf-cli-resource-request.XXXXXX)
 
 cat > $payload <&0
 
+debug=$(jq -r '.source.debug //empty' < $payload)
+if [ "$debug" = "true" ]; then
+  set -x
+fi
+
 api=$(jq -r '.source.api //empty' < $payload)
 skip_cert_check=$(jq -r '.source.skip_cert_check //empty' < $payload)
 username=$(jq -r '.source.username //empty' < $payload)
