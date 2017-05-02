@@ -157,14 +157,21 @@ for command in $commands; do
       exit 1
     fi
 
+    instructions="$(dirname $manifest)/.cf-cli-resource-manifest-update-instructions.yml"
+
     # add pipeline defined environment variables to the manifest
     for key in $(echo $environment_variables | jq -r 'keys[]');
     do
       value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
       # alternative till fixed: https://github.com/mikefarah/yaml/issues/10
-      echo "env.$key: $value" >>update-instructions.yml
+      echo "env.$key: $value" >>$instructions
     done
-    yaml w -s update-instructions.yml $manifest
+
+    if [ -f "$instructions" ]; then
+      cp "$manifest" "$manifest.original"
+      yaml w -s $instructions $manifest > $manifest
+      cat $manifest
+    fi
 
     args="-f $manifest"
     [ -n "$path" ] && args="$args -p $path"
