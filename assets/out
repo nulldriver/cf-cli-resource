@@ -161,8 +161,10 @@ for command in $commands; do
     for key in $(echo $environment_variables | jq -r 'keys[]');
     do
       value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-      yaml w -i $manifest "env.$key" "$value"
+      # alternative till fixed: https://github.com/mikefarah/yaml/issues/10
+      echo "env.$key: $value" >>update-instructions.yml
     done
+    yaml w -s update-instructions.yml $manifest
 
     args="-f $manifest"
     [ -n "$path" ] && args="$args -p $path"
