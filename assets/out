@@ -56,27 +56,14 @@ cd $working_dir
 
 cf_login $api "$username" "$password" $skip_cert_check
 
-old_syntax=false
-if echo $params | jq -e 'has("commands")' >/dev/null; then
-  commands=$(echo $params | jq -r '.commands[].command')
-elif echo $params | jq -e 'has("command")' >/dev/null; then
-  # make the single command now plural
+# convert the single command into a single element array
+if echo $params | jq -e 'has("command")' >/dev/null; then
   params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
-  commands=$(echo $params | jq -r '.commands[].command')
-else
-  commands=$(echo $params | jq -r 'keys_unsorted[]')
-  old_syntax=true
 fi
 
-for command in $commands; do
+echo -e $params | jq -c '.commands[]' | while read -r options; do
 
-  if $old_syntax ; then
-    options=$(echo $params | jq --arg command $command '.[$command]')
-    # convert underscores to hyphens in command names
-    command=${command//_/-}
-  else
-    options=$(echo $params | jq --arg command $command '.commands[] | select(.command == $command)')
-  fi
+  command=$(echo $options | jq -r '.command')
 
   org=$(echo $options | jq -r '.org //empty')
   [ -z "$org" ] && org=$source_org

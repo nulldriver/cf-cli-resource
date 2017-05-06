@@ -30,7 +30,8 @@ source=$(jq -n \
     username: "admin",
     password: "admin",
     org: $org,
-    space: $space
+    space: $space,
+    debug: false
   }
 }')
 
@@ -40,9 +41,8 @@ it_can_create_an_org() {
   local params=$(jq -n \
   --arg org "$org" \
   '{
-    create_org: {
-      org: $org
-    }
+    command: "create-org",
+    org: $org
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -61,10 +61,9 @@ it_can_create_a_space() {
   --arg org "$org" \
   --arg space "$space" \
   '{
-    create_space: {
-      org: $org,
-      space: $space
-    }
+    command: "create-space",
+    org: $org,
+    space: $space
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -84,13 +83,12 @@ it_can_create_a_mysql_service() {
   --arg space "$space" \
   --arg service_instance "$mysql_si" \
   '{
-    create_service: {
-      org: $org,
-      space: $space,
-      service: "p-mysql",
-      plan: "512mb",
-      service_instance: $service_instance
-    }
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: "p-mysql",
+    plan: "512mb",
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -110,13 +108,12 @@ it_can_create_a_rabbitmq_service() {
   --arg space "$space" \
   --arg service_instance "$rabbitmq_si" \
   '{
-    create_service: {
-      org: $org,
-      space: $space,
-      service: "p-rabbitmq",
-      plan: "standard",
-      service_instance: $service_instance
-    }
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: "p-rabbitmq",
+    plan: "standard",
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -137,15 +134,14 @@ it_can_create_a_service_registry() {
   --arg service_instance "$service_registry_si" \
   --arg configuration '{"count": 1}' \
   '{
-    create_service: {
-      org: $org,
-      space: $space,
-      service: "p-service-registry",
-      plan: "standard",
-      service_instance: $service_instance,
-      configuration: $configuration,
-      wait_for_service: true
-    }
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: "p-service-registry",
+    plan: "standard",
+    service_instance: $service_instance,
+    configuration: $configuration,
+    wait_for_service: true
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -166,15 +162,14 @@ it_can_create_a_config_server() {
   --arg service_instance "$config_server_si" \
   --arg configuration '{"count": 1, "git": {"uri": "https://github.com/patrickcrocker/cf-SpringBootTrader-config.git"}}' \
   '{
-    create_service: {
-      org: $org,
-      space: $space,
-      service: "p-config-server",
-      plan: "standard",
-      service_instance: $service_instance,
-      configuration: $configuration,
-      wait_for_service: true
-    }
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: "p-config-server",
+    plan: "standard",
+    service_instance: $service_instance,
+    configuration: $configuration,
+    wait_for_service: true
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -195,14 +190,13 @@ it_can_create_a_circuit_breaker_dashboard() {
   --arg service_instance "$circuit_breaker_dashboard_si" \
   --arg configuration '{"count": 1}' \
   '{
-    create_service: {
-      org: $org,
-      space: $space,
-      service: "p-circuit-breaker-dashboard",
-      plan: "standard",
-      service_instance: $service_instance,
-      configuration: $configuration
-    }
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: "p-circuit-breaker-dashboard",
+    plan: "standard",
+    service_instance: $service_instance,
+    configuration: $configuration
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -222,11 +216,10 @@ it_can_wait_for_circuit_breaker_dashboard() {
   --arg space "$space" \
   --arg service_instance "$circuit_breaker_dashboard_si" \
   '{
-    wait_for_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "wait-for-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -248,15 +241,14 @@ it_can_push_an_app() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   '{
-    push: {
-      org: $org,
-      space: $space,
-      app_name: $app_name,
-      hostname: $app_name,
-      path: "static-app/content",
-      manifest: "static-app/manifest.yml",
-      no_start: "true"
-    }
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    hostname: $app_name,
+    path: "static-app/content",
+    manifest: "static-app/manifest.yml",
+    no_start: "true"
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -276,13 +268,12 @@ it_can_start_an_app() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   '{
-    start: {
-      org: $org,
-      space: $space,
-      app_name: $app_name,
-      staging_timeout: 15,
-      startup_timeout: 5
-    }
+    command: "start",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    staging_timeout: 15,
+    startup_timeout: 5
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -333,12 +324,11 @@ it_can_bind_mysql_service() {
   --arg app_name "$app_name" \
   --arg service_instance "$service_instance" \
   '{
-    bind_service: {
-      org: $org,
-      space: $space,
-      app_name: $app_name,
-      service_instance: $service_instance
-    }
+    command: "bind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -361,12 +351,11 @@ it_can_bind_rabbitmq_service() {
   --arg app_name "$app_name" \
   --arg service_instance "$service_instance" \
   '{
-    bind_service: {
-      org: $org,
-      space: $space,
-      app_name: $app_name,
-      service_instance: $service_instance
-    }
+    command: "bind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -386,12 +375,11 @@ it_can_delete_an_app() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   '{
-    delete: {
-      org: $org,
-      space: $space,
-      app_name: $app_name,
-      delete_mapped_routes: "true"
-    }
+    command: "delete",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    delete_mapped_routes: "true"
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -411,11 +399,10 @@ it_can_delete_a_mysql_service() {
   --arg space "$space" \
   --arg service_instance "$mysql_si" \
   '{
-    delete_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -435,11 +422,10 @@ it_can_delete_a_rabbitmq_service() {
   --arg space "$space" \
   --arg service_instance "$rabbitmq_si" \
   '{
-    delete_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -459,11 +445,10 @@ it_can_delete_a_circuit_breaker_dashboard() {
   --arg space "$space" \
   --arg service_instance "$circuit_breaker_dashboard_si" \
   '{
-    delete_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -483,11 +468,10 @@ it_can_delete_a_config_server() {
   --arg space "$space" \
   --arg service_instance "$config_server_si" \
   '{
-    delete_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -507,11 +491,10 @@ it_can_delete_a_service_registry() {
   --arg space "$space" \
   --arg service_instance "$service_registry_si" \
   '{
-    delete_service: {
-      org: $org,
-      space: $space,
-      service_instance: $service_instance
-    }
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -530,10 +513,9 @@ it_can_delete_a_space() {
   --arg org "$org" \
   --arg space "$space" \
   '{
-    delete_space: {
-      org: $org,
-      space: $space
-    }
+    command: "delete-space",
+    org: $org,
+    space: $space
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -551,9 +533,8 @@ it_can_delete_an_org() {
   local params=$(jq -n \
   --arg org "$org" \
   '{
-    delete_org: {
-      org: $org
-    }
+    command: "delete-org",
+    org: $org
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -565,25 +546,6 @@ it_can_delete_an_org() {
   ! cf_org_exists "$org"
 }
 
-it_can_use_command_syntax() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  '{
-    command: "create-org",
-    org: $org
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_org_exists "$org"
-}
-
 it_can_use_commands_syntax() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -592,6 +554,9 @@ it_can_use_commands_syntax() {
   '{
     commands: [
       {
+        command: "create-org",
+      },
+      {
         command: "create-space",
       },
       {
@@ -599,6 +564,12 @@ it_can_use_commands_syntax() {
         service: "p-mysql",
         plan: "512mb",
         service_instance: $service_instance
+      },
+      {
+        command: "create-service",
+        service: "p-mysql",
+        plan: "512mb",
+        service_instance: "si2"
       }
     ]
   }')
@@ -643,6 +614,5 @@ run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
 run it_can_delete_a_space
 run it_can_delete_an_org
-run it_can_use_command_syntax
 run it_can_use_commands_syntax
 run it_can_delete_an_org
