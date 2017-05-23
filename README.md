@@ -1,6 +1,7 @@
 # cf cli Concourse Resource
 
-[![ci.anvil.pcfdemo.com](https://ci.anvil.pcfdemo.com/api/v1/teams/pcrocker/pipelines/cf-cli-resource/jobs/build/badge)](https://ci.anvil.pcfdemo.com/teams/pcrocker/pipelines/cf-cli-resource) [docker](https://hub.docker.com/r/patrickcrocker/cf-cli-resource/)
+[![CI Builds](https://wings.concourse.ci/api/v1/teams/sme-pcf-concourse/pipelines/cf-cli-resource/jobs/build/badge)](https://wings.concourse.ci/teams/sme-pcf-concourse/pipelines/cf-cli-resource)
+[![Docker Pulls](https://img.shields.io/docker/pulls/pivotalpa/cf-cli-resource.svg)](https://hub.docker.com/r/pivotalpa/cf-cli-resource/)
 
 An output only resource capable of running lots of Cloud Foundry cli commands.
 
@@ -18,7 +19,7 @@ resource_types:
 - name: cf-cli-resource
   type: docker-image
   source:
-    repository: patrickcrocker/cf-cli-resource
+    repository: pivotalpa/cf-cli-resource
     tag: latest
 
 resources:
