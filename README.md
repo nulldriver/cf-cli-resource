@@ -142,6 +142,79 @@ Delete a space
       space: myspace
 ```
 
+#### create-user
+
+Create a new user
+
+* `username`: *Required.* The user to create
+* `password`: *Optional.* The password (must specify either `password` or `origin`)
+* `origin`: *Optional.* The authentication origin (e.g. ldap, provider-alias) (must specify either `password` or `origin`)
+
+Create a user with credentials:
+```
+  - put: prepare-env
+    resource: cf-env
+    params:
+      command: create-user
+      username: j.smith@example.com
+      password: S3cr3t
+```
+
+Create an LDAP user:
+```
+  - put: prepare-env
+    resource: cf-env
+    params:
+      command: create-user
+      username: j.smith@example.com
+      origin: ldap
+```
+
+#### create-users-from-file
+
+Bulk create users from a csv file
+
+* `file`: *Required.* The csv file containing the users
+
+```
+  - put: prepare-env
+    resource: cf-env
+    params:
+      command: create-users-from-file
+      file: somepath/users.csv
+```
+
+The format of the bulk load file:
+
+| Username | Password | Org        | Space        | OrgManager | BillingManager | OrgAuditor | SpaceManager | SpaceDeveloper | SpaceAuditor |
+| -------- | -------- | ---------- | -------------| ---------- | -------------- | ---------- | ------------ | -------------- | ------------ |
+| user1    | S3cr3t   | org1       | dev          |      x     |        x       |      x     |       x      |        x       |       x      |
+| user2    |          | org2       | dev          |            |        x       |      x     |              |        x       |       x      |
+| user3    | S3cr3t   | org3       | dev          |            |                |      x     |              |                |       x      |
+| user3    | S3cr3t   | org3       | test         |            |                |      x     |              |                |       x      |
+
+Notes:
+
+* The file must include the header row
+* The file must be in comma separated value format
+* You can specify the user more than once to assign multiple orgs/spaces
+* If you omit the Org, no org or space roles will be assigned
+* If you omit the Space, no space roles will be assigned
+
+#### delete-user
+
+Delete a user
+
+* `username`: *Required.* The user to delete
+
+```
+  - put: prepare-env
+    resource: cf-env
+    params:
+      command: delete-user
+      username: j.smith@example.com
+```
+
 #### create-service
 
 Create a service instance

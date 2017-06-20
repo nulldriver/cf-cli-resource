@@ -12,6 +12,10 @@ testprefix=cfclitest
 timestamp=$(date +%s)
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
+username=$testprefix-user-$timestamp
+password=$testprefix-pass-$timestamp
+origin_username=$testprefix-originuser-$timestamp
+origin=sso
 mysql_si=$testprefix-db-$timestamp
 rabbitmq_si=$testprefix-rabbitmq-$timestamp
 service_registry_si=$testprefix-service_registry-$timestamp
@@ -73,6 +77,83 @@ it_can_create_a_space() {
   '
 
   cf_space_exists "$org" "$space"
+}
+
+it_can_create_a_user_with_password() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg username "$username" \
+  --arg password "$password" \
+  '{
+    command: "create-user",
+    org: $org,
+    space: $space,
+    username: $username,
+    password: $password
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_user_exists "$username"
+}
+
+it_can_create_a_user_with_origin() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg username "$origin_username" \
+  --arg origin "$origin" \
+  '{
+    command: "create-user",
+    org: $org,
+    space: $space,
+    username: $username,
+    origin: $origin
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_user_exists "$username"
+}
+
+it_can_create_users_from_file() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  mkdir -p $working_dir/input
+  cp $test_dir/users.csv $working_dir/input
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  '{
+    command: "create-users-from-file",
+    org: $org,
+    space: $space,
+    file: "input/users.csv"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_user_exists "bulkloadtestuser1"
+  cf_user_exists "bulkloadtestuser2"
+  cf_user_exists "bulkloadtestuser3"
 }
 
 it_can_create_a_mysql_service() {
@@ -506,6 +587,52 @@ it_can_delete_a_service_registry() {
   ! cf_service_exists "$service_registry_si"
 }
 
+it_can_delete_a_user_with_password() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg username "$username" \
+  '{
+    command: "delete-user",
+    org: $org,
+    space: $space,
+    username: $username
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_user_exists "$username"
+}
+
+it_can_delete_a_user_with_origin() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg username "$origin_username" \
+  '{
+    command: "delete-user",
+    org: $org,
+    space: $space,
+    username: $username
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_user_exists "$origin_username"
+}
+
 it_can_delete_a_space() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -586,13 +713,19 @@ it_can_use_commands_syntax() {
 cleanup_failed_tests() {
   orgs=$(cf orgs | grep "$testprefix-org" || true)
   for org in $orgs; do
-    cf delete-org "$org" -f
+    cf_delete_org "$org"
   done
+  cf_delete_user "bulkloadtestuser1"
+  cf_delete_user "bulkloadtestuser2"
+  cf_delete_user "bulkloadtestuser3"
 }
 
 run cleanup_failed_tests
 run it_can_create_an_org
 run it_can_create_a_space
+run it_can_create_a_user_with_password
+run it_can_create_a_user_with_origin
+run it_can_create_users_from_file
 run it_can_create_a_mysql_service
 run it_can_create_a_rabbitmq_service
 run it_can_create_a_service_registry
@@ -612,6 +745,8 @@ run it_can_delete_a_config_server
 run it_can_delete_a_service_registry
 run it_can_delete_a_rabbitmq_service
 run it_can_delete_a_mysql_service
+run it_can_delete_a_user_with_origin
+run it_can_delete_a_user_with_password
 run it_can_delete_a_space
 run it_can_delete_an_org
 run it_can_use_commands_syntax

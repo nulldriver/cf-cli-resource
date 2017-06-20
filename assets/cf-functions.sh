@@ -84,6 +84,71 @@ function cf_delete_space() {
   cf delete-space "$space" -o "$org" -f
 }
 
+function cf_user_exists() {
+  local username=$1
+  cf curl /v2/users | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
+}
+
+function cf_create_user_with_password() {
+  local username="${1:?username not set or empty}"
+  local password="${2:?password not set or empty}"
+  cf create-user "$username" "$password"
+}
+
+function cf_create_user_with_origin() {
+  local username="${1:?username not set or empty}"
+  local origin="${2:?origin not set or empty}"
+  cf create-user "$username" --origin "$origin"
+}
+
+function cf_create_users_from_file() {
+  file=${1:?user file not set or empty}
+
+  if [ ! -f "$file" ]; then
+    echo "file not found: $file"
+    exit 1
+  fi
+
+  oldifs=$IFS
+  IFS=,
+
+  # First line is the header row, so skip it and start processing at line 2
+  linenum=1
+  sed 1d "$file" | while read -r Username Password Org Space OrgManager BillingManager OrgAuditor SpaceManager SpaceDeveloper SpaceAuditor
+  do
+    (( linenum++ ))
+
+    if [ -z "$Username" ]; then
+      echo "error: no Username specified, unable to process line number: $linenum"
+      continue
+    fi
+
+    if [ -n "$Password" ]; then
+      cf create-user "$Username" "$Password"
+    fi
+
+
+    if [ -n "$Org" ]; then
+      [ -n "$OrgManager" ]     && cf set-org-role "$Username" "$Org" OrgManager
+      [ -n "$BillingManager" ] && cf set-org-role "$Username" "$Org" BillingManager
+      [ -n "$OrgAuditor" ]     && cf set-org-role "$Username" "$Org" OrgAuditor
+
+      if [ -n "$Space" ]; then
+        [ -n "$SpaceManager" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceManager
+        [ -n "$SpaceDeveloper" ] && cf set-space-role "$Username" "$Org" "$Space" SpaceDeveloper
+        [ -n "$SpaceAuditor" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceAuditor
+      fi
+    fi
+  done
+
+  IFS=$oldifs
+}
+
+function cf_delete_user() {
+  local username="${1:?username not set or empty}"
+  cf delete-user -f "$username"
+}
+
 function cf_service_exists() {
   local service_instance=$1
   cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null

@@ -83,6 +83,25 @@ echo -e $params | jq -c '.commands[]' | while read -r options; do
   elif [ "delete-space" = "$command" ]; then
     echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$space"
     cf_delete_space "$org" "$space"
+  elif [ "create-user" = "$command" ]; then
+    username=$(echo $options | jq -r '.username //empty')
+    password=$(echo $options | jq -r '.password //empty')
+    origin=$(echo $options | jq -r '.origin //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$username"
+    if [ -n "$password" ]; then
+      cf_create_user_with_password "$username" "$password"
+    elif [ -n "$origin" ]; then
+      cf_create_user_with_origin "$username" "$origin"
+    else
+      echo "Invalid config: Must specify password or origin"
+    fi
+  elif [ "create-users-from-file" = "$command" ]; then
+    file=$(echo $options | jq -r '.file //empty')
+    cf_create_users_from_file "$file"
+  elif [ "delete-user" = "$command" ]; then
+    username=$(echo $options | jq -r '.username //empty')
+    echo -e 'Executing \e[33m'"$command"$'\e[0m: '"$username"
+    cf_delete_user "$username"
   elif [ "create-service" = "$command" ]; then
     service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
