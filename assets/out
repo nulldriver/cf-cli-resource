@@ -30,7 +30,7 @@ if [ "$debug" = "true" ]; then
 fi
 
 api=$(jq -r '.source.api //empty' < $payload)
-skip_cert_check=$(jq -r '.source.skip_cert_check //empty' < $payload)
+skip_cert_check=$(jq -r '.source.skip_cert_check //false' < $payload)
 username=$(jq -r '.source.username //empty' < $payload)
 password=$(jq -r '.source.password //empty' < $payload)
 source_org=$(jq -r '.source.org //empty' < $payload)
