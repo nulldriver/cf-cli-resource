@@ -3,7 +3,7 @@ function cf_login() {
   local api_endpoint=$1
   local cf_user=$2
   local cf_pass=$3
-  local skip_ssl_validation=$4
+  local skip_ssl_validation=${4:-false}
 
   local cf_skip_ssl_validation=""
   if [ "$skip_ssl_validation" = "true" ]; then
