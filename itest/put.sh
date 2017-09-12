@@ -10,6 +10,10 @@ source $test_dir/helpers.sh
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
 timestamp=$(date +%s)
+cf_api=https://api.local.pcfdev.io
+cf_skip_cert_check=true
+cf_username=admin
+cf_password=admin
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
 username=$testprefix-user-$timestamp
@@ -25,14 +29,18 @@ app_name=$testprefix-app-$timestamp
 
 # cf dev start -s all
 source=$(jq -n \
+--arg api "$cf_api" \
+--arg skip_cert_check "$cf_skip_cert_check" \
+--arg username "$cf_username" \
+--arg password "$cf_password" \
 --arg org "$org" \
 --arg space "$space" \
 '{
   source: {
-    api: "https://api.local.pcfdev.io",
+    api: $api,
     skip_cert_check: "true",
-    username: "admin",
-    password: "admin",
+    username: $username,
+    password: $password,
     org: $org,
     space: $space,
     debug: false
@@ -711,6 +719,7 @@ it_can_use_commands_syntax() {
 }
 
 cleanup_failed_tests() {
+  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
   orgs=$(cf orgs | grep "$testprefix-org" || true)
   for org in $orgs; do
     cf_delete_org "$org"
