@@ -61,7 +61,7 @@ if echo $params | jq -e 'has("command")' >/dev/null; then
   params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
 fi
 
-echo -e $params | jq -c '.commands[]' | while read -r options; do
+echo "$params" | jq -c '.commands[]' | while read -r options; do
 
   command=$(echo $options | jq -r '.command')
 
