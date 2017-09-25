@@ -154,6 +154,41 @@ function cf_service_exists() {
   cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
+function cf_user_provided_service_exists() {
+  local service_instance="${1:?service_instance not set or empty}"
+  cf curl /v2/user_provided_service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+}
+
+function cf_create_user_provided_service_credentials() {
+  local service_instance="${1:?service_instance not set or empty}"
+  local credentials="${2:?credentials json not set or empty}"
+
+  local json=$credentials
+  if [ -f "$credentials" ]; then
+    json=$(cat $credentials)
+  fi
+
+  # validate the json
+  if echo "$json" | jq . 1>/dev/null 2>&1; then
+    cf create-user-provided-service "$service_instance" -p "$json"
+  else
+    echo "[ERROR] invalid credentials payload (must be valid json string or json file)"
+    exit 1
+  fi
+}
+
+function cf_create_user_provided_service_syslog() {
+  local service_instance="${1:?service_instance not set or empty}"
+  local syslog_drain_url="${2:?syslog_drain_url not set or empty}"
+  cf create-user-provided-service "$service_instance" -l "$syslog_drain_url"
+}
+
+function cf_create_user_provided_service_route() {
+  local service_instance="${1:?service_instance not set or empty}"
+  local route_service_url="${2:?route_service_url not set or empty}"
+  cf create-user-provided-service "$service_instance" -r "$route_service_url"
+}
+
 function cf_create_service() {
   local service=$1
   local plan=$2

@@ -14,7 +14,7 @@ An output only resource capable of running lots of Cloud Foundry cli commands.
 * `org`: *Optional.* Sets the default organization to target (can be overridden in the params config).
 * `space`: *Optional.* Sets the default space to target (can be overridden in the params config).
 
-```
+```yml
 resource_types:
 - name: cf-cli-resource
   type: docker-image
@@ -36,7 +36,7 @@ resources:
 
 This resource is capable of running single commands in separate `put` steps:
 
-```
+```yml
   - put: cf-create-org
     resource: cf-env
     params:
@@ -52,7 +52,7 @@ This resource is capable of running single commands in separate `put` steps:
 
 *or* they can be combined in a single `put` step:
 
-```
+```yml
   - put: cf-create-org-and-space
     resource: cf-env
     params:
@@ -67,7 +67,7 @@ This resource is capable of running single commands in separate `put` steps:
 And, of course, if you have your `org` and `space` defined in the `source` config,
 it gets even simpler:
 
-```
+```yml
   - put: cf-create-org-and-space
     resource: cf-env
     params:
@@ -89,7 +89,7 @@ Create an org
 
 * `org`: *Optional.* The organization to create (required if not set in the source config)
 
-```
+```yml
   - put: cf-create-org
     resource: cf-env
     params:
@@ -103,7 +103,7 @@ Delete an org
 
 * `org`: *Optional.* The organization to delete (required if not set in the source config)
 
-```
+```yml
   - put: cf-delete-org
     resource: cf-env
     params:
@@ -118,7 +118,7 @@ Create a space
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to create (required if not set in the source config)
 
-```
+```yml
   - put: cf-create-space
     resource: cf-env
     params:
@@ -134,7 +134,7 @@ Delete a space
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to delete (required if not set in the source config)
 
-```
+```yml
   - put: cf-delete-space
     resource: cf-env
     params:
@@ -152,7 +152,7 @@ Create a new user
 * `origin`: *Optional.* The authentication origin (e.g. ldap, provider-alias) (must specify either `password` or `origin`)
 
 Create a user with credentials:
-```
+```yml
   - put: prepare-env
     resource: cf-env
     params:
@@ -162,7 +162,7 @@ Create a user with credentials:
 ```
 
 Create an LDAP user:
-```
+```yml
   - put: prepare-env
     resource: cf-env
     params:
@@ -177,7 +177,7 @@ Bulk create users from a csv file
 
 * `file`: *Required.* The csv file containing the users
 
-```
+```yml
   - put: prepare-env
     resource: cf-env
     params:
@@ -208,12 +208,47 @@ Delete a user
 
 * `username`: *Required.* The user to delete
 
-```
+```yml
   - put: prepare-env
     resource: cf-env
     params:
       command: delete-user
       username: j.smith@example.com
+```
+
+#### create-user-provided-service
+
+Make a user-provided service instance available to CF apps
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The name to give the service instance
+* Options: *Only specify one.*
+  * `credentials`: Credentials, provided inline or in a file, to be exposed in the VCAP_SERVICES environment variable for bound applications
+  * `syslog_drain_url`: URL to which logs for bound applications will be streamed
+  * `route_service_url`: URL to which requests for bound routes will be forwarded. Scheme for this URL must be https
+
+```yml
+  - put: cf-create-user-provided-service
+    resource: cf-env
+    params:
+      commands:
+      # inline json
+      - command: create-user-provided-service
+        service_instance: my-db-mine
+        credentials: '{"username":"admin","password":"pa55woRD"}'
+      # json file
+      - command: create-user-provided-service
+        service_instance: another-db-mine
+        credentials: path/to/credentials.json
+      # syslog drain url
+      - command: create-user-provided-service
+        service_instance: my-drain-service
+        syslog_drain_url: syslog://example.com
+      # route service url
+      - command: create-user-provided-service
+        service_instance: my-route-service
+        syslog_drain_url: https://example.com
 ```
 
 #### create-service
@@ -230,7 +265,7 @@ Create a service instance
 * `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
 * `wait_for_service`: *Optional.* Wait for the asynchronous service to start. Defaults to `false`.
 
-```
+```yml
   - put: cf-create-service
     resource: cf-env
     params:
@@ -253,7 +288,7 @@ Wait for a service instance to start
 * `service_instance`: *Required.* The service instance to wait for
 * `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
 
-```
+```yml
   - put: cf-wait-for-service
     resource: cf-env
     params:
@@ -270,7 +305,7 @@ Delete a service instance
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_instance`: *Required.* The service instance to delete
 
-```
+```yml
   - put: cf-delete-service
     resource: cf-env
     params:
@@ -288,7 +323,7 @@ Bind a service instance to an app
 * `service_instance`: *Required.* The service instance to bind to the application
 * `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 
-```
+```yml
   - put: cf-bind-service
     resource: cf-env
     params:
@@ -316,7 +351,7 @@ Push a new app or sync changes to an existing app
 * `manifest`: *Optional.* Path to manifest
 * `no_start`: *Optional.* Do not start an app after pushing. Defaults to `false`.
 
-```
+```yml
   - put: cf-push
     resource: cf-env
     params:
@@ -343,7 +378,7 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
 * `environment_variables`: *Optional.*  Environment variable key/value pairs to add to the manifest.
 
-```
+```yml
   - put: cf-zero-downtime-push
     resource: cf-env
     params:
@@ -366,7 +401,7 @@ Start an app
 * `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
 * `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
 
-```
+```yml
   - put: cf-start
     resource: cf-env
     params:
@@ -385,7 +420,7 @@ Delete an app
 * `app_name`: *Required.* The name of the application
 * `delete_mapped_routes`: *Optional.* Delete any mapped routes. Defaults to `false`.
 
-```
+```yml
   - put: cf-delete
     resource: cf-env
     params:
