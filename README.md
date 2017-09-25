@@ -101,7 +101,7 @@ Create an org
 
 Delete an org
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
+* `org`: *Optional.* The organization to delete (required if not set in the source config)
 
 ```
   - put: cf-delete-org
@@ -115,7 +115,7 @@ Delete an org
 
 Create a space
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to create (required if not set in the source config)
 
 ```
@@ -131,8 +131,8 @@ Create a space
 
 Delete a space
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to delete (required if not set in the source config)
 
 ```
   - put: cf-delete-space
@@ -220,8 +220,8 @@ Delete a user
 
 Create a service instance
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `service`: *Required.* The marketplace service name to create
 * `plan`: *Required.* The service plan name to create
 * `service_instance`: *Required.* The name to give the service instance
@@ -248,8 +248,8 @@ Create a service instance
 
 Wait for a service instance to start
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_instance`: *Required.* The service instance to wait for
 * `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
 
@@ -266,8 +266,8 @@ Wait for a service instance to start
 
 Delete a service instance
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_instance`: *Required.* The service instance to delete
 
 ```
@@ -282,8 +282,8 @@ Delete a service instance
 
 Bind a service instance to an app
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The application to bind the service to
 * `service_instance`: *Required.* The service instance to bind to the application
 * `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
@@ -304,8 +304,8 @@ Push a new app or sync changes to an existing app
 
 *NOTE*: A manifest can be used to specify values for required parameters. Any parameters specified will override manifest values.
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
 * `hostname`: *Optional.* Hostname (e.g. my-subdomain)
 * `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
@@ -336,8 +336,8 @@ Push a new app or sync changes to an existing app
 
 Push a single app using the [autopilot plugin](https://github.com/contraband/autopilot).
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `manifest`: *Required.* Path to a application manifest file.
 * `path`: *Optional.* Path to the application to push. If this isn't set then it will be read from the manifest instead.
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
@@ -360,8 +360,8 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
 
 Start an app
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
 * `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
 * `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
@@ -380,8 +380,8 @@ Start an app
 
 Delete an app
 
-* `org`: *Optional.* The organization to create (required if not set in the source config)
-* `space`: *Optional.* The space to create (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
 * `delete_mapped_routes`: *Optional.* Delete any mapped routes. Defaults to `false`.
 
