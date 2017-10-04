@@ -958,6 +958,8 @@ run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
 run it_can_create_users_from_file
 run it_can_create_a_user_provided_service_with_credentials_string
+# run again to prove that it won't error out if it already exists
+run it_can_create_a_user_provided_service_with_credentials_string
 run it_can_create_a_user_provided_service_with_credentials_file
 run it_can_create_a_user_provided_service_with_syslog
 run it_can_create_a_user_provided_service_with_route
