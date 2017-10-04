@@ -105,7 +105,7 @@ function cf_create_users_from_file() {
   file=${1:?user file not set or empty}
 
   if [ ! -f "$file" ]; then
-    echo "file not found: $file"
+    printf '\e[91m[ERROR]\e[0m file not found: %s\n' "$file"
     exit 1
   fi
 
@@ -119,7 +119,7 @@ function cf_create_users_from_file() {
     (( linenum++ ))
 
     if [ -z "$Username" ]; then
-      echo "error: no Username specified, unable to process line number: $linenum"
+      printf '\e[91m[ERROR]\e[0m no Username specified, unable to process line number: %s\n' "$linenum"
       continue
     fi
 
@@ -172,7 +172,7 @@ function cf_create_user_provided_service_credentials() {
   if echo "$json" | jq . 1>/dev/null 2>&1; then
     cf create-user-provided-service "$service_instance" -p "$json"
   else
-    echo "[ERROR] invalid credentials payload (must be valid json string or json file)"
+    printf '\e[91m[ERROR]\e[0m invalid credentials payload (must be valid json string or json file)\n'
     exit 1
   fi
 }
@@ -210,24 +210,25 @@ function cf_wait_for_service_instance() {
   local guid=$(cf service "$service_instance" --guid)
   local start=$(date +%s)
 
-  echo "Waiting for service: $service_instance"
+  printf '\e[92m[INFO]\e[0m Waiting for service: %s\n' "$service_instance"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
     local state=$(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
-      echo "Service $service_instance is ready"
+      printf '\e[92m[INFO]\e[0m Service is ready: %s\n' "$service_instance"
       return
     elif [ "$state" = "failed" ]; then
-      echo "Service $service_instance failed to provision:"
-      cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description
+      printf '\e[91m[ERROR]\e[0m Failed to provision service: %s, error: %s\n' \
+        "$service_instance" \
+        $(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
       exit 1
     fi
 
     local now=$(date +%s)
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
-      echo "Timed out waiting for service instance to provision: $service_instance"
+      printf '\e[91m[ERROR]\e[0m Timed out waiting for service instance to provision: %s\n' "$service_instance"
       exit 1
     fi
     sleep 5

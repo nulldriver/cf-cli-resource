@@ -8,7 +8,7 @@ export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
 on_exit() {
   exitcode=$?
   if [ $exitcode != 0 ] ; then
-    echo -e '\e[41;33;1m'"Failure encountered!"'\e[0m'
+    printf '\e[41;33;1mFailure encountered!\e[0m\n'
   fi
   rm -rf $TMPDIR_ROOT
 }
@@ -27,7 +27,7 @@ source $resource_dir/cf-functions.sh
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
 
-  echo -e 'running \e[33m'"$@"$'\e[0m...'
+  printf 'running \e[33m%s\e[0m...\n' "$@"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
   echo ""
 }
