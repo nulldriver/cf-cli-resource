@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Output the `cf --version` in the logs.
+
 ### Changed
+- Updated `cf` cli to version 6.32.0. This paves the way for introducing some of the new `v3` commands (although we haven't implemented any yet...)
 - Log messages have been cleaned up and now use color coded severity levels (in green and red, respectively): [INFO], [ERROR]
 
 ## 2.2.1 - 2017-10-04
