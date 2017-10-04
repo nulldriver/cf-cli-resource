@@ -4,7 +4,7 @@ ADD assets/ /opt/resource/
 ADD itest/ /opt/itest/
 
 # Install Cloud Foundry cli
-ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.26.0 /tmp/cf-cli.tgz
+ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.32.0 /tmp/cf-cli.tgz
 RUN mkdir -p /usr/local/bin && \
   tar -xzf /tmp/cf-cli.tgz -C /usr/local/bin && \
   cf --version && \
