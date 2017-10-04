@@ -1,0 +1,66 @@
+# Change log
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## 2.2.1 - 2017-10-04
+### Added
+- Change log.
+- Generate release notes from change log for github release.
+
+### Changed
+- `create-user-provided-service` command no longer fails if there is an existing *user provided service* by the same name.  **NOTE:** This is a departure from how the normal `cf cups ...` command works as it normally fails with an error:
+
+  *Server error, status code: 400, error code: 60002, message: The service instance name is taken: my-cups-service*
+
+## 2.2.0 - 2017-09-25
+### Added
+- `create-user-provided-service` command.
+
+### Changed
+- Fixed the docs in certain places to state that we 'target' orgs and spaces instead of 'create'.
+
+## 2.1.1 - 2017-09-19
+### Fixed
+- No longer use `echo -e` flag when processing params (which would expand escaped characters and result in invalid json), thanks to a PR by [@keymon](https://github.com/keymon)
+- cf_login skip_ssl_validation param now defaults to `false`.
+
+### Changed
+- Integration test now parameterizes the cf connection settings so we can target different cf installs.
+- Integration test now cleans-up previously failed tests.
+
+## 2.1.0 - 2017-08-21
+### Added
+- `create-user` command to create user with credentials or origin (e.g. ldap, provider-alias).
+- `create-users-from-file` command to create users from a csv file.
+- `delete-user` command.
+
+### Fixed
+- `skip_cert_check` is really optional now, thanks to a PR by [@ntdt](http://github.com/ntdt).
+
+## 2.0.0 - 2017-05-23
+### Added
+- Learned how to run multiple instances of the same command.
+
+### Removed
+- Old deprecated command syntax.
+
+## 1.2.1 - 2017-05-02
+### Fixed
+- `zero-downtime-push` Properly handle environment variables passed as a single value or as a sequence or map.
+
+## 1.2.0 - 2017-05-02
+### Fixed
+- Put script now sets default TMPDIR if not set.
+
+## 1.1.0 - 2017-04-18
+### Changed
+- `zero-downtime-push` now supports adding environment variables.
+
+## 1.0.2 - 2017-04-18
+### Added
+- `wait-for-service` commmand.
+
+### Changed
+- `create-service` command now supports `timeout` and `wait_for_service` params.

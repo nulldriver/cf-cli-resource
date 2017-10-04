@@ -42,14 +42,26 @@ jobs:
   - task: generate-commitish
     file: pipeline-tasks/generate-commitish/task.yml
     output_mapping: {task-output: generate-commitish-output}
+  - task: generate-release-notes
+    file: pipeline-tasks/generate-release-notes-from-changelog/task.yml
+    input_mapping: {task-input: project}
+    output_mapping: {task-output: generate-release-notes-output}
   - put: github-release
     params:
       name: generate-github-release-output/release-name
       tag: generate-github-release-output/release-tag
       commitish: generate-commitish-output/commitish
+      body: generate-release-notes-output/RELEASE_NOTES.md
   - put: version
     params: {file: version/version}
+  # publish to primary repo
   - put: cf-cli-resource-image-final
+    params:
+      load: cf-cli-resource-image-rc
+      tag: version/version
+      tag_as_latest: true
+  # keep old repo in sync until everyone moves to the primary
+  - put: cf-cli-resource-image-final-secondary
     params:
       load: cf-cli-resource-image-rc
       tag: version/version
@@ -118,6 +130,13 @@ resources:
   type: docker-image
   source:
     repository: {{docker-repository-final}}
+    username: {{docker-username}}
+    password: {{docker-password}}
+
+- name: cf-cli-resource-image-final-secondary
+  type: docker-image
+  source:
+    repository: {{docker-repository-final-secondary}}
     username: {{docker-username}}
     password: {{docker-password}}
 
