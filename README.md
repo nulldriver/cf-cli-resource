@@ -303,6 +303,26 @@ Create a service broker
       space_scoped: true
 ```
 
+#### enable-service-access
+
+Enables service access
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+* `plan`: *Optional.* The plan to be enabled
+* `enable_to_org`: *Optional.* The organization in which to enable the service
+
+```yml
+  - put: cf-enable-service-access
+    resource: cf-env
+    params:
+      command: enable-service-access
+      broker_name: the-broker
+      plan: simple
+      enable_to_org: dev-org
+```
+
 #### delete-service-broker
 
 Deletes a service broker

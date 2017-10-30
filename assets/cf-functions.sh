@@ -248,6 +248,22 @@ function cf_create_service_broker() {
   cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
 }
 
+function cf_enable_service_access() {
+  local broker_name=$1
+  local plan=$2
+  local enable_to_org=$3
+
+  if [ -n "${plan}" ]; then
+    plan="-p $plan"
+  fi
+
+  if [ -n "${enable_to_org}" ]; then
+    enable_to_org="-o $enable_to_org"
+  fi
+
+  cf enable-service-access "$broker_name" $plan $enable_to_org
+}
+
 function cf_delete_service_broker() {
   local broker_name=$1
   cf delete-service-broker $broker_name -f
@@ -331,4 +347,10 @@ function cf_app_exists() {
 function cf_is_a_service_broker() {
   local broker_name=$1
   cf service-brokers | grep $broker_name >/dev/null
+}
+
+function cf_is_an_available_service() {
+  local service_name=$1
+  local plan=$2
+  cf marketplace | grep $service_name | grep $plan >/dev/null
 }

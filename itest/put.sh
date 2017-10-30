@@ -551,6 +551,34 @@ it_can_create_a_service_broker() {
   cf_is_a_service_broker "$broker_name"
 }
 
+it_can_enable_service_access() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local plan="simple"
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg broker_name "$broker_name" \
+    --arg enable_to_org ${org} \
+    --arg plan ${plan} \
+    '{
+      command: "enable-service-access",
+      org: $org,
+      space: $space,
+      broker_name: $broker_name,
+      enable_to_org: $enable_to_org,
+      plan: $plan
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_an_available_service "$broker_name" "$plan"
+}
+
 it_can_delete_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1015,6 +1043,7 @@ run it_can_create_a_space
 run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
 run it_can_create_a_service_broker
+run it_can_enable_service_access
 run it_can_delete_a_service_broker
 run it_can_create_users_from_file
 run it_can_create_a_user_provided_service_with_credentials_string
