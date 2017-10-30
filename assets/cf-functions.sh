@@ -248,6 +248,11 @@ function cf_create_service_broker() {
   cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
 }
 
+function cf_delete_service_broker() {
+  local broker_name=$1
+  cf delete-service-broker $broker_name -f
+}
+
 function cf_bind_service() {
   local app_name=$1
   local service_instance=$2

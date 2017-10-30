@@ -238,6 +238,11 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s %s %s %s %s\n' "$command" "$broker_name" "$username" "$password" "$url"
     cf_target "$org" "$space"
     cf_create_service_broker "$broker_name" "$username" "$password" "$url" "$is_space_scoped"
+  elif [ "delete-service-broker" = "$command" ]; then
+    broker_name=$(echo $options | jq -r '.broker_name //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s %s\n' "$command" "$broker_name"
+    cf_target "$org" "$space"
+    cf_delete_service_broker "$broker_name"
   else
     printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
     exit 1

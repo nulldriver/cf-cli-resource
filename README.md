@@ -303,6 +303,22 @@ Create a service broker
       space_scoped: true
 ```
 
+#### delete-service-broker
+
+Deletes a service broker
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+
+```yml
+  - put: cf-delete-service-broker
+    resource: cf-env
+    params:
+      command: create-service-broker
+      broker_name: the-broker
+```
+
 #### wait-for-service
 
 Wait for a service instance to start
