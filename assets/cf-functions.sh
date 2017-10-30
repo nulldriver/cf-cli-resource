@@ -235,6 +235,19 @@ function cf_wait_for_service_instance() {
   done
 }
 
+function cf_create_service_broker() {
+  local broker_name=$1
+  local broker_username=$2
+  local broker_password=$3
+  local broker_url=$4
+  local is_space_scoped=${5:-""}
+  local space_scoped=""
+  if [ "${is_space_scoped}" = "true" ]; then
+    space_scoped="--space-scoped"
+  fi
+  cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
+}
+
 function cf_bind_service() {
   local app_name=$1
   local service_instance=$2
@@ -308,4 +321,9 @@ function cf_app_exists() {
   local app_name=$1
   cf app "$app_name" --guid >/dev/null 2>&1
   return $?
+}
+
+function cf_is_a_service_broker() {
+  local broker_name=$1
+  cf service-brokers | grep $broker_name >/dev/null
 }

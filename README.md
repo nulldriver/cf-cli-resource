@@ -279,6 +279,30 @@ Create a service instance
       wait_for_service: true
 ```
 
+#### create-service-broker
+
+Create a service broker
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+* `username`: *Required.* The service broker username
+* `password`: *Required.* The service broker password
+* `url`: *Required.* The service broker url
+* `space_scoped`: *Optional.* Whether this service broker should be scoped to the `org` and `space`. Defaults to `false`.
+
+```yml
+  - put: cf-create-service-broker
+    resource: cf-env
+    params:
+      command: create-service-broker
+      broker_name: the-broker
+      username: admin
+      password: password
+      url: http://broker.name.com
+      space_scoped: true
+```
+
 #### wait-for-service
 
 Wait for a service instance to start
