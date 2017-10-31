@@ -281,7 +281,7 @@ Create a service instance
 
 #### create-service-broker
 
-Create a service broker
+Create a service broker. If a service broker already exists, updates the service broker.
 
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
