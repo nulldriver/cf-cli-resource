@@ -521,9 +521,12 @@ it_can_zero_downtime_push() {
 it_can_create_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
   cf_target "$org" "$space"
-  git clone https://github.com/mattmcneeney/overview-broker "${working_dir}/broker"
 
-  cf_push "$broker_name -p ${working_dir}/broker -b nodejs_buildpack"
+
+  if [ ! -d "${working_dir}/broker" ]; then
+    git clone https://github.com/mattmcneeney/overview-broker "${working_dir}/broker"
+    cf_push "$broker_name -p ${working_dir}/broker -b nodejs_buildpack"
+  fi
 
   local params=$(jq -n \
     --arg org "$org" \

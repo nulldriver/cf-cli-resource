@@ -245,7 +245,12 @@ function cf_create_service_broker() {
   if [ "${is_space_scoped}" = "true" ]; then
     space_scoped="--space-scoped"
   fi
-  cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
+
+  if cf_is_a_service_broker $broker_name; then
+    cf update-service-broker $broker_name $broker_username $broker_password $broker_url
+  else
+    cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
+  fi
 }
 
 function cf_enable_service_access() {
