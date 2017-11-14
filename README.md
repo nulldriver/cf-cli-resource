@@ -279,6 +279,66 @@ Create a service instance
       wait_for_service: true
 ```
 
+#### create-service-broker
+
+Create a service broker. If a service broker already exists, updates the service broker.
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+* `username`: *Required.* The service broker username
+* `password`: *Required.* The service broker password
+* `url`: *Required.* The service broker url
+* `space_scoped`: *Optional.* Whether this service broker should be scoped to the `org` and `space`. Defaults to `false`.
+
+```yml
+  - put: cf-create-service-broker
+    resource: cf-env
+    params:
+      command: create-service-broker
+      broker_name: the-broker
+      username: admin
+      password: password
+      url: http://broker.name.com
+      space_scoped: true
+```
+
+#### enable-service-access
+
+Enables service access
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+* `plan`: *Optional.* The plan to be enabled
+* `enable_to_org`: *Optional.* The organization in which to enable the service
+
+```yml
+  - put: cf-enable-service-access
+    resource: cf-env
+    params:
+      command: enable-service-access
+      broker_name: the-broker
+      plan: simple
+      enable_to_org: dev-org
+```
+
+#### delete-service-broker
+
+Deletes a service broker
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `broker_name`: *Required.* The service broker name
+
+```yml
+  - put: cf-delete-service-broker
+    resource: cf-env
+    params:
+      command: create-service-broker
+      broker_name: the-broker
+```
+
 #### wait-for-service
 
 Wait for a service instance to start

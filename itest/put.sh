@@ -10,10 +10,11 @@ source $test_dir/helpers.sh
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
 timestamp=$(date +%s)
-cf_api=https://api.local.pcfdev.io
+cf_host="${CF_HOST:-local.pcfdev.io}"
+cf_api="${CF_API:-https://api.${cf_host}}"
 cf_skip_cert_check=true
-cf_username=admin
-cf_password=admin
+cf_username="${CF_USERNAME:-admin}"
+cf_password="${CF_PASSWORD:-admin}"
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
 username=$testprefix-user-$timestamp
@@ -30,6 +31,7 @@ service_registry_si=$testprefix-service_registry-$timestamp
 config_server_si=$testprefix-config_server-$timestamp
 circuit_breaker_dashboard_si=$testprefix-circuit_breaker_dashboard-$timestamp
 app_name=$testprefix-app-$timestamp
+broker_name=$testprefix-broker-$timestamp
 
 # cf dev start -s all
 source=$(jq -n \
@@ -516,6 +518,93 @@ it_can_zero_downtime_push() {
   cf_is_app_started "$app_name"
 }
 
+it_can_create_a_service_broker() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  cf_target "$org" "$space"
+
+
+  if [ ! -d "${working_dir}/broker" ]; then
+    git clone https://github.com/mattmcneeney/overview-broker "${working_dir}/broker"
+    cf_push "$broker_name -p ${working_dir}/broker -b nodejs_buildpack"
+  fi
+
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg broker_name ${broker_name} \
+    --arg username admin \
+    --arg password password \
+    --arg url https://${broker_name}.${cf_host} \
+    '{
+      command: "create-service-broker",
+      org: $org,
+      space: $space,
+      broker_name: $broker_name,
+      username: $username,
+      password: $password,
+      url: $url
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_a_service_broker "$broker_name"
+}
+
+it_can_enable_service_access() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local plan="simple"
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg broker_name "$broker_name" \
+    --arg enable_to_org ${org} \
+    --arg plan ${plan} \
+    '{
+      command: "enable-service-access",
+      org: $org,
+      space: $space,
+      broker_name: $broker_name,
+      enable_to_org: $enable_to_org,
+      plan: $plan
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_an_available_service "$broker_name" "$plan"
+}
+
+it_can_delete_a_service_broker() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg broker_name ${broker_name} \
+    '{
+      command: "delete-service-broker",
+      org: $org,
+      space: $space,
+      broker_name: $broker_name
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  [ ! $(cf_is_a_service_broker "$broker_name") ]
+}
+
 it_can_bind_user_provided_service_with_credentials_string() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -956,6 +1045,9 @@ run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
+run it_can_create_a_service_broker
+run it_can_enable_service_access
+run it_can_delete_a_service_broker
 run it_can_create_users_from_file
 run it_can_create_a_user_provided_service_with_credentials_string
 # run again to prove that it won't error out if it already exists
