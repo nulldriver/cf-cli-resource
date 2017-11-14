@@ -533,7 +533,7 @@ it_can_create_a_service_broker() {
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg broker_name "$broker_name" \
+    --arg service_broker "$broker_name" \
     --arg username admin \
     --arg password password \
     --arg url "https://$broker_name.$cf_host" \
@@ -541,7 +541,7 @@ it_can_create_a_service_broker() {
       command: "create-service-broker",
       org: $org,
       space: $space,
-      broker_name: $broker_name,
+      service_broker: $service_broker,
       username: $username,
       password: $password,
       url: $url
@@ -563,15 +563,15 @@ it_can_enable_service_access() {
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg broker_name "$broker_name" \
-    --arg enable_to_org "$org" \
+    --arg service_broker "$broker_name" \
+    --arg access_org "$org" \
     --arg plan "$plan" \
     '{
       command: "enable-service-access",
       org: $org,
       space: $space,
-      broker_name: $broker_name,
-      enable_to_org: $enable_to_org,
+      service_broker: $service_broker,
+      access_org: $access_org,
       plan: $plan
     }')
 
@@ -590,12 +590,12 @@ it_can_delete_a_service_broker() {
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg broker_name "$broker_name" \
+    --arg service_broker "$broker_name" \
     '{
       command: "delete-service-broker",
       org: $org,
       space: $space,
-      broker_name: $broker_name
+      service_broker: $service_broker
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')

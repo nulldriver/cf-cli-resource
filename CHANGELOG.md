@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.3.0 - 2017-11-14
 ### Added
 - Output the `cf --version` in the logs.
+- `create-service-broker` command - Create/Update a service broker
+- `delete-service-broker` command - Delete a service broker
+- `enable-service-access` command - Enable access to a service or service plan for one or all orgs
 
 ### Changed
 - Updated `cf` cli to version 6.32.0. This paves the way for introducing some of the new `v3` commands (although we haven't implemented any yet...)

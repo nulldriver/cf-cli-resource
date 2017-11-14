@@ -279,48 +279,44 @@ Create a service instance
       wait_for_service: true
 ```
 
-#### create-service-broker
+#### delete-service
 
-Create a service broker. If a service broker already exists, updates the service broker.
+Delete a service instance
 
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
-* `broker_name`: *Required.* The service broker name
+* `service_instance`: *Required.* The service instance to delete
+
+```yml
+  - put: cf-delete-service
+    resource: cf-env
+    params:
+      command: delete-service
+      service_instance: my-config-server
+```
+
+#### create-service-broker
+
+Create/Update a service broker. If a service broker already exists, updates the existing service broker.
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_broker`: *Required.* The service broker name to create
 * `username`: *Required.* The service broker username
 * `password`: *Required.* The service broker password
 * `url`: *Required.* The service broker url
-* `space_scoped`: *Optional.* Whether this service broker should be scoped to the `org` and `space`. Defaults to `false`.
+* `space_scoped`: *Optional.* Make the broker's service plans only visible within the targeted space. Defaults to `false`.
 
 ```yml
   - put: cf-create-service-broker
     resource: cf-env
     params:
       command: create-service-broker
-      broker_name: the-broker
+      service_broker: some-service
       username: admin
       password: password
       url: http://broker.name.com
       space_scoped: true
-```
-
-#### enable-service-access
-
-Enables service access
-
-* `org`: *Optional.* The organization to target (required if not set in the source config)
-* `space`: *Optional.* The space to target (required if not set in the source config)
-* `broker_name`: *Required.* The service broker name
-* `plan`: *Optional.* The plan to be enabled
-* `enable_to_org`: *Optional.* The organization in which to enable the service
-
-```yml
-  - put: cf-enable-service-access
-    resource: cf-env
-    params:
-      command: enable-service-access
-      broker_name: the-broker
-      plan: simple
-      enable_to_org: dev-org
 ```
 
 #### delete-service-broker
@@ -329,14 +325,14 @@ Deletes a service broker
 
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
-* `broker_name`: *Required.* The service broker name
+* `service_broker`: *Required.* The service broker name to delete
 
 ```yml
   - put: cf-delete-service-broker
     resource: cf-env
     params:
-      command: create-service-broker
-      broker_name: the-broker
+      command: delete-service-broker
+      service_broker: some-service
 ```
 
 #### wait-for-service
@@ -357,20 +353,24 @@ Wait for a service instance to start
       timeout: 300
 ```
 
-#### delete-service
+#### enable-service-access
 
-Delete a service instance
+Enable access to a service or service plan for one or all orgs
 
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
-* `service_instance`: *Required.* The service instance to delete
+* `service`: *Required.* The marketplace service name to enable
+* `access_org`: *Optional.* Enable access for a specified organization
+* `plan`: *Optional.* Enable access to a specified service plan
 
 ```yml
-  - put: cf-delete-service
+  - put: cf-enable-service-access
     resource: cf-env
     params:
-      command: delete-service
-      service_instance: my-config-server
+      command: enable-service-access
+      service: some-service
+      access_org: myorg
+      plan: simple
 ```
 
 #### bind-service
