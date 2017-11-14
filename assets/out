@@ -235,19 +235,19 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     password=$(echo $options | jq -r '.password //empty')
     url=$(echo $options | jq -r '.url //empty')
     is_space_scoped=$(echo $options | jq -r '.space_scoped //"false"')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s %s %s %s %s\n' "$command" "$broker_name" "$username" "$password" "$url"
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$broker_name"
     cf_target "$org" "$space"
     cf_create_service_broker "$broker_name" "$username" "$password" "$url" "$is_space_scoped"
   elif [ "enable-service-access" = "$command" ]; then
     broker_name=$(echo $options | jq -r '.broker_name //empty')
     plan=$(echo $options | jq -r '.plan //""')
     enable_to_org=$(echo $options | jq -r '.enable_to_org //""')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s %s %s\n' "$command" "$broker_name" "$plan" "$enable_to_org"
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$broker_name"
     cf_target "$org" "$space"
     cf_enable_service_access "$broker_name" "$plan" "$enable_to_org"
   elif [ "delete-service-broker" = "$command" ]; then
     broker_name=$(echo $options | jq -r '.broker_name //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s %s\n' "$command" "$broker_name"
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$broker_name"
     cf_target "$org" "$space"
     cf_delete_service_broker "$broker_name"
   else

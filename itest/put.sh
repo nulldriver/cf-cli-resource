@@ -11,7 +11,7 @@ source $test_dir/helpers.sh
 testprefix=cfclitest
 timestamp=$(date +%s)
 cf_host="${CF_HOST:-local.pcfdev.io}"
-cf_api="${CF_API:-https://api.${cf_host}}"
+cf_api="${CF_API:-https://api.$cf_host}"
 cf_skip_cert_check=true
 cf_username="${CF_USERNAME:-admin}"
 cf_password="${CF_PASSWORD:-admin}"
@@ -520,21 +520,23 @@ it_can_zero_downtime_push() {
 
 it_can_create_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-  cf_target "$org" "$space"
 
-
-  if [ ! -d "${working_dir}/broker" ]; then
-    git clone https://github.com/mattmcneeney/overview-broker "${working_dir}/broker"
-    cf_push "$broker_name -p ${working_dir}/broker -b nodejs_buildpack"
+  if [ ! -d "$working_dir/broker" ]; then
+    cf_target "$org" "$space"
+    git clone https://github.com/mattmcneeney/overview-broker "$working_dir/broker"
+    # pin to a specific commit for build reproducibility
+    git -C "$working_dir/broker" reset --hard dddec578676b8dcbe06158e3ac0b34edc6f5de6e
+    # pin to a specific buildpack for build reproducibility
+    cf push "$broker_name" -p "$working_dir/broker" -b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
   fi
 
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg broker_name ${broker_name} \
+    --arg broker_name "$broker_name" \
     --arg username admin \
     --arg password password \
-    --arg url https://${broker_name}.${cf_host} \
+    --arg url "https://$broker_name.$cf_host" \
     '{
       command: "create-service-broker",
       org: $org,
@@ -551,7 +553,7 @@ it_can_create_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_a_service_broker "$broker_name"
+  cf_service_broker_exists "$broker_name"
 }
 
 it_can_enable_service_access() {
@@ -562,8 +564,8 @@ it_can_enable_service_access() {
     --arg org "$org" \
     --arg space "$space" \
     --arg broker_name "$broker_name" \
-    --arg enable_to_org ${org} \
-    --arg plan ${plan} \
+    --arg enable_to_org "$org" \
+    --arg plan "$plan" \
     '{
       command: "enable-service-access",
       org: $org,
@@ -579,7 +581,7 @@ it_can_enable_service_access() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_an_available_service "$broker_name" "$plan"
+  cf_is_marketplace_service_available "$broker_name" "$plan"
 }
 
 it_can_delete_a_service_broker() {
@@ -588,7 +590,7 @@ it_can_delete_a_service_broker() {
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg broker_name ${broker_name} \
+    --arg broker_name "$broker_name" \
     '{
       command: "delete-service-broker",
       org: $org,
@@ -602,7 +604,7 @@ it_can_delete_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  [ ! $(cf_is_a_service_broker "$broker_name") ]
+  ! cf_service_broker_exists "$broker_name"
 }
 
 it_can_bind_user_provided_service_with_credentials_string() {
@@ -1045,6 +1047,8 @@ run it_can_create_an_org
 run it_can_create_a_space
 run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
+run it_can_create_a_service_broker
+# run again to prove that it won't error out if it already exists
 run it_can_create_a_service_broker
 run it_can_enable_service_access
 run it_can_delete_a_service_broker

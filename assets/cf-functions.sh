@@ -236,33 +236,34 @@ function cf_wait_for_service_instance() {
 }
 
 function cf_create_service_broker() {
-  local broker_name=$1
-  local broker_username=$2
-  local broker_password=$3
-  local broker_url=$4
+  local broker_name=${1:?broker_name null or not set}
+  local broker_username=${2:?broker_username null or not set}
+  local broker_password=${3:?broker_password null or not set}
+  local broker_url=${4:?broker_url null or not set}
   local is_space_scoped=${5:-""}
   local space_scoped=""
-  if [ "${is_space_scoped}" = "true" ]; then
+
+  if [ "$is_space_scoped" = "true" ]; then
     space_scoped="--space-scoped"
   fi
 
-  if cf_is_a_service_broker $broker_name; then
-    cf update-service-broker $broker_name $broker_username $broker_password $broker_url
+  if cf_service_broker_exists "$broker_name"; then
+    cf update-service-broker "$broker_name" "$broker_username" "$broker_password" "$broker_url"
   else
-    cf create-service-broker $broker_name $broker_username $broker_password "$broker_url" $space_scoped
+    cf create-service-broker "$broker_name" "$broker_username" "$broker_password" "$broker_url" $space_scoped
   fi
 }
 
 function cf_enable_service_access() {
-  local broker_name=$1
-  local plan=$2
-  local enable_to_org=$3
+  local broker_name=${1:?broker_name null or not set}
+  local plan=${2:?plan null or not set}
+  local enable_to_org=${3:?enable_to_org null or not set}
 
-  if [ -n "${plan}" ]; then
+  if [ -n "$plan" ]; then
     plan="-p $plan"
   fi
 
-  if [ -n "${enable_to_org}" ]; then
+  if [ -n "$enable_to_org" ]; then
     enable_to_org="-o $enable_to_org"
   fi
 
@@ -270,8 +271,8 @@ function cf_enable_service_access() {
 }
 
 function cf_delete_service_broker() {
-  local broker_name=$1
-  cf delete-service-broker $broker_name -f
+  local broker_name=${1:?broker_name null or not set}
+  cf delete-service-broker "$broker_name" -f
 }
 
 function cf_bind_service() {
@@ -349,13 +350,13 @@ function cf_app_exists() {
   return $?
 }
 
-function cf_is_a_service_broker() {
-  local broker_name=$1
-  cf service-brokers | grep $broker_name >/dev/null
+function cf_service_broker_exists() {
+  local broker_name=${1:?broker_name}
+  cf curl /v2/service_brokers | jq -e --arg name "$broker_name" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
-function cf_is_an_available_service() {
-  local service_name=$1
-  local plan=$2
-  cf marketplace | grep $service_name | grep $plan >/dev/null
+function cf_is_marketplace_service_available() {
+  local service_name=${1:?service_name null or not set}
+  local plan=${2:?plan null or not set}
+  cf marketplace | grep "$service_name" | grep "$plan" >/dev/null
 }
