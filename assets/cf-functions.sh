@@ -270,6 +270,22 @@ function cf_enable_service_access() {
   cf enable-service-access "$service_broker" $plan $access_org
 }
 
+function cf_disable_service_access() {
+  local service_broker=${1:?service_broker null or not set}
+  local plan=${2:?plan null or not set}
+  local access_org=${3:?access_org null or not set}
+
+  if [ -n "$plan" ]; then
+    plan="-p $plan"
+  fi
+
+  if [ -n "$access_org" ]; then
+    access_org="-o $access_org"
+  fi
+
+  cf disable-service-access "$service_broker" $plan $access_org
+}
+
 function cf_delete_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   cf delete-service-broker "$service_broker" -f

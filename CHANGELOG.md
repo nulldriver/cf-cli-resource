@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `create-service-broker` command - Create/Update a service broker
 - `delete-service-broker` command - Delete a service broker
 - `enable-service-access` command - Enable access to a service or service plan for one or all orgs
+- `disable-service-access` command - Disable access to a service or service plan for one or all orgs
 
 ### Changed
 - Updated `cf` cli to version 6.32.0. This paves the way for introducing some of the new `v3` commands (although we haven't implemented any yet...)

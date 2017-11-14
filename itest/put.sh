@@ -584,6 +584,34 @@ it_can_enable_service_access() {
   cf_is_marketplace_service_available "$broker_name" "$plan"
 }
 
+it_can_disable_service_access() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local plan="simple"
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg service_broker "$broker_name" \
+    --arg access_org "$org" \
+    --arg plan "$plan" \
+    '{
+      command: "disable-service-access",
+      org: $org,
+      space: $space,
+      service_broker: $service_broker,
+      access_org: $access_org,
+      plan: $plan
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_is_marketplace_service_available "$broker_name" "$plan"
+}
+
 it_can_delete_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1051,6 +1079,7 @@ run it_can_create_a_service_broker
 # run again to prove that it won't error out if it already exists
 run it_can_create_a_service_broker
 run it_can_enable_service_access
+run it_can_disable_service_access
 run it_can_delete_a_service_broker
 run it_can_create_users_from_file
 run it_can_create_a_user_provided_service_with_credentials_string

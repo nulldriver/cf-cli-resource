@@ -245,6 +245,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
     cf_target "$org" "$space"
     cf_enable_service_access "$service_broker" "$plan" "$access_org"
+  elif [ "disable-service-access" = "$command" ]; then
+    service_broker=$(echo $options | jq -r '.service_broker //empty')
+    plan=$(echo $options | jq -r '.plan //""')
+    access_org=$(echo $options | jq -r '.access_org //""')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
+    cf_target "$org" "$space"
+    cf_disable_service_access "$service_broker" "$plan" "$access_org"
   elif [ "delete-service-broker" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
