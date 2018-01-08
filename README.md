@@ -34,7 +34,10 @@ resources:
 
 ## Multiple Command Syntax
 
-This resource is capable of running single commands in separate `put` steps:
+This resource is capable of running single commands in separate `put` steps.
+
+*NOTE*: A common practice is to use different logical names for each `put` step and reuse the same `resource`.
+In this example were we use `cf-create-org` and `cf-create-space` to describe the `put` steps and use the same `cf-env` resource for both steps.
 
 ```yml
   - put: cf-create-org
