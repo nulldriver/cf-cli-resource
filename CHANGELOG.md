@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.3.1 - 2018-01-08
+### Fixed
+- Fixed `enable-service-access` and `disable-service-access` both now properly treat `plan` and `access_org` as optional, thanks to a PR by [@legnoh](https://github.com/legnoh)
+- Docs for `enable-service-access` and `disable-service-access` have been corrected to reference `service_broker` argument name (was incorrectly set to `service`).
+
 ## 2.3.0 - 2017-11-14
 ### Added
 - Output the `cf --version` in the logs.
