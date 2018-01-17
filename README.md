@@ -13,6 +13,9 @@ An output only resource capable of running lots of Cloud Foundry cli commands.
 * `skip_cert_check`: *Optional.* Check the validity of the CF SSL cert. Defaults to `false`.
 * `org`: *Optional.* Sets the default organization to target (can be overridden in the params config).
 * `space`: *Optional.* Sets the default space to target (can be overridden in the params config).
+* `cf_color`: *Optional.* Set to `false` to not colorize cf output (can be overridden in the params config).
+* `cf_dial_timeout`: *Optional.* Max wait time to establish a connection, including name resolution, in seconds (can be overridden in the params config).
+* `cf_trace`: *Optional.* Set to `true` to print cf API request diagnostics to stdout (can be overridden in the params config).
 
 ```yml
 resource_types:

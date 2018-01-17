@@ -15,6 +15,9 @@ cf_api="${CF_API:-https://api.$cf_host}"
 cf_skip_cert_check=true
 cf_username="${CF_USERNAME:-admin}"
 cf_password="${CF_PASSWORD:-admin}"
+cf_color=true
+cf_dial_timeout=5
+cf_trace=false
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
 username=$testprefix-user-$timestamp
@@ -41,6 +44,9 @@ source=$(jq -n \
 --arg password "$cf_password" \
 --arg org "$org" \
 --arg space "$space" \
+--arg cf_color "$cf_color" \
+--arg cf_dial_timeout "$cf_dial_timeout" \
+--arg cf_trace "$cf_trace" \
 '{
   source: {
     api: $api,
@@ -49,7 +55,10 @@ source=$(jq -n \
     password: $password,
     org: $org,
     space: $space,
-    debug: false
+    debug: false,
+    cf_color: $cf_color,
+    cf_dial_timeout: $cf_dial_timeout,
+    cf_trace: $cf_trace
   }
 }')
 
@@ -60,7 +69,8 @@ it_can_create_an_org() {
   --arg org "$org" \
   '{
     command: "create-org",
-    org: $org
+    org: $org,
+    cf_trace: "true"
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -81,7 +91,8 @@ it_can_create_a_space() {
   '{
     command: "create-space",
     org: $org,
-    space: $space
+    space: $space,
+    cf_trace: "true"
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -1070,6 +1081,9 @@ cleanup_failed_tests() {
   cf_delete_user "bulkloadtestuser3"
 }
 
+# Enable/Disable certain tests
+scs_tests_enabled=true
+
 run cleanup_failed_tests
 run it_can_create_an_org
 run it_can_create_a_space
@@ -1090,12 +1104,16 @@ run it_can_create_a_user_provided_service_with_syslog
 run it_can_create_a_user_provided_service_with_route
 run it_can_create_a_mysql_service
 run it_can_create_a_rabbitmq_service
-run it_can_create_a_service_registry
-run it_can_create_a_config_server
-run it_can_create_a_circuit_breaker_dashboard
-# run again to prove that it won't error out if it already exists
-run it_can_create_a_circuit_breaker_dashboard
-run it_can_wait_for_circuit_breaker_dashboard
+
+$scs_tests_enabled && {
+  run it_can_create_a_service_registry
+  run it_can_create_a_config_server
+  run it_can_create_a_circuit_breaker_dashboard
+  #run again to prove that it won't error out if it already exists
+  run it_can_create_a_circuit_breaker_dashboard
+  run it_can_wait_for_circuit_breaker_dashboard
+}
+
 run it_can_push_an_app
 run it_can_bind_user_provided_service_with_credentials_string
 run it_can_bind_user_provided_service_with_credentials_file

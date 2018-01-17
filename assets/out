@@ -37,6 +37,10 @@ source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
 params=$(jq -r '.params //empty' < $payload)
 
+cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
+cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
+cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
+
 if [ -z "$api" ]; then
   printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
   exit 1
@@ -56,7 +60,7 @@ cd $working_dir
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf --version)"
 
-cf_login $api "$username" "$password" $skip_cert_check
+cf_logged_in=false
 
 # convert the single command into a single element array
 if echo $params | jq -e 'has("command")' >/dev/null; then
@@ -67,11 +71,22 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
 
   command=$(echo $options | jq -r '.command')
 
-  org=$(echo $options | jq -r '.org //empty')
-  [ -z "$org" ] && org=$source_org
+  # Backup the old values so we can reset at the end of the loop
+  OLD_CF_COLOR=$CF_COLOR
+  OLD_CF_DIAL_TIMEOUT=$CF_DIAL_TIMEOUT
+  OLD_CF_TRACE=$CF_TRACE
 
-  space=$(echo $options | jq -r '.space //empty')
-  [ -z "$space" ] && space=$source_space
+  # Override source values if set in params
+  cf_color=$(echo $options | jq -r '.cf_color //empty') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
+  cf_dial_timeout=$(echo $options | jq -r '.cf_dial_timeout //empty') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
+  cf_trace=$(echo $options | jq -r '.cf_trace //empty') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
+  org=$(echo $options | jq -r '.org //empty') && [ -z "$org" ] && org=$source_org
+  space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
+
+  if ! $cf_logged_in; then
+    cf_login $api "$username" "$password" $skip_cert_check
+    cf_logged_in=true
+  fi
 
   if [ "create-org" = "$command" ]; then
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$org"
@@ -261,6 +276,12 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
     exit 1
   fi
+
+  # Reset back to the old values for the next iteration
+  CF_COLOR=$OLD_CF_COLOR
+  CF_DIAL_TIMEOUT=$OLD_CF_DIAL_TIMEOUT
+  CF_TRACE=$OLD_CF_TRACE
+
 done
 
 # todo: metadata
