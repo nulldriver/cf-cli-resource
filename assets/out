@@ -193,6 +193,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     path=$(echo $options | jq -r '.path //empty')
     current_app_name=$(echo $options | jq -r '.current_app_name //empty')
     environment_variables=$(echo $options | jq -r '.environment_variables //empty')
+    domains=$(echo $options | jq -cr '.domains //empty')
 
     if [ ! -f "$manifest" ]; then
       printf '\e[91m[ERROR]\e[0m invalid payload (manifest is not a file: %s)\n' "$manifest"
@@ -212,6 +213,11 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
         echo "env.$key: $value" >>"$instructions"
       fi
     done
+
+    # add the domains to the manifest
+    if [ "$domains" ]; then
+      echo "domains: $domains" >>"$instructions"
+    fi
 
     if [ -f "$instructions" ]; then
       mv "$manifest" "$manifest.original"
