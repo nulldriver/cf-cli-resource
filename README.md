@@ -514,3 +514,23 @@ Delete an app
       app_name: myapp-ui
       delete_mapped_routes: true
 ```
+
+#### run-task
+
+Run task on an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `task`: *Required.* The task to be ran
+* `task_name`: *Optional.* Delete any mapped routes. Defaults to `false`.
+
+```yml
+  - put: cf-run-task
+    resource: cf-env
+    params:
+      command: delete
+      app_name: myapp-ui
+      task_name: migrate
+      task: bundle exec rake db:migrate
+```

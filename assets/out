@@ -237,6 +237,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_delete "$app_name" "$delete_mapped_routes"
+  elif [ "run-task" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    task=$(echo $options | jq -r '.task //"0"')
+    task_name=$(echo $options | jq -r '.task_name //"0"')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name" "$task" "$task_name"
+    cf_target "$org" "$space"
+    cf_run_task $app_name "$task" $task_name
   elif [ "bind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')

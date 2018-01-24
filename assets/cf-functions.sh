@@ -348,6 +348,18 @@ function cf_delete() {
   fi
 }
 
+function cf_run_task() {
+  local app_name=$1
+  local cf_task=$2
+  local task_name=${3:-""}
+
+  if [ -n "$task_name" ]; then
+    task_name="--name $task_name"
+  fi
+  cf run-task $app_name "$cf_task" $task_name
+  # cf run-task my-app "bundle exec rake db:migrate" --name migrate
+}
+
 function cf_is_app_started() {
   local app_name=$1
   guid=$(cf app "$app_name" --guid)
