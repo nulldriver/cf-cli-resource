@@ -523,7 +523,7 @@ Run task on an app
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
 * `task`: *Required.* The task to be ran
-* `task_name`: *Optional.* Delete any mapped routes. Defaults to `false`.
+* `task_name`: *Optional.* The task name if you wish to name your task
 
 ```yml
   - put: cf-run-task
