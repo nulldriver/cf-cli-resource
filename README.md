@@ -529,7 +529,7 @@ Run task on an app
   - put: cf-run-task
     resource: cf-env
     params:
-      command: delete
+      command: run-task
       app_name: myapp-ui
       task_name: migrate
       task: bundle exec rake db:migrate
