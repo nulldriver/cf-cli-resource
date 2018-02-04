@@ -1,4 +1,0 @@
-Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-bulkloadtestuser1,wasabi,pcfdev-org,pcfdev-space,x,x,x,x,x,x
-bulkloadtestuser2,wasabi,pcfdev-org,pcfdev-space,,x,x,,x,x
-bulkloadtestuser3,ldap,pcfdev-org,pcfdev-space,,,x,,,x
