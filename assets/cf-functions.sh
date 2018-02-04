@@ -150,7 +150,7 @@ function cf_delete_user() {
 }
 
 function cf_service_exists() {
-  local service_instance=$1
+  local service_instance="${1:?service_instance not set or empty}"
   cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
@@ -229,6 +229,29 @@ function cf_wait_for_service_instance() {
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
       printf '\e[91m[ERROR]\e[0m Timed out waiting for service instance to provision: %s\n' "$service_instance"
+      exit 1
+    fi
+    sleep 5
+  done
+}
+
+function cf_wait_for_delete_service_instance() {
+  local service_instance="${1:?service_instance not set or empty}"
+  local timeout=${2:-600}
+
+  local start=$(date +%s)
+
+  printf '\e[92m[INFO]\e[0m Waiting for service deletion: %s\n' "$service_instance"
+  while true; do
+    if ! (cf_service_exists "$service_instance"); then
+      printf '\e[92m[INFO]\e[0m Service deleted: %s\n' "$service_instance"
+      return
+    fi
+
+    local now=$(date +%s)
+    local time=$(($now - $start))
+    if [[ "$time" -ge "$timeout" ]]; then
+      printf '\e[91m[ERROR]\e[0m Timed out waiting for service instance to delete: %s\n' "$service_instance"
       exit 1
     fi
     sleep 5

@@ -292,6 +292,7 @@ Delete a service instance
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_instance`: *Required.* The service instance to delete
+* `wait_for_service`: *Optional.* Wait for the service to delete. Defaults to `false`.
 
 ```yml
   - put: cf-delete-service
@@ -299,6 +300,7 @@ Delete a service instance
     params:
       command: delete-service
       service_instance: my-config-server
+      wait_for_service: true
 ```
 
 #### create-service-broker

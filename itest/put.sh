@@ -7,34 +7,58 @@ test_dir=$(dirname $0)
 
 source $test_dir/helpers.sh
 
+# Defaults for PCF Dev (override by exporting your own vars before running this script)
+: "${CF_SYSTEM_DOMAIN:=local.pcfdev.io}"
+: "${CF_APPS_DOMAIN:=local.pcfdev.io}"
+: "${CF_SKIP_CERT_CHECK:=true}"
+: "${CF_USERNAME:=admin}"
+: "${CF_PASSWORD:=admin}"
+: "${SYNC_SERVICE:=p-mysql}"
+: "${SYNC_PLAN:=512mb}"
+: "${SYNC_CONFIGURATION:=}"
+: "${ASYNC_SERVICE:=p-service-registry}"
+: "${ASYNC_PLAN:=standard}"
+: "${ASYNC_CONFIGURATION:='{\"count\": 1}'}"
+
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
 timestamp=$(date +%s)
-cf_host="${CF_HOST:-local.pcfdev.io}"
-cf_api="${CF_API:-https://api.$cf_host}"
-cf_skip_cert_check=true
-cf_username="${CF_USERNAME:-admin}"
-cf_password="${CF_PASSWORD:-admin}"
+
+cf_api="https://api.$CF_SYSTEM_DOMAIN"
+cf_apps_domain=$CF_APPS_DOMAIN
+cf_skip_cert_check=$CF_SKIP_CERT_CHECK
+cf_username=$CF_USERNAME
+cf_password=$CF_PASSWORD
 cf_color=true
 cf_dial_timeout=5
 cf_trace=false
+
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
+
 username=$testprefix-user-$timestamp
 password=$testprefix-pass-$timestamp
+
 origin_username=$testprefix-originuser-$timestamp
 origin=sso
+
 cups_credentials_string_si=$testprefix-cups_credentials_string-$timestamp
 cups_credentials_file_si=$testprefix-cups_credentials_file-$timestamp
 cups_syslog_si=$testprefix-cups_syslog-$timestamp
 cups_route_si=$testprefix-cups_route-$timestamp
-mysql_si=$testprefix-db-$timestamp
-rabbitmq_si=$testprefix-rabbitmq-$timestamp
-service_registry_si=$testprefix-service_registry-$timestamp
-config_server_si=$testprefix-config_server-$timestamp
-circuit_breaker_dashboard_si=$testprefix-circuit_breaker_dashboard-$timestamp
+
+sync_service=$SYNC_SERVICE
+sync_plan=$SYNC_PLAN
+sync_service_instance=$testprefix-sync_service-$timestamp
+sync_configuration=$SYNC_CONFIGURATION
+
+async_service=$ASYNC_SERVICE
+async_plan=$ASYNC_PLAN
+async_service_instance=$testprefix-async_service-$timestamp
+async_configuration=$ASYNC_CONFIGURATION
+
 app_name=$testprefix-app-$timestamp
-broker_name=$testprefix-broker-$timestamp
+broker_name=$testprefix-broker
 
 # cf dev start -s all
 source=$(jq -n \
@@ -158,7 +182,12 @@ it_can_create_users_from_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir -p $working_dir/input
-  cp $test_dir/users.csv $working_dir/input
+  cat>$working_dir/input/users.csv <<EOF
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+bulkloadtestuser1,wasabi,$org,$space,x,x,x,x,x,x
+bulkloadtestuser2,wasabi,$org,$space,,x,x,,x,x
+bulkloadtestuser3,ldap,$org,$space,,,x,,,x
+EOF
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -291,19 +320,21 @@ it_can_create_a_user_provided_service_with_route() {
   cf_user_provided_service_exists "$cups_route_si"
 }
 
-it_can_create_a_mysql_service() {
+it_can_create_a_synchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
-  --arg service_instance "$mysql_si" \
+  --arg service "$sync_service" \
+  --arg plan "$sync_plan" \
+  --arg service_instance "$sync_service_instance" \
   '{
     command: "create-service",
     org: $org,
     space: $space,
-    service: "p-mysql",
-    plan: "512mb",
+    service: $service,
+    plan: $plan,
     service_instance: $service_instance
   }')
 
@@ -313,48 +344,25 @@ it_can_create_a_mysql_service() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$mysql_si"
+  cf_service_exists "$sync_service_instance"
 }
 
-it_can_create_a_rabbitmq_service() {
+it_can_create_an_asynchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
-  --arg service_instance "$rabbitmq_si" \
-  '{
-    command: "create-service",
-    org: $org,
-    space: $space,
-    service: "p-rabbitmq",
-    plan: "standard",
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_service_exists "$rabbitmq_si"
-}
-
-it_can_create_a_service_registry() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$service_registry_si" \
+  --arg service "$async_service" \
+  --arg plan "$async_plan" \
+  --arg service_instance "$async_service_instance" \
   --arg configuration '{"count": 1}' \
   '{
     command: "create-service",
     org: $org,
     space: $space,
-    service: "p-service-registry",
-    plan: "standard",
+    service: $service,
+    plan: $plan,
     service_instance: $service_instance,
     configuration: $configuration,
     wait_for_service: true
@@ -366,71 +374,16 @@ it_can_create_a_service_registry() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$service_registry_si"
+  cf_service_exists "$async_service_instance"
 }
 
-it_can_create_a_config_server() {
+it_can_wait_for_asynchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
-  --arg service_instance "$config_server_si" \
-  --arg configuration '{"count": 1, "git": {"uri": "https://github.com/patrickcrocker/cf-SpringBootTrader-config.git"}}' \
-  '{
-    command: "create-service",
-    org: $org,
-    space: $space,
-    service: "p-config-server",
-    plan: "standard",
-    service_instance: $service_instance,
-    configuration: $configuration,
-    wait_for_service: true
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_service_exists "$config_server_si"
-}
-
-it_can_create_a_circuit_breaker_dashboard() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$circuit_breaker_dashboard_si" \
-  --arg configuration '{"count": 1}' \
-  '{
-    command: "create-service",
-    org: $org,
-    space: $space,
-    service: "p-circuit-breaker-dashboard",
-    plan: "standard",
-    service_instance: $service_instance,
-    configuration: $configuration
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_service_exists "$circuit_breaker_dashboard_si"
-}
-
-it_can_wait_for_circuit_breaker_dashboard() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$circuit_breaker_dashboard_si" \
+  --arg service_instance "$async_service_instance" \
   '{
     command: "wait-for-service",
     org: $org,
@@ -444,10 +397,10 @@ it_can_wait_for_circuit_breaker_dashboard() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$circuit_breaker_dashboard_si"
+  cf_service_exists "$async_service_instance"
 }
 
-it_can_push_an_app() {
+it_can_push_an_app_no_start() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   create_static_app "$app_name" "$working_dir"
@@ -547,7 +500,7 @@ it_can_create_a_service_broker() {
     --arg service_broker "$broker_name" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$broker_name.$cf_host" \
+    --arg url "https://$broker_name.$cf_apps_domain" \
     '{
       command: "create-service-broker",
       org: $org,
@@ -754,10 +707,10 @@ it_can_bind_user_provided_service_with_route() {
   cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
-it_can_bind_mysql_service() {
+it_can_bind_a_synchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local service_instance=$mysql_si
+  local service_instance=$sync_service_instance
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -781,10 +734,10 @@ it_can_bind_mysql_service() {
   cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
-it_can_bind_rabbitmq_service() {
+it_can_bind_an_asynchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local service_instance=$rabbitmq_si
+  local service_instance=$async_service_instance
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -832,18 +785,21 @@ it_can_delete_an_app() {
   ! cf_app_exists "$app_name"
 }
 
-it_can_delete_a_mysql_service() {
+it_can_delete_a_synchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$sync_service_instance
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
-  --arg service_instance "$mysql_si" \
+  --arg service_instance "$service_instance" \
   '{
     command: "delete-service",
     org: $org,
     space: $space,
-    service_instance: $service_instance
+    service_instance: $service_instance,
+    wait_for_service: true
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -852,21 +808,24 @@ it_can_delete_a_mysql_service() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_service_exists "$mysql_si"
+  ! cf_service_exists "$service_instance"
 }
 
-it_can_delete_a_rabbitmq_service() {
+it_can_delete_an_asynchronous_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$async_service_instance
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
-  --arg service_instance "$rabbitmq_si" \
+  --arg service_instance "$service_instance" \
   '{
     command: "delete-service",
     org: $org,
     space: $space,
-    service_instance: $service_instance
+    service_instance: $service_instance,
+    wait_for_service: true
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -875,76 +834,7 @@ it_can_delete_a_rabbitmq_service() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_service_exists "$rabbitmq_si"
-}
-
-it_can_delete_a_circuit_breaker_dashboard() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$circuit_breaker_dashboard_si" \
-  '{
-    command: "delete-service",
-    org: $org,
-    space: $space,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  ! cf_service_exists "$circuit_breaker_dashboard_si"
-}
-
-it_can_delete_a_config_server() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$config_server_si" \
-  '{
-    command: "delete-service",
-    org: $org,
-    space: $space,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  ! cf_service_exists "$config_server_si"
-}
-
-it_can_delete_a_service_registry() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$service_registry_si" \
-  '{
-    command: "delete-service",
-    org: $org,
-    space: $space,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  ! cf_service_exists "$service_registry_si"
+  ! cf_service_exists "$service_instance"
 }
 
 it_can_delete_a_user_with_password() {
@@ -993,70 +883,23 @@ it_can_delete_a_user_with_origin() {
   ! cf_user_exists "$origin_username"
 }
 
-it_can_delete_a_space() {
+# This test showcases the multi-command syntax
+it_can_delete_a_space_and_org() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   '{
-    command: "delete-space",
-    org: $org,
-    space: $space
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  ! cf_space_exists "$org" "$space"
-}
-
-it_can_delete_an_org() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  '{
-    command: "delete-org",
-    org: $org
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  ! cf_org_exists "$org"
-}
-
-it_can_use_commands_syntax() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg service_instance "$mysql_si" \
-  '{
     commands: [
       {
-        command: "create-org",
+        command: "delete-space",
+        org: $org,
+        space: $space
       },
       {
-        command: "create-space",
-      },
-      {
-        command: "create-service",
-        service: "p-mysql",
-        plan: "512mb",
-        service_instance: $service_instance
-      },
-      {
-        command: "create-service",
-        service: "p-mysql",
-        plan: "512mb",
-        service_instance: "si2"
+        command: "delete-org",
+        org: $org
       }
     ]
   }')
@@ -1067,7 +910,8 @@ it_can_use_commands_syntax() {
     .version | keys == ["timestamp"]
   '
 
-  cf_space_exists "$org" "$space"
+  ! cf_space_exists "$org" "$space"
+  ! cf_org_exists "$org"
 }
 
 cleanup_failed_tests() {
@@ -1081,57 +925,51 @@ cleanup_failed_tests() {
   cf_delete_user "bulkloadtestuser3"
 }
 
-# Enable/Disable certain tests
-scs_tests_enabled=true
-
 run cleanup_failed_tests
+
 run it_can_create_an_org
 run it_can_create_a_space
+
 run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
+run it_can_create_users_from_file
+
 run it_can_create_a_service_broker
 # run again to prove that it won't error out if it already exists
 run it_can_create_a_service_broker
 run it_can_enable_service_access
 run it_can_disable_service_access
 run it_can_delete_a_service_broker
-run it_can_create_users_from_file
+
 run it_can_create_a_user_provided_service_with_credentials_string
 # run again to prove that it won't error out if it already exists
 run it_can_create_a_user_provided_service_with_credentials_string
 run it_can_create_a_user_provided_service_with_credentials_file
 run it_can_create_a_user_provided_service_with_syslog
 run it_can_create_a_user_provided_service_with_route
-run it_can_create_a_mysql_service
-run it_can_create_a_rabbitmq_service
 
-$scs_tests_enabled && {
-  run it_can_create_a_service_registry
-  run it_can_create_a_config_server
-  run it_can_create_a_circuit_breaker_dashboard
-  #run again to prove that it won't error out if it already exists
-  run it_can_create_a_circuit_breaker_dashboard
-  run it_can_wait_for_circuit_breaker_dashboard
-}
+run it_can_push_an_app_no_start
 
-run it_can_push_an_app
 run it_can_bind_user_provided_service_with_credentials_string
 run it_can_bind_user_provided_service_with_credentials_file
 run it_can_bind_user_provided_service_with_syslog
 run it_can_bind_user_provided_service_with_route
-run it_can_bind_mysql_service
-run it_can_bind_rabbitmq_service
+
+run it_can_create_a_synchronous_service
+run it_can_bind_a_synchronous_service
+
+run it_can_create_an_asynchronous_service
+run it_can_bind_an_asynchronous_service
+
 run it_can_start_an_app
 run it_can_zero_downtime_push
+
 run it_can_delete_an_app
-run it_can_delete_a_circuit_breaker_dashboard
-run it_can_delete_a_config_server
-run it_can_delete_a_service_registry
-run it_can_delete_a_rabbitmq_service
-run it_can_delete_a_mysql_service
+
+run it_can_delete_a_synchronous_service
+run it_can_delete_an_asynchronous_service
+
 run it_can_delete_a_user_with_origin
 run it_can_delete_a_user_with_password
-run it_can_delete_a_space
-run it_can_delete_an_org
-run it_can_use_commands_syntax
-run it_can_delete_an_org
+
+run it_can_delete_a_space_and_org

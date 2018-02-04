@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Updated docs to clarify the use of logical names for `put` steps.
+- `delete-service` command now supports `wait_for_service` param for deleting asynchronous services.
+- Refactored integration tests to default to PCF Dev for local testing while allowing for overriding by exporting env vars before running the test script.
+- Refactored service creation/binding/deletion tests to better focus on synchronous and asynchronous services.
 
 ## 2.3.1 - 2018-01-08
 ### Fixed

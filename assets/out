@@ -160,9 +160,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     cf_wait_for_service_instance "$service_instance" "$timeout"
   elif [ "delete-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
+    timeout=$(echo $options | jq -r '.timeout //empty')
+    wait=$(echo $options | jq -r '.wait_for_service //"false"')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
     cf_delete_service "$service_instance"
+    if [ "true" = "$wait" ]; then
+      cf_wait_for_delete_service_instance "$service_instance" "$timeout"
+    fi
   elif [ "push" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
