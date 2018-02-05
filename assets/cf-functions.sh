@@ -204,10 +204,15 @@ function cf_delete_service() {
 }
 
 function cf_wait_for_service_instance() {
-  local service_instance=$1
+  local service_instance="${1:?service_instance not set or empty}"
   local timeout=${2:-600}
 
-  local guid=$(cf service "$service_instance" --guid)
+  local guid=
+  if ! guid=$(cf service "$service_instance" --guid 2>/dev/null); then
+    printf '\e[91m[ERROR]\e[0m Service instance does not exist: %s\n' "$service_instance"
+    exit 1
+  fi
+
   local start=$(date +%s)
 
   printf '\e[92m[INFO]\e[0m Waiting for service: %s\n' "$service_instance"
@@ -392,7 +397,6 @@ function cf_is_app_stopped() {
 function cf_app_exists() {
   local app_name=$1
   cf app "$app_name" --guid >/dev/null 2>&1
-  return $?
 }
 
 function cf_service_broker_exists() {

@@ -338,7 +338,8 @@ it_can_create_a_synchronous_service() {
     space: $space,
     service: $service,
     plan: $plan,
-    service_instance: $service_instance
+    service_instance: $service_instance,
+    wait_for_service: true
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -1013,8 +1014,12 @@ run it_can_bind_user_provided_service_with_syslog
 run it_can_bind_user_provided_service_with_route
 
 run it_can_create_a_synchronous_service
+# run again to prove that it won't error out if it already exists
+run it_can_create_a_synchronous_service
 run it_can_bind_a_synchronous_service
 
+run it_can_create_an_asynchronous_service
+# run again to prove that it won't error out if it already exists
 run it_can_create_an_asynchronous_service
 run it_can_bind_an_asynchronous_service
 
