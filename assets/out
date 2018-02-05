@@ -72,9 +72,9 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   command=$(echo $options | jq -r '.command')
 
   # Backup the old values so we can reset at the end of the loop
-  OLD_CF_COLOR=$CF_COLOR
-  OLD_CF_DIAL_TIMEOUT=$CF_DIAL_TIMEOUT
-  OLD_CF_TRACE=$CF_TRACE
+  [ -n "${CF_COLOR:-}" ] && OLD_CF_COLOR=$CF_COLOR || true
+  [ -n "${CF_DIAL_TIMEOUT:-}" ] && OLD_CF_DIAL_TIMEOUT=$CF_DIAL_TIMEOUT || true
+  [ -n "${CF_TRACE:-}" ] && OLD_CF_TRACE=$CF_TRACE || true
 
   # Override source values if set in params
   cf_color=$(echo $options | jq -r '.cf_color //empty') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
@@ -289,9 +289,9 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   fi
 
   # Reset back to the old values for the next iteration
-  CF_COLOR=$OLD_CF_COLOR
-  CF_DIAL_TIMEOUT=$OLD_CF_DIAL_TIMEOUT
-  CF_TRACE=$OLD_CF_TRACE
+  [ -n "${OLD_CF_COLOR:-}" ] && CF_COLOR=$OLD_CF_COLOR || true
+  [ -n "${OLD_CF_DIAL_TIMEOUT:-}" ] && CF_DIAL_TIMEOUT=$OLD_CF_DIAL_TIMEOUT || true
+  [ -n "${OLD_CF_TRACE:-}" ] && CF_TRACE=$OLD_CF_TRACE || true
 
 done
 
