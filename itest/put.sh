@@ -60,6 +60,14 @@ async_configuration=$ASYNC_CONFIGURATION
 app_name=$testprefix-app-$timestamp
 broker_name=$testprefix-broker
 
+users_csv=$(cat <<EOF
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+bulkloadtestuser1,wasabi,$org,$space,x,x,x,x,x,x
+bulkloadtestuser2,wasabi,$org,$space,,x,x,,x,x
+bulkloadtestuser3,ldap,$org,$space,,,x,,,x
+EOF
+)
+
 # cf dev start -s all
 source=$(jq -n \
 --arg api "$cf_api" \
@@ -182,12 +190,7 @@ it_can_create_users_from_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir -p $working_dir/input
-  cat>$working_dir/input/users.csv <<EOF
-Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-bulkloadtestuser1,wasabi,$org,$space,x,x,x,x,x,x
-bulkloadtestuser2,wasabi,$org,$space,,x,x,,x,x
-bulkloadtestuser3,ldap,$org,$space,,,x,,,x
-EOF
+  echo "$users_csv" > $working_dir/input/users.csv
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -761,6 +764,60 @@ it_can_bind_an_asynchronous_service() {
   cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
+it_can_unbind_a_synchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$sync_service_instance
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    command: "unbind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_is_app_bound_to_service "$app_name" "$service_instance"
+}
+
+it_can_unbind_an_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$async_service_instance
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    command: "unbind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_is_app_bound_to_service "$app_name" "$service_instance"
+}
+
 it_can_delete_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -963,6 +1020,9 @@ run it_can_bind_an_asynchronous_service
 
 run it_can_start_an_app
 run it_can_zero_downtime_push
+
+run it_can_unbind_a_synchronous_service
+run it_can_unbind_an_asynchronous_service
 
 run it_can_delete_an_app
 

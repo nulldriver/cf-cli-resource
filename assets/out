@@ -245,10 +245,16 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   elif [ "bind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
-    configuration=$(echo $options | jq -r '.configuration // "{}" //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    configuration=$(echo $options | jq -r '.configuration //"{}"')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
     cf_bind_service "$app_name" "$service_instance" "$configuration"
+  elif [ "unbind-service" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    cf_target "$org" "$space"
+    cf_unbind_service "$app_name" "$service_instance"
   elif [ "create-service-broker" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
     username=$(echo $options | jq -r '.username //empty')

@@ -315,10 +315,16 @@ function cf_delete_service_broker() {
 }
 
 function cf_bind_service() {
-  local app_name=$1
-  local service_instance=$2
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
   local configuration=$3
   cf bind-service "$app_name" "$service_instance" -c "$configuration"
+}
+
+function cf_unbind_service() {
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
+  cf unbind-service "$app_name" "$service_instance"
 }
 
 function cf_is_app_bound_to_service() {

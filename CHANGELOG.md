@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 - Support `cf_trace`, `cf_dial_timeout` and `cf_trace` configurations for source and command params.
+- `unbind-service` command - Unbind a service instance from an app
 
 ### Changed
 - Updated docs to clarify the use of logical names for `put` steps.

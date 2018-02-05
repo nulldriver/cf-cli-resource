@@ -407,7 +407,7 @@ Bind a service instance to an app
 
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
-* `app_name`: *Required.* The application to bind the service to
+* `app_name`: *Required.* The application to bind to the service
 * `service_instance`: *Required.* The service instance to bind to the application
 * `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 
@@ -419,6 +419,24 @@ Bind a service instance to an app
       app_name: myapp-ui
       service_instance: mydb
       configuration: '{"permissions":"read-only"}'
+```
+
+#### unbind-service
+
+Unbind a service instance from an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The application to unbind from the service instance
+* `service_instance`: *Required.* The service instance to unbind from the application
+
+```yml
+  - put: cf-unbind-service
+    resource: cf-env
+    params:
+      command: unbind-service
+      app_name: myapp-ui
+      service_instance: mydb
 ```
 
 #### push
