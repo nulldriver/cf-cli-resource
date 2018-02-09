@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.4.0 - 2018-02-04
+## Unreleased
 ### Added
-- We now have a dedicated Cloud Foundry instance to use for integration testing (thanks Pivotal!!). This will allow for faster turn-around of PRs and issues.
+- We now have a dedicated Cloud Foundry instance to use for integration testing (thanks Pivotal!!). This should help turn-around PRs and issues a little faster.
 - Support `cf_trace`, `cf_dial_timeout` and `cf_trace` configurations for source and command params.
 - `unbind-service` command - Unbind a service instance from an app
 
@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated docs to clarify the use of logical names for `put` steps.
 - `delete-service` command now supports `wait_for_service` param for deleting asynchronous services.
 - Refactored integration tests to default to PCF Dev for local testing while allowing for overriding by exporting env vars before running the test script.
+- Added `test` job to pipeline to run the integration tests after the Docker image is built.
 - Refactored service creation/binding/deletion tests to better focus on synchronous and asynchronous services.
 
 ### Fixed

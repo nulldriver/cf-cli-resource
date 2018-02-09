@@ -16,6 +16,50 @@ jobs:
       build: cf-cli-resource
       tag: version/version
       tag_as_latest: false
+
+- name: test
+  public: true
+  serial_groups: [version]
+  plan:
+  - aggregate:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
+    - get: cf-cli-resource-image-rc
+      trigger: true
+      passed: [build]
+    - get: version
+      passed: [build]
+    - get: service-broker
+  - task: test
+    image: cf-cli-resource-image-rc
+    config:
+      platform: linux
+      inputs:
+      - name: service-broker
+      params:
+        CF_SYSTEM_DOMAIN: ((cf-system-domain))
+        CF_APPS_DOMAIN: ((cf-apps-domain))
+        CF_SKIP_CERT_CHECK: ((cf-skip-cert-check))
+        CF_USERNAME: ((cf-username))
+        CF_PASSWORD: ((cf-password))
+        SYNC_SERVICE: ((sync-service))
+        SYNC_PLAN: ((sync-plan))
+        SYNC_CONFIGURATION: ((sync-configuration))
+        ASYNC_SERVICE: ((async-service))
+        ASYNC_PLAN: ((async-plan))
+        ASYNC_CONFIGURATION: ((async-configuration))
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          pwd
+          ls -al
+          ln -s service-broker /opt/service-broker
+          ls -al /opt/service-broker
+          #/opt/itest/put.sh
+          exit 1
   - put: tracker
     params:
       repos:
@@ -28,12 +72,12 @@ jobs:
   - aggregate:
     - get: project
       resource: cf-cli-resource
-      passed: [build]
+      passed: [test]
     - get: cf-cli-resource-image-rc
-      passed: [build]
+      passed: [test]
       params: {save: true}
     - get: version
-      passed: [build]
+      passed: [test]
       params: {bump: final}
     - get: pipeline-tasks
   - task: generate-github-release
@@ -159,3 +203,16 @@ resources:
     access_token: {{github-release-access-token}}
     repository: cf-cli-resource
     user: {{github-release-user}}
+
+- name: service-broker
+  type: file-url
+  source:
+    url: https://github.com/mattmcneeney/overview-broker/archive/dddec578676b8dcbe06158e3ac0b34edc6f5de6e.zip
+    filename: overview-broker.zip
+
+resource_types:
+- name: file-url
+  type: docker-image
+  source:
+    repository: pivotalservices/concourse-curl-resource
+    tag: latest

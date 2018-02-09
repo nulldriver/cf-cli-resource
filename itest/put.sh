@@ -489,14 +489,28 @@ it_can_zero_downtime_push() {
 it_can_create_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  if [ ! -d "$working_dir/broker" ]; then
-    cf_target "$org" "$space"
-    git clone https://github.com/mattmcneeney/overview-broker "$working_dir/broker"
-    # pin to a specific commit for build reproducibility
-    git -C "$working_dir/broker" reset --hard dddec578676b8dcbe06158e3ac0b34edc6f5de6e
-    # pin to a specific buildpack for build reproducibility
-    cf push "$broker_name" -p "$working_dir/broker" -b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
+  local commit=dddec578676b8dcbe06158e3ac0b34edc6f5de6e
+
+  # if tests are running in concourse, the overview-broker.zip is provided
+  # by the pipeline.  Otherwise, if we are running locally, we'll need to
+  # download it.
+  local broker_dir=$working_dir/broker
+  if [ -d "/opt/service-broker" ]; then
+    broker_dir=/opt/service-broker
+  else
+    mkdir -p $broker_dir
   fi
+
+  if [ ! -f "$broker_dir/overview-broker.zip" ]; then
+    wget https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O $broker_dir/overview-broker.zip
+  fi
+
+  if [ ! -d "$broker_dir/overview-broker-$commit" ]; then
+    unzip $broker_dir/overview-broker.zip -d $broker_dir
+  fi
+
+  cf_target "$org" "$space"
+  cf push "$broker_name" -p "$broker_dir/overview-broker-$commit" -b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
 
   local params=$(jq -n \
     --arg org "$org" \
