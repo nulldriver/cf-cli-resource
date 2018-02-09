@@ -39,7 +39,7 @@ params=$(jq -r '.params //empty' < $payload)
 
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
-cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
+cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
 
 if [ -z "$api" ]; then
   printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'

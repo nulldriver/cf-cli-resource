@@ -27,7 +27,7 @@ function cf_target() {
 
 function cf_get_org_guid() {
   local org=$1
-  cf curl "/v2/organizations" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$org" | jq -r '.resources[].metadata.guid'
+  CF_TRACE=false cf curl "/v2/organizations" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$org" | jq -r '.resources[].metadata.guid'
 }
 
 function cf_org_exists() {
@@ -55,7 +55,7 @@ function cf_get_space_guid() {
   local org=$1
   local space=$2
   local org_guid=$(cf_get_org_guid "$org")
-  cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
+  CF_TRACE=false cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
 }
 
 function cf_space_exists() {
@@ -86,7 +86,7 @@ function cf_delete_space() {
 
 function cf_user_exists() {
   local username=$1
-  cf curl /v2/users | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
+  CF_TRACE=false cf curl /v2/users | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
 }
 
 function cf_create_user_with_password() {
@@ -151,12 +151,12 @@ function cf_delete_user() {
 
 function cf_service_exists() {
   local service_instance="${1:?service_instance not set or empty}"
-  cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  CF_TRACE=false cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
 function cf_user_provided_service_exists() {
   local service_instance="${1:?service_instance not set or empty}"
-  cf curl /v2/user_provided_service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  CF_TRACE=false cf curl /v2/user_provided_service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
 function cf_create_user_provided_service_credentials() {
@@ -208,7 +208,7 @@ function cf_wait_for_service_instance() {
   local timeout=${2:-600}
 
   local guid=
-  if ! guid=$(cf service "$service_instance" --guid 2>/dev/null); then
+  if ! guid=$(CF_TRACE=false cf service "$service_instance" --guid 2>/dev/null); then
     printf '\e[91m[ERROR]\e[0m Service instance does not exist: %s\n' "$service_instance"
     exit 1
   fi
@@ -218,7 +218,7 @@ function cf_wait_for_service_instance() {
   printf '\e[92m[INFO]\e[0m Waiting for service: %s\n' "$service_instance"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
-    local state=$(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
+    local state=$(CF_TRACE=false cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
       printf '\e[92m[INFO]\e[0m Service is ready: %s\n' "$service_instance"
@@ -226,7 +226,7 @@ function cf_wait_for_service_instance() {
     elif [ "$state" = "failed" ]; then
       printf '\e[91m[ERROR]\e[0m Failed to provision service: %s, error: %s\n' \
         "$service_instance" \
-        $(cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
+        $(CF_TRACE=false cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
       exit 1
     fi
 
@@ -335,9 +335,9 @@ function cf_unbind_service() {
 function cf_is_app_bound_to_service() {
   local app_name=$1
   local service_instance=$2
-  local app_guid=$(cf app "$app_name" --guid)
-  local si_guid=$(cf service "$service_instance" --guid)
-  cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
+  local app_guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  local si_guid=$(CF_TRACE=false cf service "$service_instance" --guid)
+  CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf_push() {
@@ -349,7 +349,8 @@ function cf_zero_downtime_push() {
   local args=$1
   local current_app_name=$2
   if [ -n "$current_app_name" ]; then
-    cf zero-downtime-push "$current_app_name" $args
+    # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
+    CF_TRACE=false cf zero-downtime-push "$current_app_name" $args
   else
     cf push $args
   fi
@@ -384,28 +385,28 @@ function cf_delete() {
 
 function cf_is_app_started() {
   local app_name=$1
-  guid=$(cf app "$app_name" --guid)
-  cf curl /v2/apps/$guid | jq -e '.entity.state == "STARTED"' >/dev/null
+  guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STARTED"' >/dev/null
 }
 
 function cf_is_app_stopped() {
   local app_name=$1
-  guid=$(cf app "$app_name" --guid)
-  cf curl /v2/apps/$guid | jq -e '.entity.state == "STOPPED"' >/dev/null
+  guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STOPPED"' >/dev/null
 }
 
 function cf_app_exists() {
   local app_name=$1
-  cf app "$app_name" --guid >/dev/null 2>&1
+  CF_TRACE=false cf app "$app_name" --guid >/dev/null 2>&1
 }
 
 function cf_service_broker_exists() {
   local service_broker=${1:?service_broker}
-  cf curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  CF_TRACE=false cf curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
 function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
   local plan=${2:?plan null or not set}
-  cf marketplace | grep "$service_name" | grep "$plan" >/dev/null
+  CF_TRACE=false cf marketplace | grep "$service_name" | grep "$plan" >/dev/null
 }

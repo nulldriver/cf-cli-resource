@@ -31,7 +31,7 @@ cf_username=$CF_USERNAME
 cf_password=$CF_PASSWORD
 cf_color=true
 cf_dial_timeout=5
-cf_trace=false
+cf_trace=true
 
 org=$testprefix-org-$timestamp
 space=$testprefix-space-$timestamp
