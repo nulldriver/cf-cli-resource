@@ -54,12 +54,8 @@ jobs:
         args:
         - -exc
         - |
-          pwd
-          ls -al
-          ln -s service-broker /opt/service-broker
-          ls -al /opt/service-broker
-          #/opt/itest/put.sh
-          exit 1
+          ln -s $PWD/service-broker /opt/service-broker
+          /opt/itest/put.sh
   - put: tracker
     params:
       repos:
