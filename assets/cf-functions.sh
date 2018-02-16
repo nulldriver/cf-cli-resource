@@ -149,9 +149,21 @@ function cf_delete_user() {
   cf delete-user -f "$username"
 }
 
+# returns the service instance guid, otherwise null if not found
+function cf_get_service_instance_guid() {
+  local service_instance="${1:?service_instance not set or empty}"
+  # cf <= v6.34.1 - returns "FAILED" to stdout for return code > 0
+  local service_instance_guid=
+  if service_instance_guid=$(CF_TRACE=false cf service "$service_instance" --guid 2>/dev/null); then
+    echo "$service_instance_guid"
+  fi
+}
+
+# returns true if service exists, otherwise false
 function cf_service_exists() {
   local service_instance="${1:?service_instance not set or empty}"
-  CF_TRACE=false cf curl /v2/service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  local service_instance_guid=$(cf_get_service_instance_guid "$service_instance")
+  [ -n "$service_instance_guid" ]
 }
 
 function cf_user_provided_service_exists() {
@@ -207,8 +219,8 @@ function cf_wait_for_service_instance() {
   local service_instance="${1:?service_instance not set or empty}"
   local timeout=${2:-600}
 
-  local guid=
-  if ! guid=$(CF_TRACE=false cf service "$service_instance" --guid 2>/dev/null); then
+  local guid=$(cf_get_service_instance_guid "$service_instance")
+  if [ -z "$guid" ]; then
     printf '\e[91m[ERROR]\e[0m Service instance does not exist: %s\n' "$service_instance"
     exit 1
   fi
