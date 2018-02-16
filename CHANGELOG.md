@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.4.2 - 2018-02-16
+### Fixed
+- `delete-service` command's `wait_for_service` now only checks the current space instead of every space the user has access to.
+
 ## 2.4.1 - 2018-02-09
 ### Fixed
 - `cf_trace: true` no longer messes up `cf` calls that are intended to capture the json output inside scripts. For now, we set `CF_TRACE=false` for all `cf` calls where we need to capture the output. I think there is a way to redirect the `CF_TRACE` output, but I couldn't figure it out with the way we do stdout and stderr redirects in the `out` script.  Until then, please note that you won't see the trace info *every* `cf` command used in the script.
