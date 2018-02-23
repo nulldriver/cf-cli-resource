@@ -127,7 +127,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
 
-    if cf_user_provided_service_exists "$service_instance"; then
+    if cf_service_exists "$service_instance"; then
       printf '\e[92m[INFO]\e[0m \e[95mService %s already exists\e[0m\n' "$service_instance"
     else
       if [ -n "$credentials" ]; then

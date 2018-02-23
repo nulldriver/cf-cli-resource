@@ -235,7 +235,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_provided_service_exists "$cups_credentials_string_si"
+  cf_service_exists "$cups_credentials_string_si"
 }
 
 it_can_create_a_user_provided_service_with_credentials_file() {
@@ -270,7 +270,7 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_provided_service_exists "$cups_credentials_file_si"
+  cf_service_exists "$cups_credentials_file_si"
 }
 
 it_can_create_a_user_provided_service_with_syslog() {
@@ -295,7 +295,7 @@ it_can_create_a_user_provided_service_with_syslog() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_provided_service_exists "$cups_syslog_si"
+  cf_service_exists "$cups_syslog_si"
 }
 
 it_can_create_a_user_provided_service_with_route() {
@@ -320,7 +320,7 @@ it_can_create_a_user_provided_service_with_route() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_provided_service_exists "$cups_route_si"
+  cf_service_exists "$cups_route_si"
 }
 
 it_can_create_a_synchronous_service() {

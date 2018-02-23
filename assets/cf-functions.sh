@@ -166,11 +166,6 @@ function cf_service_exists() {
   [ -n "$service_instance_guid" ]
 }
 
-function cf_user_provided_service_exists() {
-  local service_instance="${1:?service_instance not set or empty}"
-  CF_TRACE=false cf curl /v2/user_provided_service_instances | jq -e --arg name "$service_instance" '.resources[] | select(.entity.name == $name) | true' >/dev/null
-}
-
 function cf_create_user_provided_service_credentials() {
   local service_instance="${1:?service_instance not set or empty}"
   local credentials="${2:?credentials json not set or empty}"

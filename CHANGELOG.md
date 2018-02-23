@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.4.3 - 2018-02-23
+### Fixed
+- `create-user-provided-service` when checking if a ups already exists, the command now only checks the current space instead of every space the user has access to.
+
 ## 2.4.2 - 2018-02-16
 ### Fixed
 - `delete-service` command's `wait_for_service` now only checks the current space instead of every space the user has access to.
