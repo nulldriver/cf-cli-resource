@@ -236,6 +236,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
+  elif [ "scale" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    instances=$(echo $options | jq -r '.instances //empty')
+    memory=$(echo $options | jq -r '.memory //empty')
+    disk_quota=$(echo $options | jq -r '.disk_quota //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    cf_target "$org" "$space"
+    cf_scale "$app_name" "$instances" "$memory" "$disk_quota"
   elif [ "delete" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     delete_mapped_routes=$(echo $options | jq -r '.delete_mapped_routes //empty')

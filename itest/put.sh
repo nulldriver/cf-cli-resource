@@ -486,6 +486,104 @@ it_can_zero_downtime_push() {
   cf_is_app_started "$app_name"
 }
 
+it_can_scale_an_app_instances() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg instances "2" \
+  '{
+    command: "scale",
+    app_name: $app_name,
+    instances: $instances
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  assert_equals 2 "$(cf_get_app_instances "$app_name")"
+}
+
+it_can_scale_an_app_disk_quota() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg disk_quota "512M" \
+  '{
+    command: "scale",
+    app_name: $app_name,
+    disk_quota: $disk_quota
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  assert_equals 512 "$(cf_get_app_disk_quota "$app_name")"
+}
+
+it_can_scale_an_app_memory() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg memory "512M" \
+  '{
+    command: "scale",
+    app_name: $app_name,
+    memory: $memory
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  assert_equals 512 "$(cf_get_app_memory "$app_name")"
+}
+
+it_can_scale_an_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg instances "1" \
+  --arg disk_quota "1G" \
+  --arg memory "1G" \
+  '{
+    command: "scale",
+    app_name: $app_name,
+    instances: $instances,
+    disk_quota: $disk_quota
+    memory: $memory,
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  assert_equals 1 "$(cf_get_app_instances "$app_name")"
+  assert_equals 1024 "$(cf_get_app_disk_quota "$app_name")"
+  assert_equals 1024 "$(cf_get_app_memory "$app_name")"
+}
+
 it_can_create_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1039,6 +1137,11 @@ run it_can_bind_an_asynchronous_service
 
 run it_can_start_an_app
 run it_can_zero_downtime_push
+
+run it_can_scale_an_app_instances
+run it_can_scale_an_app_disk_quota
+run it_can_scale_an_app_memory
+run it_can_scale_an_app
 
 run it_can_unbind_a_synchronous_service
 run it_can_unbind_an_asynchronous_service

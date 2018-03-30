@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.5.0 - Unreleased
+### Added
+- `scale` command - Change or view the instance count, disk space limit, and memory limit for an app
+
+### Changed
+- Updated to cf cli v6.35.2
+
 ## 2.4.3 - 2018-02-23
 ### Fixed
 - `create-user-provided-service` when checking if a ups already exists, the command now only checks the current space instead of every space the user has access to.

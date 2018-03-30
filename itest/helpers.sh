@@ -32,6 +32,15 @@ run() {
   echo ""
 }
 
+assert_equals() {
+  local expected=${1:?}
+  local actual=${2:?}
+  if [ ! "$actual" = "$expected" ]; then
+    echo "expected: $expected but was: $actual"
+    return 1
+  fi
+}
+
 create_static_app() {
   local app_name=$1
   local working_dir=$2

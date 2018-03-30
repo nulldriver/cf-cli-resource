@@ -534,3 +534,25 @@ Delete an app
       app_name: myapp-ui
       delete_mapped_routes: true
 ```
+
+#### scale
+
+Change or view the instance count, disk space limit, and memory limit for an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `instances`: *Optional.* Number of instances
+* `disk_quota`: *Optional.* Disk limit (e.g. 256M, 1024M, 1G)
+* `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
+
+```yml
+  - put: cf-scale
+    resource: cf-env
+    params:
+      command: scale
+      app_name: myapp-ui
+      instances: 3
+      disk_quota: 1G
+      memory: 2G
+```

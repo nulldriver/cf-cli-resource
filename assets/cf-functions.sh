@@ -149,6 +149,12 @@ function cf_delete_user() {
   cf delete-user -f "$username"
 }
 
+# returns the app guid, otherwise null if not found
+function cf_get_app_guid() {
+  local app_name=${1:?app_name null or not set}
+  CF_TRACE=false cf app "$app_name" --guid
+}
+
 # returns the service instance guid, otherwise null if not found
 function cf_get_service_instance_guid() {
   local service_instance="${1:?service_instance not set or empty}"
@@ -342,7 +348,7 @@ function cf_unbind_service() {
 function cf_is_app_bound_to_service() {
   local app_name=$1
   local service_instance=$2
-  local app_guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  local app_guid=$(cf_get_app_guid "$app_name")
   local si_guid=$(CF_TRACE=false cf service "$service_instance" --guid)
   CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
 }
@@ -391,20 +397,52 @@ function cf_delete() {
 }
 
 function cf_is_app_started() {
-  local app_name=$1
-  guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  local app_name=${1:?app_name null or not set}
+  local guid=$(cf_get_app_guid "$app_name")
   CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STARTED"' >/dev/null
 }
 
 function cf_is_app_stopped() {
-  local app_name=$1
-  guid=$(CF_TRACE=false cf app "$app_name" --guid)
+  local app_name=${1:?app_name null or not set}
+  local guid=$(cf_get_app_guid "$app_name")
   CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STOPPED"' >/dev/null
 }
 
 function cf_app_exists() {
-  local app_name=$1
-  CF_TRACE=false cf app "$app_name" --guid >/dev/null 2>&1
+  local app_name=${1:?app_name null or not set}
+  cf_get_app_guid "$app_name" >/dev/null 2>&1
+}
+
+function cf_get_app_instances() {
+  local app_name=${1:?app_name null or not set}
+  local guid=$(cf_get_app_guid "$app_name")
+  cf curl /v2/apps/$guid | jq -r '.entity.instances'
+}
+
+function cf_get_app_memory() {
+  local app_name=${1:?app_name null or not set}
+  local guid=$(cf_get_app_guid "$app_name")
+  cf curl /v2/apps/$guid | jq -r '.entity.memory'
+}
+
+function cf_get_app_disk_quota() {
+  local app_name=${1:?app_name null or not set}
+  local guid=$(cf_get_app_guid "$app_name")
+  cf curl /v2/apps/$guid | jq -r '.entity.disk_quota'
+}
+
+function cf_scale() {
+  local app_name=${1:?app_name null or not set}
+  local instances=${2:-}
+  local memory=${3:-}
+  local disk_quota=${4:-}
+
+  local args=
+  [ -n "$instances" ] && args="$args -i $instances"
+  [ -n "$memory" ] && args="$args -m $memory"
+  [ -n "$disk_quota" ] && args="$args -k $disk_quota"
+
+  cf scale -f "$app_name" $args
 }
 
 function cf_service_broker_exists() {
