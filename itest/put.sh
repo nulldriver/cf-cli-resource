@@ -569,8 +569,8 @@ it_can_scale_an_app() {
     command: "scale",
     app_name: $app_name,
     instances: $instances,
-    disk_quota: $disk_quota
-    memory: $memory,
+    disk_quota: $disk_quota,
+    memory: $memory
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
