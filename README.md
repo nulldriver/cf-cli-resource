@@ -149,6 +149,38 @@ Delete a space
       space: myspace
 ```
 
+#### create-domain
+
+Create a domain in an org for later use
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `domain`: *Optional.* The domain to add to the organization
+
+```yml
+  - put: cf-create-domain
+    resource: cf-env
+    params:
+      command: create-domain
+      domain: example.com
+```
+
+#### delete-domain
+
+Delete a domain
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `domain`: *Optional.* The domain to delete
+
+```yml
+  - put: cf-delete-domain
+    resource: cf-env
+    params:
+      command: delete-domain
+      domain: example.com
+```
+
 #### create-user
 
 Create a new user

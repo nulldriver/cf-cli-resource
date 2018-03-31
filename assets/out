@@ -119,6 +119,21 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     username=$(echo $options | jq -r '.username //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$username"
     cf_delete_user "$username"
+  elif [ "create-domain" = "$command" ]; then
+    domain=$(echo $options | jq -r '.domain //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    cf_target "$org" "$space"
+
+    if cf_has_private_domain "$org" "$domain"; then
+      printf '\e[92m[INFO]\e[0m \e[95mDomain %s already exists\e[0m\n' "$domain"
+    else
+      cf_create_domain "$org" "$domain"
+    fi
+  elif [ "delete-domain" = "$command" ]; then
+    domain=$(echo $options | jq -r '.domain //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    cf_target "$org" "$space"
+    cf_delete_domain "$domain"
   elif [ "create-user-provided-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     credentials=$(echo $options | jq -r '.credentials //empty')

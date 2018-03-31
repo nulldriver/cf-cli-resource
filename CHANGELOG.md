@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2.5.0 - Unreleased
 ### Added
 - `scale` command - Change or view the instance count, disk space limit, and memory limit for an app
+- `create-domain` command - Create a domain in an org for later use
+- `delete-domain` command - Delete a domain
 
 ### Changed
 - Updated to cf cli v6.35.2

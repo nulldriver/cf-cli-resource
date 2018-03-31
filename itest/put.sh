@@ -57,6 +57,8 @@ async_plan=$ASYNC_PLAN
 async_service_instance=$testprefix-async_service-$timestamp
 async_configuration=$ASYNC_CONFIGURATION
 
+domain=$testprefix-domain-$timestamp.com
+
 app_name=$testprefix-app-$timestamp
 broker_name=$testprefix-broker
 
@@ -569,8 +571,8 @@ it_can_scale_an_app() {
     command: "scale",
     app_name: $app_name,
     instances: $instances,
-    disk_quota: $disk_quota
-    memory: $memory,
+    disk_quota: $disk_quota,
+    memory: $memory
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -582,6 +584,48 @@ it_can_scale_an_app() {
   assert_equals 1 "$(cf_get_app_instances "$app_name")"
   assert_equals 1024 "$(cf_get_app_disk_quota "$app_name")"
   assert_equals 1024 "$(cf_get_app_memory "$app_name")"
+}
+
+it_can_create_a_domain() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  '{
+    command: "create-domain",
+    domain: $domain
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_has_private_domain "$org" "$domain"
+}
+
+it_can_delete_a_domain() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  '{
+    command: "delete-domain",
+    domain: $domain
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_has_private_domain "$org" "$domain"
 }
 
 it_can_create_a_service_broker() {
@@ -1118,6 +1162,8 @@ run it_can_create_a_user_provided_service_with_credentials_file
 run it_can_create_a_user_provided_service_with_syslog
 run it_can_create_a_user_provided_service_with_route
 
+run it_can_create_a_domain
+
 run it_can_push_an_app_no_start
 
 run it_can_bind_user_provided_service_with_credentials_string
@@ -1147,6 +1193,8 @@ run it_can_unbind_a_synchronous_service
 run it_can_unbind_an_asynchronous_service
 
 run it_can_delete_an_app
+
+run it_can_delete_a_domain
 
 run it_can_delete_a_synchronous_service
 run it_can_delete_an_asynchronous_service

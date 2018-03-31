@@ -26,13 +26,13 @@ function cf_target() {
 }
 
 function cf_get_org_guid() {
-  local org=$1
-  CF_TRACE=false cf curl "/v2/organizations" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$org" | jq -r '.resources[].metadata.guid'
+  local org=${1:?org not set or empty}
+  CF_TRACE=false cf org "$org" --guid
 }
 
 function cf_org_exists() {
   local org=$1
-  [ -n "$(cf_get_org_guid $org)" ]
+  [ -n "$(cf_get_org_guid "$org")" ]
 }
 
 function cf_create_org() {
@@ -54,7 +54,7 @@ function cf_delete_org() {
 function cf_get_space_guid() {
   local org=$1
   local space=$2
-  local org_guid=$(cf_get_org_guid "$org")
+  local org_guid="$(cf_get_org_guid "$org")"
   CF_TRACE=false cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
 }
 
@@ -147,6 +147,24 @@ function cf_create_users_from_file() {
 function cf_delete_user() {
   local username="${1:?username not set or empty}"
   cf delete-user -f "$username"
+}
+
+cf_has_private_domain() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+  local org_guid="$(cf_get_org_guid "$org")"
+  CF_TRACE=false cf curl /v2/organizations/$org_guid/private_domains?q=name:$domain | jq -e '.total_results == 1' >/dev/null
+}
+
+function cf_create_domain() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+  cf create-domain "$org" "$domain"
+}
+
+function cf_delete_domain() {
+  local domain=${1:?domain null or not set}
+  cf delete-domain -f "$domain"
 }
 
 # returns the app guid, otherwise null if not found
