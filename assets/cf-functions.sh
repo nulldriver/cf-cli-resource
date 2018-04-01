@@ -167,6 +167,32 @@ function cf_delete_domain() {
   cf delete-domain -f "$domain"
 }
 
+function cf_map_route() {
+  local app_name=${1:?app_name null or not set}
+  local domain=${2:?domain null or not set}
+  local hostname=${3:-}
+  local path=${4:-}
+
+  local args=
+  [ -n "$hostname" ] && args="$args --hostname $hostname"
+  [ -n "$path" ] && args="$args --path $path"
+
+  cf map-route "$app_name" "$domain" $args
+}
+
+function cf_unmap_route() {
+  local app_name=${1:?app_name null or not set}
+  local domain=${2:?domain null or not set}
+  local hostname=${3:-}
+  local path=${4:-}
+
+  local args=
+  [ -n "$hostname" ] && args="$args --hostname $hostname"
+  [ -n "$path" ] && args="$args --path $path"
+
+  cf unmap-route "$app_name" "$domain" $args
+}
+
 # returns the app guid, otherwise null if not found
 function cf_get_app_guid() {
   local app_name=${1:?app_name null or not set}

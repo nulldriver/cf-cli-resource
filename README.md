@@ -181,6 +181,50 @@ Delete a domain
       domain: example.com
 ```
 
+#### map-route
+
+Add a url route to an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The application to map the route to
+* `domain`: *Required.* The domain to map to the application
+* `hostname`: *Optional.* Hostname for the HTTP route (required for shared domains)
+* `path`: *Optional.* Path for the HTTP route
+
+```yml
+  - put: cf-map-route
+    resource: cf-env
+    params:
+      command: map-route
+      app_name: myapp-ui
+      domain: example.com
+      hostname: myhost
+      path: foo
+```
+
+#### unmap-route
+
+Remove a url route from an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The application to map the route to
+* `domain`: *Required.* The domain to unmap from the application
+* `hostname`: *Optional.* Hostname used to identify the HTTP route
+* `path`: *Optional.* Path used to identify the HTTP route
+
+```yml
+  - put: cf-unmap-route
+    resource: cf-env
+    params:
+      command: unmap-route
+      app_name: myapp-ui
+      domain: example.com
+      hostname: myhost
+      path: foo
+```
+
 #### create-user
 
 Create a new user

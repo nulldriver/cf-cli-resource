@@ -628,6 +628,150 @@ it_can_delete_a_domain() {
   ! cf_has_private_domain "$org" "$domain"
 }
 
+it_can_map_a_route() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  '{
+    command: "map-route",
+    app_name: $app_name,
+    domain: $domain
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was mapped
+}
+
+it_can_map_a_route_with_hostname() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  --arg hostname "$app_name" \
+  '{
+    command: "map-route",
+    app_name: $app_name,
+    domain: $domain,
+    hostname: $hostname
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was mapped
+}
+
+it_can_map_a_route_with_hostname_and_path() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  --arg hostname "$app_name" \
+  --arg path "foo" \
+  '{
+    command: "map-route",
+    app_name: $app_name,
+    domain: $domain,
+    hostname: $hostname,
+    path: $path
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was mapped
+}
+
+it_can_unmap_a_route_with_hostname_and_path() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  --arg hostname "$app_name" \
+  --arg path "foo" \
+  '{
+    command: "unmap-route",
+    app_name: $app_name,
+    domain: $domain,
+    hostname: $hostname,
+    path: $path
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was unmapped
+}
+
+it_can_unmap_a_route_with_hostname() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  --arg hostname "$app_name" \
+  '{
+    command: "unmap-route",
+    app_name: $app_name,
+    domain: $domain,
+    hostname: $hostname
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was unmapped
+}
+
+it_can_unmap_a_route() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg domain "$domain" \
+  '{
+    command: "unmap-route",
+    app_name: $app_name,
+    domain: $domain
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  # TODO: check that the route was unmapped
+}
+
 it_can_create_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1189,8 +1333,16 @@ run it_can_scale_an_app_disk_quota
 run it_can_scale_an_app_memory
 run it_can_scale_an_app
 
+run it_can_map_a_route
+run it_can_map_a_route_with_hostname
+run it_can_map_a_route_with_hostname_and_path
+
 run it_can_unbind_a_synchronous_service
 run it_can_unbind_an_asynchronous_service
+
+run it_can_unmap_a_route_with_hostname_and_path
+run it_can_unmap_a_route_with_hostname
+run it_can_unmap_a_route
 
 run it_can_delete_an_app
 
