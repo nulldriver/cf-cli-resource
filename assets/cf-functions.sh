@@ -435,6 +435,28 @@ function cf_delete() {
   fi
 }
 
+function cf_run_task() {
+  local app_name=${1:?app_name null or not set}
+  local task_command=${2:?task_command null or not set}
+  local task_name=${3:-}
+  local memory=${4:-}
+  local disk_quota=${5:-}
+
+  local args=("$app_name" "$task_command")
+  [ -n "$task_name" ] && args+=(--name "$task_name")
+  [ -n "$memory" ] && args+=(-m "$memory")
+  [ -n "$disk_quota" ] && args+=(-k "$disk_quota")
+
+  cf run-task "${args[@]}"
+}
+
+# very loose match on some "task name" (or command...) in the cf tasks output
+function cf_was_task_run() {
+  local app_name=${1:?app_name null or not set}
+  local task_name=${2:?task_name null or not set}
+  CF_TRACE=false cf tasks "$app_name" | grep "$task_name" >/dev/null
+}
+
 function cf_is_app_started() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")

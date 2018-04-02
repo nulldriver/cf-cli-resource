@@ -266,6 +266,15 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
+  elif [ "run-task" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    task_command=$(echo $options | jq -r '.task_command //empty')
+    task_name=$(echo $options | jq -r '.task_name //empty')
+    memory=$(echo $options | jq -r '.memory //empty')
+    disk_quota=$(echo $options | jq -r '.disk_quota //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    cf_target "$org" "$space"
+    cf_run_task "$app_name" "$task_command" "$task_name" "$memory" "$disk_quota"
   elif [ "scale" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     instances=$(echo $options | jq -r '.instances //empty')

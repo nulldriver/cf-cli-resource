@@ -611,6 +611,30 @@ Delete an app
       delete_mapped_routes: true
 ```
 
+#### run-task
+
+Run a one-off task on an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `task_command`: *Required.* The command to run for the task
+* `task_name`: *Optional.* Name to give the task (generated if omitted)
+* `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
+* `disk_quota`: *Optional.* Disk limit (e.g. 256M, 1024M, 1G)
+
+```yml
+  - put: cf-run-task
+    resource: cf-env
+    params:
+      command: run-task
+      app_name: myapp-ui
+      task_command: "bundle exec rake db:migrate"
+      task_name: migrate
+      memory: 256M
+      disk_quota: 1G
+```
+
 #### scale
 
 Change or view the instance count, disk space limit, and memory limit for an app

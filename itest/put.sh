@@ -488,6 +488,118 @@ it_can_zero_downtime_push() {
   cf_is_app_started "$app_name"
 }
 
+it_can_run_a_task_with_disk_quota() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg task_command "echo run-task-with-disk_quota-test" \
+  --arg disk_quota "756M" \
+  '{
+    command: "run-task",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    task_command: $task_command,
+    disk_quota: $disk_quota
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
+}
+
+it_can_run_a_task_with_memory() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg task_command "echo run-task-with-memory-test" \
+  --arg memory "512M" \
+  '{
+    command: "run-task",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    task_command: $task_command,
+    memory: $memory
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_was_task_run "$app_name" "run-task-with-memory-test"
+}
+
+it_can_run_a_task_with_name() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg task_command "echo run-task-with-name-test" \
+  --arg task_name "run-task-with-name-test" \
+  '{
+    command: "run-task",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    task_command: $task_command,
+    task_name: $task_name
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_was_task_run "$app_name" "run-task-with-name-test"
+}
+
+it_can_run_a_task() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg task_command "echo run-task-test-all" \
+  --arg task_name "run-task-test-all" \
+  --arg memory "512M" \
+  --arg disk_quota "756M" \
+  '{
+    command: "run-task",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    task_command: $task_command,
+    task_name: $task_name,
+    memory: $memory,
+    disk_quota: $disk_quota
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_was_task_run "$app_name" "run-task-test-all"
+}
+
 it_can_scale_an_app_instances() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1326,6 +1438,11 @@ run it_can_bind_an_asynchronous_service
 
 run it_can_start_an_app
 run it_can_zero_downtime_push
+
+run it_can_run_a_task_with_disk_quota
+run it_can_run_a_task_with_memory
+run it_can_run_a_task_with_name
+run it_can_run_a_task
 
 run it_can_scale_an_app_instances
 run it_can_scale_an_app_disk_quota
