@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `delete-domain` command - Delete a domain
 - `map-route` command - Add a url route to an app
 - `unmap-route` command - Remove a url route from an app
-- `run-task` command - Run a one-off task on an app
+- `run-task` command - Run a one-off task on an app, thanks to a PR by [@bigorangemachine](https://github.com/bigorangemachine)
 
 ### Changed
 - Updated to cf cli v6.35.2
