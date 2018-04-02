@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.5.0 - Unreleased
+## 2.5.0 - 2018-04-02
 ### Added
 - `scale` command - Change or view the instance count, disk space limit, and memory limit for an app
 - `create-domain` command - Create a domain in an org for later use
