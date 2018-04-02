@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Updated to cf cli v6.35.2
 
+### General Code Cleanup
+- Change tests to support Orgs and Spaces with spaces
+- Add necessary variable quoting
+- Remove un-necessary variable quoting
+- Use parameter expansion in cf_* functions to check all required args and allow optional args
+- Use array for dynamic argument building for cf cli calls to retain argument quoting
+- Removed unused function: cf_create_org_if_not_exists
+- Removed unused function: cf_create_space_if_not_exists
+
 ## 2.4.3 - 2018-02-23
 ### Fixed
 - `create-user-provided-service` when checking if a ups already exists, the command now only checks the current space instead of every space the user has access to.

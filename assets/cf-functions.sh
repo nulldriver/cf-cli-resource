@@ -1,108 +1,100 @@
 
 function cf_login() {
-  local api_endpoint=$1
-  local cf_user=$2
-  local cf_pass=$3
+  local api_endpoint=${1:?api_endpoint null or not set}
+  local cf_user=${2:?cf_user null or not set}
+  local cf_pass=${3:?cf_pass null or not set}
   local skip_ssl_validation=${4:-false}
 
-  local cf_skip_ssl_validation=""
-  if [ "$skip_ssl_validation" = "true" ]; then
-    cf_skip_ssl_validation="--skip-ssl-validation"
-  fi
+  local args=("$api_endpoint")
+  [ "$skip_ssl_validation" = "true" ] && args+=(--skip-ssl-validation)
 
-  cf api "$api_endpoint" "$cf_skip_ssl_validation"
+  cf api "${args[@]}"
 
   cf auth "$cf_user" "$cf_pass"
 }
 
 function cf_target() {
-  local org=$1
-  local space=$2
-  if [ -n "$space" ]; then
-    cf target -o "$org" -s "$space"
-  else
-    cf target -o "$org"
-  fi
+  local org=${1:?org null or not set}
+  local space=${2:-}
+
+  local args=(-o "$org")
+  [ -n "$space" ] && args+=(-s "$space")
+
+  cf target "${args[@]}"
 }
 
 function cf_get_org_guid() {
-  local org=${1:?org not set or empty}
-  CF_TRACE=false cf org "$org" --guid
+  local org=${1:?org null or not set}
+  # swallow "FAILED" stdout if org not found
+  local org_guid=
+  if org_guid=$(CF_TRACE=false cf org "$org" --guid 2>/dev/null); then
+    echo "$org_guid"
+  fi
 }
 
 function cf_org_exists() {
-  local org=$1
+  local org=${1:?org null or not set}
   [ -n "$(cf_get_org_guid "$org")" ]
 }
 
 function cf_create_org() {
-  local org=$1
+  local org=${1:?org null or not set}
   cf create-org "$org"
 }
 
-function cf_create_org_if_not_exists() {
-  local org=$1
-  if ! (cf_org_exists "$org"); then
-    cf_create_org "$org"
-  fi
-}
-
 function cf_delete_org() {
-  cf delete-org "$1" -f
+  local org=${1:?org null or not set}
+  cf delete-org "$org" -f
 }
 
 function cf_get_space_guid() {
-  local org=$1
-  local space=$2
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
   local org_guid="$(cf_get_org_guid "$org")"
-  CF_TRACE=false cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
-}
-
-function cf_space_exists() {
-  local org=$1
-  local space=$2
-  [ -n "$(cf_get_space_guid $org $space)" ]
-}
-
-function cf_create_space() {
-  local org=$1
-  local space=$2
-  cf create-space "$space" -o "$org"
-}
-
-function cf_create_space_if_not_exists() {
-  local org=$1
-  local space=$2
-  if ! (cf_space_exists "$org" "$space"); then
-    cf_create_space "$org" "$space"
+  if [ -n "$org_guid" ]; then
+    CF_TRACE=false cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
   fi
 }
 
+function cf_space_exists() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  [ -n "$(cf_get_space_guid "$org" "$space")" ]
+}
+
+function cf_create_space() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  cf create-space "$space" -o "$org"
+}
+
 function cf_delete_space() {
-  local org=$1
-  local space=$2
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
   cf delete-space "$space" -o "$org" -f
 }
 
+# TODO: handle multiple pages
 function cf_user_exists() {
-  local username=$1
-  CF_TRACE=false cf curl /v2/users | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
+  local username=${1:?username null or not set}
+  CF_TRACE=false cf curl /v2/users?results-per-page=100 | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
 }
 
 function cf_create_user_with_password() {
-  local username="${1:?username not set or empty}"
-  local password="${2:?password not set or empty}"
+  local username=${1:?username null or not set}
+  local password=${2:?password null or not set}
   cf create-user "$username" "$password"
 }
 
 function cf_create_user_with_origin() {
-  local username="${1:?username not set or empty}"
-  local origin="${2:?origin not set or empty}"
+  local username=${1:?username null or not set}
+  local origin=${2:?origin null or not set}
   cf create-user "$username" --origin "$origin"
 }
 
 function cf_create_users_from_file() {
-  file=${1:?user file not set or empty}
+  local file=${1:?file null or not set}
 
   if [ ! -f "$file" ]; then
     printf '\e[91m[ERROR]\e[0m file not found: %s\n' "$file"
@@ -145,15 +137,15 @@ function cf_create_users_from_file() {
 }
 
 function cf_delete_user() {
-  local username="${1:?username not set or empty}"
+  local username=${1:?username null or not set}
   cf delete-user -f "$username"
 }
 
 cf_has_private_domain() {
   local org=${1:?org null or not set}
   local domain=${2:?domain null or not set}
-  local org_guid="$(cf_get_org_guid "$org")"
-  CF_TRACE=false cf curl /v2/organizations/$org_guid/private_domains?q=name:$domain | jq -e '.total_results == 1' >/dev/null
+  local org_guid=$(cf_get_org_guid "$org")
+  CF_TRACE=false cf curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf_create_domain() {
@@ -173,11 +165,11 @@ function cf_map_route() {
   local hostname=${3:-}
   local path=${4:-}
 
-  local args=
-  [ -n "$hostname" ] && args="$args --hostname $hostname"
-  [ -n "$path" ] && args="$args --path $path"
+  local args=("$app_name" "$domain")
+  [ -n "$hostname" ] && args+=(--hostname "$hostname")
+  [ -n "$path" ] && args+=(--path "$path")
 
-  cf map-route "$app_name" "$domain" $args
+  cf map-route "${args[@]}"
 }
 
 function cf_unmap_route() {
@@ -186,11 +178,11 @@ function cf_unmap_route() {
   local hostname=${3:-}
   local path=${4:-}
 
-  local args=
-  [ -n "$hostname" ] && args="$args --hostname $hostname"
-  [ -n "$path" ] && args="$args --path $path"
+  local args=("$app_name" "$domain")
+  [ -n "$hostname" ] && args+=(--hostname "$hostname")
+  [ -n "$path" ] && args+=(--path "$path")
 
-  cf unmap-route "$app_name" "$domain" $args
+  cf unmap-route "${args[@]}"
 }
 
 # returns the app guid, otherwise null if not found
@@ -201,8 +193,8 @@ function cf_get_app_guid() {
 
 # returns the service instance guid, otherwise null if not found
 function cf_get_service_instance_guid() {
-  local service_instance="${1:?service_instance not set or empty}"
-  # cf <= v6.34.1 - returns "FAILED" to stdout for return code > 0
+  local service_instance=${1:?service_instance null or not set}
+  # swallow "FAILED" stdout if service not found
   local service_instance_guid=
   if service_instance_guid=$(CF_TRACE=false cf service "$service_instance" --guid 2>/dev/null); then
     echo "$service_instance_guid"
@@ -211,14 +203,14 @@ function cf_get_service_instance_guid() {
 
 # returns true if service exists, otherwise false
 function cf_service_exists() {
-  local service_instance="${1:?service_instance not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
   local service_instance_guid=$(cf_get_service_instance_guid "$service_instance")
   [ -n "$service_instance_guid" ]
 }
 
 function cf_create_user_provided_service_credentials() {
-  local service_instance="${1:?service_instance not set or empty}"
-  local credentials="${2:?credentials json not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
+  local credentials=${2:?credentials json null or not set}
 
   local json=$credentials
   if [ -f "$credentials" ]; then
@@ -235,33 +227,38 @@ function cf_create_user_provided_service_credentials() {
 }
 
 function cf_create_user_provided_service_syslog() {
-  local service_instance="${1:?service_instance not set or empty}"
-  local syslog_drain_url="${2:?syslog_drain_url not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
+  local syslog_drain_url=${2:?syslog_drain_url null or not set}
   cf create-user-provided-service "$service_instance" -l "$syslog_drain_url"
 }
 
 function cf_create_user_provided_service_route() {
-  local service_instance="${1:?service_instance not set or empty}"
-  local route_service_url="${2:?route_service_url not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
+  local route_service_url=${2:?route_service_url null or not set}
   cf create-user-provided-service "$service_instance" -r "$route_service_url"
 }
 
 function cf_create_service() {
-  local service=$1
-  local plan=$2
-  local service_instance=$3
-  local configuration=$4
-  local tags=$5
-  cf create-service "$service" "$plan" "$service_instance" -c "$configuration" -t "$tags"
+  local service=${1:?service null or not set}
+  local plan=${2:?plan null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local configuration=${4:-}
+  local tags=${5:-}
+
+  local args=("$service" "$plan" "$service_instance")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+  [ -n "$tags" ] && args+=(-t "$tags")
+
+  cf create-service "${args[@]}"
 }
 
 function cf_delete_service() {
-  local service_instance=$1
+  local service_instance=${1:?service_instance null or not set}
   cf delete-service "$service_instance" -f
 }
 
 function cf_wait_for_service_instance() {
-  local service_instance="${1:?service_instance not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
   local timeout=${2:-600}
 
   local guid=$(cf_get_service_instance_guid "$service_instance")
@@ -298,7 +295,7 @@ function cf_wait_for_service_instance() {
 }
 
 function cf_wait_for_delete_service_instance() {
-  local service_instance="${1:?service_instance not set or empty}"
+  local service_instance=${1:?service_instance null or not set}
   local timeout=${2:-600}
 
   local start=$(date +%s)
@@ -325,9 +322,9 @@ function cf_create_service_broker() {
   local username=${2:?username null or not set}
   local password=${3:?password null or not set}
   local url=${4:?broker_url null or not set}
-  local is_space_scoped=${5:-""}
-  local space_scoped=""
+  local is_space_scoped=${5:-}
 
+  local space_scoped=
   if [ "$is_space_scoped" = "true" ]; then
     space_scoped="--space-scoped"
   fi
@@ -341,34 +338,26 @@ function cf_create_service_broker() {
 
 function cf_enable_service_access() {
   local service_broker=${1:?service_broker null or not set}
-  local plan=${2:-""}
-  local access_org=${3:-""}
+  local plan=${2:-}
+  local access_org=${3:-}
 
-  if [ -n "$plan" ]; then
-    plan="-p $plan"
-  fi
+  local args=("$service_broker")
+  [ -n "$plan" ] && args+=(-p "$plan")
+  [ -n "$access_org" ] && args+=(-o "$access_org")
 
-  if [ -n "$access_org" ]; then
-    access_org="-o $access_org"
-  fi
-
-  cf enable-service-access "$service_broker" $plan $access_org
+  cf enable-service-access "${args[@]}"
 }
 
 function cf_disable_service_access() {
   local service_broker=${1:?service_broker null or not set}
-  local plan=${2:-""}
-  local access_org=${3:-""}
+  local plan=${2:-}
+  local access_org=${3:-}
 
-  if [ -n "$plan" ]; then
-    plan="-p $plan"
-  fi
+  local args=("$service_broker")
+  [ -n "$plan" ] && args+=(-p "$plan")
+  [ -n "$access_org" ] && args+=(-o "$access_org")
 
-  if [ -n "$access_org" ]; then
-    access_org="-o $access_org"
-  fi
-
-  cf disable-service-access "$service_broker" $plan $access_org
+  cf disable-service-access "${args[@]}"
 }
 
 function cf_delete_service_broker() {
@@ -379,8 +368,12 @@ function cf_delete_service_broker() {
 function cf_bind_service() {
   local app_name=${1:?app_name null or not set}
   local service_instance=${2:?service_instance null or not set}
-  local configuration=$3
-  cf bind-service "$app_name" "$service_instance" -c "$configuration"
+  local configuration=${3:-}
+
+  local args=("$app_name" "$service_instance")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+
+  cf bind-service "${args[@]}"
 }
 
 function cf_unbind_service() {
@@ -390,21 +383,21 @@ function cf_unbind_service() {
 }
 
 function cf_is_app_bound_to_service() {
-  local app_name=$1
-  local service_instance=$2
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
   local app_guid=$(cf_get_app_guid "$app_name")
   local si_guid=$(CF_TRACE=false cf service "$service_instance" --guid)
   CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf_push() {
-  local args=$1
+  local args=${1:?args null or not set}
   cf push $args
 }
 
 function cf_zero_downtime_push() {
-  local args=$1
-  local current_app_name=$2
+  local args=${1:?args null or not set}
+  local current_app_name=${2:-}
   if [ -n "$current_app_name" ]; then
     # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
     CF_TRACE=false cf zero-downtime-push "$current_app_name" $args
@@ -414,9 +407,10 @@ function cf_zero_downtime_push() {
 }
 
 function cf_start() {
-  local app_name=$1
-  local staging_timeout=$2
-  local startup_timeout=$3
+  local app_name=${1:?app_name null or not set}
+  local staging_timeout=${2:?staging_timeout null or not set}
+  local startup_timeout=${3:?startup_timeout null or not set}
+
   if [ "$staging_timeout" -gt "0" ]; then
     export CF_STAGING_TIMEOUT=$staging_timeout
   fi
@@ -431,8 +425,9 @@ function cf_start() {
 }
 
 function cf_delete() {
-  local app_name=$1
-  local delete_mapped_routes=$2
+  local app_name=${1:?app_name null or not set}
+  local delete_mapped_routes=${2:-}
+
   if [ -n "$delete_mapped_routes" ]; then
     cf delete "$app_name" -f -r
   else
@@ -443,13 +438,13 @@ function cf_delete() {
 function cf_is_app_started() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STARTED"' >/dev/null
+  CF_TRACE=false cf curl "/v2/apps/$guid" | jq -e '.entity.state == "STARTED"' >/dev/null
 }
 
 function cf_is_app_stopped() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  CF_TRACE=false cf curl /v2/apps/$guid | jq -e '.entity.state == "STOPPED"' >/dev/null
+  CF_TRACE=false cf curl "/v2/apps/$guid" | jq -e '.entity.state == "STOPPED"' >/dev/null
 }
 
 function cf_app_exists() {
@@ -460,19 +455,19 @@ function cf_app_exists() {
 function cf_get_app_instances() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  cf curl /v2/apps/$guid | jq -r '.entity.instances'
+  cf curl "/v2/apps/$guid" | jq -r '.entity.instances'
 }
 
 function cf_get_app_memory() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  cf curl /v2/apps/$guid | jq -r '.entity.memory'
+  cf curl "/v2/apps/$guid" | jq -r '.entity.memory'
 }
 
 function cf_get_app_disk_quota() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  cf curl /v2/apps/$guid | jq -r '.entity.disk_quota'
+  cf curl "/v2/apps/$guid" | jq -r '.entity.disk_quota'
 }
 
 function cf_scale() {
@@ -481,12 +476,12 @@ function cf_scale() {
   local memory=${3:-}
   local disk_quota=${4:-}
 
-  local args=
-  [ -n "$instances" ] && args="$args -i $instances"
-  [ -n "$memory" ] && args="$args -m $memory"
-  [ -n "$disk_quota" ] && args="$args -k $disk_quota"
+  local args=(-f "$app_name")
+  [ -n "$instances" ] && args+=(-i "$instances")
+  [ -n "$memory" ] && args+=(-m "$memory")
+  [ -n "$disk_quota" ] && args+=(-k "$disk_quota")
 
-  cf scale -f "$app_name" $args
+  cf scale "${args[@]}"
 }
 
 function cf_service_broker_exists() {

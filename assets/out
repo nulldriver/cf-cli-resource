@@ -20,7 +20,7 @@ fi
 PATH=/usr/local/bin:$PATH
 
 TMPDIR=${TMPDIR:-/tmp}
-payload=$(mktemp $TMPDIR/cf-cli-resource-request.XXXXXX)
+payload=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
 
 cat > $payload <&0
 
@@ -56,7 +56,7 @@ if [ -z "$password" ]; then
   exit 1
 fi
 
-cd $working_dir
+cd "$working_dir"
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf --version)"
 
@@ -123,7 +123,6 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     domain=$(echo $options | jq -r '.domain //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
     cf_target "$org" "$space"
-
     if cf_has_private_domain "$org" "$domain"; then
       printf '\e[92m[INFO]\e[0m \e[95mDomain %s already exists\e[0m\n' "$domain"
     else
@@ -173,7 +172,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
-    configuration=$(echo $options | jq -r '.configuration //"{}"')
+    configuration=$(echo $options | jq -r '.configuration //empty')
     tags=$(echo $options | jq -r '.tags //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
@@ -284,7 +283,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   elif [ "bind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
-    configuration=$(echo $options | jq -r '.configuration //"{}"')
+    configuration=$(echo $options | jq -r '.configuration //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
     cf_bind_service "$app_name" "$service_instance" "$configuration"
@@ -305,15 +304,15 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     cf_create_service_broker "$service_broker" "$username" "$password" "$url" "$is_space_scoped"
   elif [ "enable-service-access" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
-    plan=$(echo $options | jq -r '.plan //""')
-    access_org=$(echo $options | jq -r '.access_org //""')
+    plan=$(echo $options | jq -r '.plan //empty')
+    access_org=$(echo $options | jq -r '.access_org //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
     cf_target "$org" "$space"
     cf_enable_service_access "$service_broker" "$plan" "$access_org"
   elif [ "disable-service-access" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
-    plan=$(echo $options | jq -r '.plan //""')
-    access_org=$(echo $options | jq -r '.access_org //""')
+    plan=$(echo $options | jq -r '.plan //empty')
+    access_org=$(echo $options | jq -r '.access_org //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
     cf_target "$org" "$space"
     cf_disable_service_access "$service_broker" "$plan" "$access_org"

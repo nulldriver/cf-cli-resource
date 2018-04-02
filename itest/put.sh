@@ -18,7 +18,7 @@ source $test_dir/helpers.sh
 : "${SYNC_CONFIGURATION:=}"
 : "${ASYNC_SERVICE:=p-service-registry}"
 : "${ASYNC_PLAN:=standard}"
-: "${ASYNC_CONFIGURATION:='{\"count\": 1}'}"
+: "${ASYNC_CONFIGURATION:=}"
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
@@ -31,10 +31,10 @@ cf_username=$CF_USERNAME
 cf_password=$CF_PASSWORD
 cf_color=true
 cf_dial_timeout=5
-cf_trace=true
+cf_trace=false
 
-org=$testprefix-org-$timestamp
-space=$testprefix-space-$timestamp
+org="$testprefix Org $timestamp"
+space="$testprefix Space $timestamp"
 
 username=$testprefix-user-$timestamp
 password=$testprefix-pass-$timestamp
@@ -362,7 +362,7 @@ it_can_create_an_asynchronous_service() {
   --arg service "$async_service" \
   --arg plan "$async_plan" \
   --arg service_instance "$async_service_instance" \
-  --arg configuration '{"count": 1}' \
+  --arg configuration "$async_configuration" \
   '{
     command: "create-service",
     org: $org,
@@ -1274,10 +1274,9 @@ it_can_delete_a_space_and_org() {
 
 cleanup_failed_tests() {
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
-  orgs=$(cf orgs | grep "$testprefix-org" || true)
-  for org in $orgs; do
+  while read -r org; do
     cf_delete_org "$org"
-  done
+  done < <(cf orgs | grep "$testprefix Org" || true)
   cf_delete_user "bulkloadtestuser1"
   cf_delete_user "bulkloadtestuser2"
   cf_delete_user "bulkloadtestuser3"
