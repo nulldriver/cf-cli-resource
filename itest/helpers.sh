@@ -26,7 +26,7 @@ source $resource_dir/cf-functions.sh
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
-
+  cf logout
   printf 'running \e[33m%s\e[0m...\n' "$@"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
   echo ""

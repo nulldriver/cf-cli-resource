@@ -61,6 +61,7 @@ domain=$testprefix-domain-$timestamp.com
 
 app_name=$testprefix-app-$timestamp
 broker_name=$testprefix-broker
+broker_space_scoped_name=$testprefix-space-scoped-broker
 
 users_csv=$(cat <<EOF
 Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
@@ -87,8 +88,6 @@ source=$(jq -n \
     skip_cert_check: "true",
     username: $username,
     password: $password,
-    org: $org,
-    space: $space,
     debug: false,
     cf_color: $cf_color,
     cf_dial_timeout: $cf_dial_timeout,
@@ -471,6 +470,8 @@ it_can_zero_downtime_push() {
   --arg app_name "$app_name" \
   '{
     command: "zero-downtime-push",
+    org: $org,
+    space: $space,
     manifest: "static-app/manifest.yml",
     current_app_name: $app_name,
     environment_variables: {
@@ -610,6 +611,8 @@ it_can_scale_an_app_instances() {
   --arg instances "2" \
   '{
     command: "scale",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     instances: $instances
   }')
@@ -633,6 +636,8 @@ it_can_scale_an_app_disk_quota() {
   --arg disk_quota "512M" \
   '{
     command: "scale",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     disk_quota: $disk_quota
   }')
@@ -656,6 +661,8 @@ it_can_scale_an_app_memory() {
   --arg memory "512M" \
   '{
     command: "scale",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     memory: $memory
   }')
@@ -681,6 +688,8 @@ it_can_scale_an_app() {
   --arg memory "1G" \
   '{
     command: "scale",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     instances: $instances,
     disk_quota: $disk_quota,
@@ -703,10 +712,10 @@ it_can_create_a_domain() {
 
   local params=$(jq -n \
   --arg org "$org" \
-  --arg space "$space" \
   --arg domain "$domain" \
   '{
     command: "create-domain",
+    org: $org,
     domain: $domain
   }')
 
@@ -724,10 +733,10 @@ it_can_delete_a_domain() {
 
   local params=$(jq -n \
   --arg org "$org" \
-  --arg space "$space" \
   --arg domain "$domain" \
   '{
     command: "delete-domain",
+    org: $org,
     domain: $domain
   }')
 
@@ -750,6 +759,8 @@ it_can_map_a_route() {
   --arg domain "$domain" \
   '{
     command: "map-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain
   }')
@@ -773,6 +784,8 @@ it_can_map_a_route_with_hostname() {
   --arg hostname "$app_name" \
   '{
     command: "map-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain,
     hostname: $hostname
@@ -798,6 +811,8 @@ it_can_map_a_route_with_hostname_and_path() {
   --arg path "foo" \
   '{
     command: "map-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain,
     hostname: $hostname,
@@ -824,6 +839,8 @@ it_can_unmap_a_route_with_hostname_and_path() {
   --arg path "foo" \
   '{
     command: "unmap-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain,
     hostname: $hostname,
@@ -849,6 +866,8 @@ it_can_unmap_a_route_with_hostname() {
   --arg hostname "$app_name" \
   '{
     command: "unmap-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain,
     hostname: $hostname
@@ -872,6 +891,8 @@ it_can_unmap_a_route() {
   --arg domain "$domain" \
   '{
     command: "unmap-route",
+    org: $org,
+    space: $space,
     app_name: $app_name,
     domain: $domain
   }')
@@ -882,6 +903,61 @@ it_can_unmap_a_route() {
     .version | keys == ["timestamp"]
   '
   # TODO: check that the route was unmapped
+}
+
+it_can_create_a_service_broker_space_scoped() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local commit=dddec578676b8dcbe06158e3ac0b34edc6f5de6e
+
+  # if tests are running in concourse, the overview-broker.zip is provided
+  # by the pipeline.  Otherwise, if we are running locally, we'll need to
+  # download it.
+  local broker_dir=$working_dir/broker
+  if [ -d "/opt/service-broker" ]; then
+    broker_dir=/opt/service-broker
+  else
+    mkdir -p $broker_dir
+  fi
+
+  if [ ! -f "$broker_dir/overview-broker.zip" ]; then
+    wget https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O $broker_dir/overview-broker.zip
+  fi
+
+  if [ ! -d "$broker_dir/overview-broker-$commit" ]; then
+    unzip $broker_dir/overview-broker.zip -d $broker_dir
+  fi
+
+  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_target "$org" "$space"
+  cf push "${broker_space_scoped_name}" -p "$broker_dir/overview-broker-$commit" #-b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
+  cf logout
+
+  local params=$(jq -n \
+    --arg org "$org" \
+    --arg space "$space" \
+    --arg service_broker "${broker_space_scoped_name}" \
+    --arg username admin \
+    --arg password password \
+    --arg url "https://${broker_space_scoped_name}.$cf_apps_domain" \
+    '{
+      command: "create-service-broker",
+      org: $org,
+      space: $space,
+      service_broker: $service_broker,
+      username: $username,
+      password: $password,
+      url: $url,
+      space_scoped: true
+    }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_broker_exists "${broker_space_scoped_name}"
 }
 
 it_can_create_a_service_broker() {
@@ -907,8 +983,10 @@ it_can_create_a_service_broker() {
     unzip $broker_dir/overview-broker.zip -d $broker_dir
   fi
 
+  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
   cf_target "$org" "$space"
-  cf push "$broker_name" -p "$broker_dir/overview-broker-$commit" -b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
+  cf push "$broker_name" -p "$broker_dir/overview-broker-$commit"
+  cf logout
 
   local params=$(jq -n \
     --arg org "$org" \
@@ -919,8 +997,6 @@ it_can_create_a_service_broker() {
     --arg url "https://$broker_name.$cf_apps_domain" \
     '{
       command: "create-service-broker",
-      org: $org,
-      space: $space,
       service_broker: $service_broker,
       username: $username,
       password: $password,
@@ -1403,6 +1479,7 @@ run it_can_create_a_user_with_password
 run it_can_create_a_user_with_origin
 run it_can_create_users_from_file
 
+run it_can_create_a_service_broker_space_scoped
 run it_can_create_a_service_broker
 # run again to prove that it won't error out if it already exists
 run it_can_create_a_service_broker

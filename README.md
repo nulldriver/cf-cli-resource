@@ -153,8 +153,7 @@ Delete a space
 
 Create a domain in an org for later use
 
-* `org`: *Optional.* The organization to target (required if not set in the source config)
-* `space`: *Optional.* The space to target (required if not set in the source config)
+* `org`: *Optional.* The organization to create the domain in (required if not set in the source config)
 * `domain`: *Optional.* The domain to add to the organization
 
 ```yml
@@ -162,6 +161,7 @@ Create a domain in an org for later use
     resource: cf-env
     params:
       command: create-domain
+      org: myorg
       domain: example.com
 ```
 
