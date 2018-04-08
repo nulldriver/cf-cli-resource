@@ -383,8 +383,8 @@ Delete a service instance
 
 Create/Update a service broker. If a service broker already exists, updates the existing service broker.
 
-* `org`: *Optional.* The organization to target (required if not set in the source config)
-* `space`: *Optional.* The space to target (required if not set in the source config)
+* `org`: *Optional.* The organization to target (required if `space_scoped: true`)
+* `space`: *Optional.* The space to target (required if `space_scoped: true`)
 * `service_broker`: *Required.* The service broker name to create
 * `username`: *Required.* The service broker username
 * `password`: *Required.* The service broker password
