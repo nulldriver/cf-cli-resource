@@ -1,7 +1,7 @@
 # cf cli Concourse Resource
 
-[![CI Builds](https://wings.pivotal.io/api/v1/teams/sme-pcf-concourse/pipelines/cf-cli-resource/jobs/build/badge)](https://wings.pivotal.io/teams/sme-pcf-concourse/pipelines/cf-cli-resource)
-[![Docker Pulls](https://img.shields.io/docker/pulls/pivotalpa/cf-cli-resource.svg)](https://hub.docker.com/r/pivotalpa/cf-cli-resource/)
+[![CI Builds](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/build/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nulldriver/cf-cli-resource.svg)](https://hub.docker.com/r/nulldriver/cf-cli-resource/)
 
 An output only resource capable of running lots of Cloud Foundry cli commands.
 
@@ -22,7 +22,7 @@ resource_types:
 - name: cf-cli-resource
   type: docker-image
   source:
-    repository: pivotalpa/cf-cli-resource
+    repository: nulldriver/cf-cli-resource
     tag: latest
 
 resources:

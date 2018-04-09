@@ -38,17 +38,17 @@ jobs:
       inputs:
       - name: service-broker
       params:
-        CF_SYSTEM_DOMAIN: ((cf-system-domain))
-        CF_APPS_DOMAIN: ((cf-apps-domain))
-        CF_SKIP_CERT_CHECK: ((cf-skip-cert-check))
-        CF_USERNAME: ((cf-username))
-        CF_PASSWORD: ((cf-password))
-        SYNC_SERVICE: ((sync-service))
-        SYNC_PLAN: ((sync-plan))
-        SYNC_CONFIGURATION: ((sync-configuration))
-        ASYNC_SERVICE: ((async-service))
-        ASYNC_PLAN: ((async-plan))
-        ASYNC_CONFIGURATION: ((async-configuration))
+        CF_SYSTEM_DOMAIN: {{cf-system-domain}}
+        CF_APPS_DOMAIN: {{cf-apps-domain}}
+        CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
+        CF_USERNAME: ((cf.username))
+        CF_PASSWORD: ((cf.password))
+        SYNC_SERVICE: {{sync-service}}
+        SYNC_PLAN: {{sync-plan}}
+        SYNC_CONFIGURATION: {{sync-configuration}}
+        ASYNC_SERVICE: {{async-service}}
+        ASYNC_PLAN: {{async-plan}}
+        ASYNC_CONFIGURATION: {{async-configuration}}
       run:
         path: sh
         args:
@@ -56,10 +56,6 @@ jobs:
         - |
           ln -s $PWD/service-broker /opt/service-broker
           /opt/itest/put.sh
-  - put: tracker
-    params:
-      repos:
-        - cf-cli-resource
 
 - name: shipit
   public: true
@@ -94,14 +90,7 @@ jobs:
       body: generate-release-notes-output/RELEASE_NOTES.md
   - put: version
     params: {file: version/version}
-  # publish to primary repo
   - put: cf-cli-resource-image-final
-    params:
-      load: cf-cli-resource-image-rc
-      tag: version/version
-      tag_as_latest: true
-  # keep old repo in sync until everyone moves to the primary
-  - put: cf-cli-resource-image-final-secondary
     params:
       load: cf-cli-resource-image-rc
       tag: version/version
@@ -142,7 +131,7 @@ resources:
   source:
     uri: {{git-uri}}
     branch: {{git-branch}}
-    private_key: {{git-private-key}}
+    private_key: ((git_key.private_key))
     ignore_paths:
     - LICENSE
     - NOTICE.md
@@ -157,35 +146,21 @@ resources:
     uri: {{git-uri-semver}}
     branch: version
     file: version
-    private_key: {{git-private-key}}
+    private_key: ((git_key.private_key))
 
 - name: cf-cli-resource-image-rc
   type: docker-image
   source:
     repository: {{docker-repository-rc}}
-    username: {{docker-username}}
-    password: {{docker-password}}
+    username: ((docker.username))
+    password: ((docker.password))
 
 - name: cf-cli-resource-image-final
   type: docker-image
   source:
     repository: {{docker-repository-final}}
-    username: {{docker-username}}
-    password: {{docker-password}}
-
-- name: cf-cli-resource-image-final-secondary
-  type: docker-image
-  source:
-    repository: {{docker-repository-final-secondary}}
-    username: {{docker-username}}
-    password: {{docker-password}}
-
-- name: tracker
-  type: tracker
-  source:
-    token: {{tracker-api-token}}
-    project_id: {{tracker-project-id}}
-    tracker_url: {{tracker-url}}
+    username: ((docker.username))
+    password: ((docker.password))
 
 - name: pipeline-tasks
   type: git
@@ -196,7 +171,7 @@ resources:
 - name: github-release
   type: github-release
   source:
-    access_token: {{github-release-access-token}}
+    access_token: ((github_access_token))
     repository: cf-cli-resource
     user: {{github-release-user}}
 
