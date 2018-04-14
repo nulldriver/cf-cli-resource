@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- `restart` command - Stop all instances of the app, then start them again. This causes downtime.
+- `restage` command - Recreate the app's executable artifact using the latest pushed app files and the latest environment (variables, service bindings, buildpack, stack, etc.)
+
 ### Changed
 - Better cleanup of users created by tests
 - The `cf_user_exists` function used in tests now handles result pagination

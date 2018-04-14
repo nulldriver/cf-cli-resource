@@ -593,6 +593,46 @@ Start an app
       startup_timeout: 5
 ```
 
+#### restart
+
+Stop all instances of the app, then start them again. This causes downtime.
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
+* `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
+
+```yml
+  - put: cf-restart
+    resource: cf-env
+    params:
+      command: restart
+      app_name: myapp-ui
+      staging_timeout: 15
+      startup_timeout: 5
+```
+
+#### restage
+
+Recreate the app's executable artifact using the latest pushed app files and the latest environment (variables, service bindings, buildpack, stack, etc.)
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
+* `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
+
+```yml
+  - put: cf-restage
+    resource: cf-env
+    params:
+      command: restage
+      app_name: myapp-ui
+      staging_timeout: 15
+      startup_timeout: 5
+```
+
 #### delete
 
 Delete an app

@@ -419,8 +419,8 @@ function cf_zero_downtime_push() {
 
 function cf_start() {
   local app_name=${1:?app_name null or not set}
-  local staging_timeout=${2:?staging_timeout null or not set}
-  local startup_timeout=${3:?startup_timeout null or not set}
+  local staging_timeout=${2:-0}
+  local startup_timeout=${3:-0}
 
   if [ "$staging_timeout" -gt "0" ]; then
     export CF_STAGING_TIMEOUT=$staging_timeout
@@ -430,6 +430,42 @@ function cf_start() {
   fi
 
   cf start "$app_name"
+
+  unset CF_STAGING_TIMEOUT
+  unset CF_STARTUP_TIMEOUT
+}
+
+function cf_restart() {
+  local app_name=${1:?app_name null or not set}
+  local staging_timeout=${2:-0}
+  local startup_timeout=${3:-0}
+
+  if [ "$staging_timeout" -gt "0" ]; then
+    export CF_STAGING_TIMEOUT=$staging_timeout
+  fi
+  if [ "$startup_timeout" -gt "0" ]; then
+    export CF_STARTUP_TIMEOUT=$startup_timeout
+  fi
+
+  cf restart "$app_name"
+
+  unset CF_STAGING_TIMEOUT
+  unset CF_STARTUP_TIMEOUT
+}
+
+function cf_restage() {
+  local app_name=${1:?app_name null or not set}
+  local staging_timeout=${2:-0}
+  local startup_timeout=${3:-0}
+
+  if [ "$staging_timeout" -gt "0" ]; then
+    export CF_STAGING_TIMEOUT=$staging_timeout
+  fi
+  if [ "$startup_timeout" -gt "0" ]; then
+    export CF_STARTUP_TIMEOUT=$startup_timeout
+  fi
+
+  cf restage "$app_name"
 
   unset CF_STAGING_TIMEOUT
   unset CF_STARTUP_TIMEOUT

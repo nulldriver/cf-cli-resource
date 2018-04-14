@@ -459,6 +459,56 @@ it_can_start_an_app() {
   cf_is_app_started "$app_name"
 }
 
+it_can_restart_an_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "restart",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    staging_timeout: 15,
+    startup_timeout: 5
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_started "$app_name"
+}
+
+it_can_restage_an_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "restage",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    staging_timeout: 15,
+    startup_timeout: 5
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_started "$app_name"
+}
+
 it_can_zero_downtime_push() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1541,6 +1591,9 @@ run it_can_scale_an_app_instances
 run it_can_scale_an_app_disk_quota
 run it_can_scale_an_app_memory
 run it_can_scale_an_app
+
+run it_can_restart_an_app
+run it_can_restage_an_app
 
 run it_can_map_a_route
 run it_can_map_a_route_with_hostname
