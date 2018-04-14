@@ -75,10 +75,21 @@ function cf_delete_space() {
   cf delete-space "$space" -o "$org" -f
 }
 
-# TODO: handle multiple pages
 function cf_user_exists() {
   local username=${1:?username null or not set}
-  CF_TRACE=false cf curl /v2/users?results-per-page=100 | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null
+
+  local next_url='/v2/users?order-direction=asc&page=1'
+  while [ "$next_url" != "null" ]; do
+
+    local output=$(CF_TRACE=false cf curl "$next_url")
+
+    if (echo $output | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null); then
+      return 0
+    fi
+
+    next_url=$(echo "$output" | jq -r '.next_url')
+  done
+  return 1
 }
 
 function cf_create_user_with_password() {

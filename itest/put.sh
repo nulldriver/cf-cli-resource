@@ -65,9 +65,9 @@ broker_space_scoped_name=$testprefix-space-scoped-broker
 
 users_csv=$(cat <<EOF
 Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-bulkloadtestuser1,wasabi,$org,$space,x,x,x,x,x,x
-bulkloadtestuser2,wasabi,$org,$space,,x,x,,x,x
-bulkloadtestuser3,ldap,$org,$space,,,x,,,x
+$testprefix-bulkload-user1,wasabi,$org,$space,x,x,x,x,x,x
+$testprefix-bulkload-user2,wasabi,$org,$space,,x,x,,x,x
+$testprefix-bulkload-user3,ldap,$org,$space,,,x,,,x
 EOF
 )
 
@@ -209,9 +209,9 @@ it_can_create_users_from_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_exists "bulkloadtestuser1"
-  cf_user_exists "bulkloadtestuser2"
-  cf_user_exists "bulkloadtestuser3"
+  cf_user_exists "$testprefix-bulkload-user1"
+  cf_user_exists "$testprefix-bulkload-user2"
+  cf_user_exists "$testprefix-bulkload-user3"
 }
 
 it_can_create_a_user_provided_service_with_credentials_string() {
@@ -1460,17 +1460,33 @@ it_can_delete_a_space_and_org() {
   ! cf_org_exists "$org"
 }
 
-cleanup_failed_tests() {
+cleanup_test_orgs() {
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
   while read -r org; do
     cf_delete_org "$org"
   done < <(cf orgs | grep "$testprefix Org" || true)
-  cf_delete_user "bulkloadtestuser1"
-  cf_delete_user "bulkloadtestuser2"
-  cf_delete_user "bulkloadtestuser3"
 }
 
-run cleanup_failed_tests
+cleanup_test_users() {
+  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+
+  local next_url='/v2/users?order-direction=asc&page=1'
+  while [ "$next_url" != "null" ]; do
+
+    local output=$(CF_TRACE=false cf curl "$next_url")
+    local username=
+
+    while read -r username; do
+      cf_delete_user "$username"
+    done < <(echo "$output" | jq -r --arg userprefix "$testprefix-" '.resources[] | select(.entity.username|startswith($userprefix)?) | .entity.username')
+
+    next_url=$(echo "$output" | jq -r '.next_url')
+  done
+}
+
+# cleanup failed tests
+run cleanup_test_orgs
+run cleanup_test_users
 
 run it_can_create_an_org
 run it_can_create_a_space
@@ -1548,3 +1564,5 @@ run it_can_delete_a_user_with_origin
 run it_can_delete_a_user_with_password
 
 run it_can_delete_a_space_and_org
+
+run cleanup_test_users

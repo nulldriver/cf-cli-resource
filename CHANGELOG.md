@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Better cleanup of users created by tests
+- The `cf_user_exists` function used in tests now handles result pagination
+
 ## 2.5.1 - 2018-04-03
 ### Fixed
 - `create-service-broker` command now only targets an org and space if `space_scoped: true`
