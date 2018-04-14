@@ -405,6 +405,48 @@ it_can_wait_for_asynchronous_service() {
   cf_service_exists "$async_service_instance"
 }
 
+it_can_enable_service_instance_sharing() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "enable-feature-flag",
+    feature_name: "service_instance_sharing"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_feature_flag_enabled "service_instance_sharing"
+}
+
+it_can_disable_service_instance_sharing() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "disable-feature-flag",
+    feature_name: "service_instance_sharing"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_feature_flag_disabled "service_instance_sharing"
+}
+
 it_can_push_an_app_no_start() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1578,6 +1620,11 @@ run it_can_create_an_asynchronous_service
 # run again to prove that it won't error out if it already exists
 run it_can_create_an_asynchronous_service
 run it_can_bind_an_asynchronous_service
+
+run it_can_disable_service_instance_sharing
+run it_can_enable_service_instance_sharing
+run it_can_disable_service_instance_sharing
+run it_can_enable_service_instance_sharing
 
 run it_can_start_an_app
 run it_can_zero_downtime_push

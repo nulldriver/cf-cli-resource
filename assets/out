@@ -345,6 +345,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
     cf_target "$org" "$space"
     cf_delete_service_broker "$service_broker"
+  elif [ "enable-feature-flag" = "$command" ]; then
+    feature_name=$(echo $options | jq -r '.feature_name //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
+    cf_enable_feature_flag "$feature_name"
+  elif [ "disable-feature-flag" = "$command" ]; then
+    feature_name=$(echo $options | jq -r '.feature_name //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
+    cf_disable_feature_flag "$feature_name"
   else
     printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
     exit 1

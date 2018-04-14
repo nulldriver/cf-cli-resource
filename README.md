@@ -515,6 +515,34 @@ Unbind a service instance from an app
       service_instance: mydb
 ```
 
+#### enable-feature-flag
+
+Allow use of a feature
+
+* `feature_name`: *Required.* Feature to enable
+
+```yml
+  - put: cf-enable-feature-flag
+    resource: cf-env
+    params:
+      command: enable-feature-flag
+      feature_name: service_instance_sharing
+```
+
+#### disable-feature-flag
+
+Prevent use of a feature
+
+* `feature_name`: *Required.* Feature to disable
+
+```yml
+  - put: cf-disable-feature-flag
+    resource: cf-env
+    params:
+      command: disable-feature-flag
+      feature_name: service_instance_sharing
+```
+
 #### push
 
 Push a new app or sync changes to an existing app

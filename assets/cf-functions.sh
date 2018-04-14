@@ -554,7 +554,7 @@ function cf_scale() {
 }
 
 function cf_service_broker_exists() {
-  local service_broker=${1:?service_broker}
+  local service_broker=${1:?service_broker null or not set}
   CF_TRACE=false cf curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
@@ -562,4 +562,24 @@ function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
   local plan=${2:?plan null or not set}
   CF_TRACE=false cf marketplace | grep "$service_name" | grep "$plan" >/dev/null
+}
+
+function cf_enable_feature_flag() {
+  local feature_name=${1:?feature_name null or not set}
+  CF_TRACE=false cf enable-feature-flag "$feature_name"
+}
+
+function cf_disable_feature_flag() {
+  local feature_name=${1:?feature_name null or not set}
+  CF_TRACE=false cf disable-feature-flag "$feature_name"
+}
+
+function cf_is_feature_flag_enabled() {
+  local feature_flag=${1:?feature_flag null or not set}
+  CF_TRACE=false cf feature-flags | grep service_instance_sharing | grep -q enabled
+}
+
+function cf_is_feature_flag_disabled() {
+  local feature_flag=${1:?feature_flag null or not set}
+  CF_TRACE=false cf feature-flags | grep service_instance_sharing | grep -q disabled
 }
