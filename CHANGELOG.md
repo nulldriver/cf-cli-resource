@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.6.0 - 2018-05-15
 ### Added
 - `stop` command - Stop an app
 - `restart` command - Stop all instances of the app, then start them again. This causes downtime.
