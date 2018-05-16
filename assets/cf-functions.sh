@@ -435,6 +435,12 @@ function cf_start() {
   unset CF_STARTUP_TIMEOUT
 }
 
+function cf_stop() {
+  local app_name=${1:?app_name null or not set}
+
+  cf stop "$app_name"
+}
+
 function cf_restart() {
   local app_name=${1:?app_name null or not set}
   local staging_timeout=${2:-0}

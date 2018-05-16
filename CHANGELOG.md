@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
+- `stop` command - Stop an app
 - `restart` command - Stop all instances of the app, then start them again. This causes downtime.
 - `restage` command - Recreate the app's executable artifact using the latest pushed app files and the latest environment (variables, service bindings, buildpack, stack, etc.)
 - `enable-feature-flag` command - Allow use of a feature

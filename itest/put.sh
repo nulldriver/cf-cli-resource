@@ -501,6 +501,28 @@ it_can_start_an_app() {
   cf_is_app_started "$app_name"
 }
 
+it_can_stop_an_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "stop",
+    org: $org,
+    space: $space,
+    app_name: $app_name
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+  cf_is_app_stopped "$app_name"
+}
+
 it_can_restart_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -1627,6 +1649,7 @@ run it_can_disable_service_instance_sharing
 run it_can_enable_service_instance_sharing
 
 run it_can_start_an_app
+run it_can_stop_an_app
 run it_can_zero_downtime_push
 
 run it_can_run_a_task_with_disk_quota

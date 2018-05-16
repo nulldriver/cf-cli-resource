@@ -265,6 +265,11 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
+  elif [ "stop" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    cf_target "$org" "$space"
+    cf_stop "$app_name"
   elif [ "restart" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')

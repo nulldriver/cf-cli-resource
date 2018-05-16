@@ -621,6 +621,22 @@ Start an app
       startup_timeout: 5
 ```
 
+#### stop
+
+Stop an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+
+```yml
+  - put: cf-stop
+    resource: cf-env
+    params:
+      command: stop
+      app_name: myapp-ui
+```
+
 #### restart
 
 Stop all instances of the app, then start them again. This causes downtime.
