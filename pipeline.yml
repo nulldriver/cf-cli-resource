@@ -171,9 +171,9 @@ resources:
 - name: github-release
   type: github-release
   source:
-    access_token: ((github_access_token))
+    owner: {{github-release-user}}
     repository: cf-cli-resource
-    user: {{github-release-user}}
+    access_token: ((github_access_token))
 
 - name: service-broker
   type: file-url
