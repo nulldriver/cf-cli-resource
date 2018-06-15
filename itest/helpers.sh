@@ -15,9 +15,9 @@ on_exit() {
 
 trap on_exit EXIT
 
-base_dir="$(cd "$(dirname $0)" ; pwd )"
-if [ -d "$base_dir/../assets" ]; then
-  resource_dir=$(cd $(dirname $0)/../assets && pwd)
+base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+if [ -d "$base_dir/assets" ]; then
+  resource_dir=$base_dir/assets
 else
   resource_dir=/opt/resource
 fi
@@ -27,7 +27,8 @@ source $resource_dir/cf-functions.sh
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
   cf logout
-  printf 'running \e[33m%s\e[0m...\n' "$@"
+  # convert multiple args to single arg so printf doesn't output multiple lines
+  printf 'running \e[33m%s\e[0m...\n' "$(echo "$@")"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
   echo ""
 }
