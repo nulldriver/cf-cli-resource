@@ -17,7 +17,7 @@ RUN chmod +x /tmp/autopilot-linux && \
   rm -f /tmp/autopilot-linux
 
 # Install yaml cli
-ADD https://github.com/mikefarah/yaml/releases/download/1.10/yaml_linux_amd64 /tmp/yaml_linux_amd64
+ADD https://storage.googleapis.com/cf-cli-resource/yaml_linux_amd64 /tmp/yaml_linux_amd64
 RUN install /tmp/yaml_linux_amd64 /usr/local/bin/yaml && \
   yaml --help && \
   rm -f /tmp/yaml_linux_amd64
