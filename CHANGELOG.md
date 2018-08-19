@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.7.0 - Unreleased
+### Changed
+- Updated to [cf cli v6.37.0](https://github.com/cloudfoundry/cli/releases/tag/v6.37.0)
+- Updated to [autopilot cf plugin v0.0.6](https://github.com/contraband/autopilot/releases/tag/0.0.6)
+- Updated to [yq cli v2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)
+
+
 ## 2.6.0 - 2018-05-15
 ### Added
 - `stop` command - Stop an app

@@ -8,6 +8,7 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 
 # Defaults for PCF Dev (override by exporting your own vars before running this script)
+. ~/git/concourse-secrets/cf-cli-resource.env
 : "${CF_SYSTEM_DOMAIN:=local.pcfdev.io}"
 : "${CF_APPS_DOMAIN:=local.pcfdev.io}"
 : "${CF_SKIP_CERT_CHECK:=true}"

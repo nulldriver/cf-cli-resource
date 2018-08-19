@@ -249,7 +249,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
 
     if [ -f "$instructions" ]; then
       mv "$manifest" "$manifest.original"
-      yaml w -s "$instructions" "$manifest.original" > "$manifest"
+      yq w -s "$instructions" "$manifest.original" > "$manifest"
     fi
 
     args="-f $manifest"
