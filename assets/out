@@ -156,16 +156,12 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
 
-    if cf_service_exists "$service_instance"; then
-      printf '\e[92m[INFO]\e[0m \e[95mService %s already exists\e[0m\n' "$service_instance"
-    else
-      if [ -n "$credentials" ]; then
-        cf_create_user_provided_service_credentials "$service_instance" "$credentials"
-      elif [ -n "$syslog_drain_url" ]; then
-        cf_create_user_provided_service_syslog "$service_instance" "$syslog_drain_url"
-      elif [ -n "$route_service_url" ]; then
-        cf_create_user_provided_service_route "$service_instance" "$route_service_url"
-      fi
+    if [ -n "$credentials" ]; then
+      cf_create_or_update_user_provided_service_credentials "$service_instance" "$credentials"
+    elif [ -n "$syslog_drain_url" ]; then
+      cf_create_or_update_user_provided_service_syslog "$service_instance" "$syslog_drain_url"
+    elif [ -n "$route_service_url" ]; then
+      cf_create_or_update_user_provided_service_route "$service_instance" "$route_service_url"
     fi
   elif [ "create-service" = "$command" ]; then
     service=$(echo $options | jq -r '.service //empty')

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated to [cf cli v6.37.0](https://github.com/cloudfoundry/cli/releases/tag/v6.37.0)
 - Updated to [autopilot cf plugin v0.0.6](https://github.com/contraband/autopilot/releases/tag/0.0.6)
 - Updated to [yq cli v2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)
+- `create-user-provided-service` now updates the ups if it already exists
 
 
 ## 2.6.0 - 2018-05-15

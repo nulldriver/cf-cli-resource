@@ -254,8 +254,6 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     "password": "pa55woRD"
   }' > $working_dir/input/credentials.json
 
-  cat $working_dir/input/credentials.json
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -1621,11 +1619,17 @@ run it_can_enable_service_access
 run it_can_disable_service_access
 run it_can_delete_a_service_broker
 
+# run first to create the ups, then again to update the ups
 run it_can_create_a_user_provided_service_with_credentials_string
-# run again to prove that it won't error out if it already exists
 run it_can_create_a_user_provided_service_with_credentials_string
+
 run it_can_create_a_user_provided_service_with_credentials_file
+run it_can_create_a_user_provided_service_with_credentials_file
+
 run it_can_create_a_user_provided_service_with_syslog
+run it_can_create_a_user_provided_service_with_syslog
+
+run it_can_create_a_user_provided_service_with_route
 run it_can_create_a_user_provided_service_with_route
 
 run it_can_create_a_domain

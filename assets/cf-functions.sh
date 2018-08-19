@@ -219,7 +219,7 @@ function cf_service_exists() {
   [ -n "$service_instance_guid" ]
 }
 
-function cf_create_user_provided_service_credentials() {
+function cf_create_or_update_user_provided_service_credentials() {
   local service_instance=${1:?service_instance null or not set}
   local credentials=${2:?credentials json null or not set}
 
@@ -230,23 +230,37 @@ function cf_create_user_provided_service_credentials() {
 
   # validate the json
   if echo "$json" | jq . 1>/dev/null 2>&1; then
-    cf create-user-provided-service "$service_instance" -p "$json"
+    if cf_service_exists "$service_instance"; then
+      cf update-user-provided-service "$service_instance" -p "$json"
+    else
+      cf create-user-provided-service "$service_instance" -p "$json"
+    fi
   else
     printf '\e[91m[ERROR]\e[0m invalid credentials payload (must be valid json string or json file)\n'
     exit 1
   fi
 }
 
-function cf_create_user_provided_service_syslog() {
+function cf_create_or_update_user_provided_service_syslog() {
   local service_instance=${1:?service_instance null or not set}
   local syslog_drain_url=${2:?syslog_drain_url null or not set}
-  cf create-user-provided-service "$service_instance" -l "$syslog_drain_url"
+
+  if cf_service_exists "$service_instance"; then
+    cf update-user-provided-service "$service_instance" -l "$syslog_drain_url"
+  else
+    cf create-user-provided-service "$service_instance" -l "$syslog_drain_url"
+  fi
 }
 
-function cf_create_user_provided_service_route() {
+function cf_create_or_update_user_provided_service_route() {
   local service_instance=${1:?service_instance null or not set}
   local route_service_url=${2:?route_service_url null or not set}
-  cf create-user-provided-service "$service_instance" -r "$route_service_url"
+
+  if cf_service_exists "$service_instance"; then
+    cf update-user-provided-service "$service_instance" -r "$route_service_url"
+  else
+    cf create-user-provided-service "$service_instance" -r "$route_service_url"
+  fi
 }
 
 function cf_create_service() {
