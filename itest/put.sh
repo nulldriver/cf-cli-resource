@@ -7,18 +7,21 @@ test_dir=$(dirname $0)
 
 source $test_dir/helpers.sh
 
-# Defaults for PCF Dev (override by exporting your own vars before running this script)
-. ~/git/concourse-secrets/cf-cli-resource.env
-: "${CF_SYSTEM_DOMAIN:=local.pcfdev.io}"
-: "${CF_APPS_DOMAIN:=local.pcfdev.io}"
-: "${CF_SKIP_CERT_CHECK:=true}"
-: "${CF_USERNAME:=admin}"
-: "${CF_PASSWORD:=admin}"
-: "${SYNC_SERVICE:=p-mysql}"
-: "${SYNC_PLAN:=512mb}"
+# export CF_CLI_RESOURCE_PROFILE=/path/to/file/that/exports/script/vars.env
+if [ -f "${CF_CLI_RESOURCE_PROFILE:-}" ]; then
+  source "$CF_CLI_RESOURCE_PROFILE"
+fi
+
+: "${CF_SYSTEM_DOMAIN:?}"
+: "${CF_APPS_DOMAIN:?}"
+: "${CF_SKIP_CERT_CHECK:?}"
+: "${CF_USERNAME:?}"
+: "${CF_PASSWORD:?}"
+: "${SYNC_SERVICE:?}"
+: "${SYNC_PLAN:?}"
 : "${SYNC_CONFIGURATION:=}"
-: "${ASYNC_SERVICE:=p-service-registry}"
-: "${ASYNC_PLAN:=standard}"
+: "${ASYNC_SERVICE:?}"
+: "${ASYNC_PLAN:?}"
 : "${ASYNC_CONFIGURATION:=}"
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
