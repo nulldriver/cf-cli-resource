@@ -502,6 +502,37 @@ function cf_delete() {
   fi
 }
 
+function cf_add_network_policy() {
+  local source_app=${1:?source_app null or not set}
+  local destination_app=${2:?destination_app null or not set}
+  local protocol=${3:?protocol null or not set}
+  local port=${4:?port null or not set}
+
+  local args=("$source_app" --destination-app "$destination_app")
+  [ -n "$protocol" ] && args+=(--protocol "$protocol")
+  [ -n "$port" ] && args+=(--port "$port")
+
+  cf add-network-policy "${args[@]}"
+}
+
+function cf_remove_network_policy() {
+  local source_app=${1:?source_app null or not set}
+  local destination_app=${2:?destination_app null or not set}
+  local protocol=${3:?protocol null or not set}
+  local port=${4:?port null or not set}
+
+  cf remove-network-policy "$source_app" --destination-app "$destination_app" --protocol "$protocol" --port "$port"
+}
+
+function cf_network_policy_exists() {
+  local source_app=${1:?source_app null or not set}
+  local destination_app=${2:?destination_app null or not set}
+  local protocol=${3=tcp}
+  local port=${4:=8080}
+
+  CF_TRACE=false cf network-policies --source "$source_app" | grep "$destination_app" | grep "$protocol" | grep -q "$port"
+}
+
 function cf_run_task() {
   local app_name=${1:?app_name null or not set}
   local task_command=${2:?task_command null or not set}
@@ -596,10 +627,10 @@ function cf_disable_feature_flag() {
 
 function cf_is_feature_flag_enabled() {
   local feature_flag=${1:?feature_flag null or not set}
-  CF_TRACE=false cf feature-flags | grep service_instance_sharing | grep -q enabled
+  CF_TRACE=false cf feature-flags | grep "$feature_flag" | grep -q enabled
 }
 
 function cf_is_feature_flag_disabled() {
   local feature_flag=${1:?feature_flag null or not set}
-  CF_TRACE=false cf feature-flags | grep service_instance_sharing | grep -q disabled
+  CF_TRACE=false cf feature-flags | grep "$feature_flag" | grep -q disabled
 }

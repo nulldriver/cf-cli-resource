@@ -280,6 +280,22 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_restage "$app_name" "$staging_timeout" "$startup_timeout"
+  elif [ "add-network-policy" = "$command" ]; then
+    source_app=$(echo $options | jq -r '.source_app //empty')
+    destination_app=$(echo $options | jq -r '.destination_app //empty')
+    protocol=$(echo $options | jq -r '.protocol //empty')
+    port=$(echo $options | jq -r '.port //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$source_app"
+    cf_target "$org" "$space"
+    cf_add_network_policy "$source_app" "$destination_app" "$protocol" "$port"
+  elif [ "remove-network-policy" = "$command" ]; then
+    source_app=$(echo $options | jq -r '.source_app //empty')
+    destination_app=$(echo $options | jq -r '.destination_app //empty')
+    protocol=$(echo $options | jq -r '.protocol //empty')
+    port=$(echo $options | jq -r '.port //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$source_app"
+    cf_target "$org" "$space"
+    cf_remove_network_policy "$source_app" "$destination_app" "$protocol" "$port"
   elif [ "run-task" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     task_command=$(echo $options | jq -r '.task_command //empty')

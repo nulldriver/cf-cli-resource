@@ -695,6 +695,50 @@ Delete an app
       delete_mapped_routes: true
 ```
 
+#### add-network-policy
+
+Create policy to allow direct network traffic from one app to another
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `source_app`: *Required.* The name of the source application
+* `destination_app`: *Required.* Name of app to connect to
+* `port`: *Optional.* Port or range of ports for connection to destination app (Default: 8080)
+* `protocol`: *Optional.* Protocol to connect apps with (Default: tcp)
+
+```yml
+  - put: cf-add-network-policy
+    resource: cf-env
+    params:
+      command: add-network-policy
+      source_app: frontend
+      destination_app: backend
+      protocol: tcp
+      port: 8080
+```
+
+#### remove-network-policy
+
+Remove network traffic policy of an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `source_app`: *Required.* The name of the source application
+* `destination_app`: *Required.* Name of app to connect to
+* `port`: *Required.* Port or range of ports that destination app is connected with
+* `protocol`: *Required.* Protocol that apps are connected with
+
+```yml
+  - put: cf-remove-network-policy
+    resource: cf-env
+    params:
+      command: remove-network-policy
+      source_app: frontend
+      destination_app: backend
+      protocol: tcp
+      port: 8080
+```
+
 #### run-task
 
 Run a one-off task on an app

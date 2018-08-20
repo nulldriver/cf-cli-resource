@@ -478,6 +478,35 @@ it_can_push_an_app_no_start() {
   cf_is_app_stopped "$app_name"
 }
 
+it_can_push_a_backend_app() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local app_name=backend-$app_name
+  create_static_app "$app_name" "$working_dir"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    hostname: $app_name,
+    path: "static-app/content",
+    manifest: "static-app/manifest.yml"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_started "$app_name"
+}
+
 it_can_start_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -603,6 +632,66 @@ it_can_zero_downtime_push() {
   '
 
   cf_is_app_started "$app_name"
+}
+
+it_can_add_network_policy() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local source_app=$app_name
+  local destination_app="backend-$app_name"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg source_app "$app_name" \
+  --arg destination_app "backend-$app_name" \
+  '{
+    command: "add-network-policy",
+    org: $org,
+    space: $space,
+    source_app: $source_app,
+    destination_app: $destination_app,
+    protocol: "udp",
+    port: "9999"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_network_policy_exists "$source_app" "$destination_app" "udp" "9999"
+}
+
+it_can_remove_network_policy() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local source_app=$app_name
+  local destination_app="backend-$app_name"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg source_app "$app_name" \
+  --arg destination_app "backend-$app_name" \
+  '{
+    command: "remove-network-policy",
+    org: $org,
+    space: $space,
+    source_app: $source_app,
+    destination_app: $destination_app,
+    protocol: "udp",
+    port: "9999"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_network_policy_exists "$source_app" "$destination_app" "udp" "9999"
 }
 
 it_can_run_a_task_with_disk_quota() {
@@ -1635,6 +1724,13 @@ run it_can_create_a_user_provided_service_with_route
 run it_can_create_a_domain
 
 run it_can_push_an_app_no_start
+run it_can_start_an_app
+run it_can_stop_an_app
+run it_can_zero_downtime_push
+
+run it_can_push_a_backend_app
+run it_can_add_network_policy
+run it_can_remove_network_policy
 
 run it_can_bind_user_provided_service_with_credentials_string
 run it_can_bind_user_provided_service_with_credentials_file
@@ -1655,10 +1751,6 @@ run it_can_disable_service_instance_sharing
 run it_can_enable_service_instance_sharing
 run it_can_disable_service_instance_sharing
 run it_can_enable_service_instance_sharing
-
-run it_can_start_an_app
-run it_can_stop_an_app
-run it_can_zero_downtime_push
 
 run it_can_run_a_task_with_disk_quota
 run it_can_run_a_task_with_memory
