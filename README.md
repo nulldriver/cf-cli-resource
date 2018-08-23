@@ -560,6 +560,9 @@ Push a new app or sync changes to an existing app
 * `buildpack`: *Optional.* Custom buildpack by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify 'default' or 'null'
 * `manifest`: *Optional.* Path to manifest
 * `no_start`: *Optional.* Do not start an app after pushing. Defaults to `false`.
+* `docker_image`: *Optional.* Docker-image to be used (e.g. user/docker-image-name)
+* `docker_username`: *Optional.* This is used as the username to authenticate against a protected docker registry
+* `docker_password`: *Optional.* This should be the users password when authenticating against a protected docker registry
 
 ```yml
   - put: cf-push

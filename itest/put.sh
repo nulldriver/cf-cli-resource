@@ -23,6 +23,9 @@ fi
 : "${ASYNC_SERVICE:?}"
 : "${ASYNC_PLAN:?}"
 : "${ASYNC_CONFIGURATION:=}"
+: "${DOCKER_IMAGE:?}"
+: "${DOCKER_USERNAME:?}"
+: "${DOCKER_PASSWORD:?}"
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
@@ -60,6 +63,10 @@ async_service=$ASYNC_SERVICE
 async_plan=$ASYNC_PLAN
 async_service_instance=$testprefix-async_service-$timestamp
 async_configuration=$ASYNC_CONFIGURATION
+
+docker_image=$DOCKER_IMAGE
+docker_username=$DOCKER_USERNAME
+docker_password=$DOCKER_PASSWORD
 
 domain=$testprefix-domain-$timestamp.com
 
@@ -407,6 +414,28 @@ it_can_wait_for_asynchronous_service() {
   cf_service_exists "$async_service_instance"
 }
 
+it_can_enable_diego_docker() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "enable-feature-flag",
+    feature_name: "diego_docker"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_feature_flag_enabled "diego_docker"
+}
+
+
 it_can_enable_service_instance_sharing() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -448,6 +477,39 @@ it_can_disable_service_instance_sharing() {
 
   cf_is_feature_flag_disabled "service_instance_sharing"
 }
+
+it_can_push_a_docker_image_from_a_private_registry() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local app_name=docker-$app_name
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg docker_image "$docker_image" \
+  --arg docker_username "$docker_username" \
+  --arg docker_password "$docker_password" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    hostname: $app_name,
+    docker_image: $docker_image,
+    docker_username: $docker_username,
+    docker_password: $docker_password
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_started "$app_name"
+}
+
 
 it_can_push_an_app_no_start() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -1723,6 +1785,9 @@ run it_can_create_a_user_provided_service_with_route
 
 run it_can_create_a_domain
 
+run it_can_enable_diego_docker
+run it_can_push_a_docker_image_from_a_private_registry
+
 run it_can_push_an_app_no_start
 run it_can_start_an_app
 run it_can_stop_an_app
@@ -1747,8 +1812,6 @@ run it_can_create_an_asynchronous_service
 run it_can_create_an_asynchronous_service
 run it_can_bind_an_asynchronous_service
 
-run it_can_disable_service_instance_sharing
-run it_can_enable_service_instance_sharing
 run it_can_disable_service_instance_sharing
 run it_can_enable_service_instance_sharing
 
