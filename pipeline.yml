@@ -49,6 +49,9 @@ jobs:
         ASYNC_SERVICE: {{async-service}}
         ASYNC_PLAN: {{async-plan}}
         ASYNC_CONFIGURATION: {{async-configuration}}
+        DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
+        DOCKER_PRIVATE_USERNAME: ((docker-private.username))
+        DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
       run:
         path: sh
         args:

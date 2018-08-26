@@ -23,9 +23,9 @@ fi
 : "${ASYNC_SERVICE:?}"
 : "${ASYNC_PLAN:?}"
 : "${ASYNC_CONFIGURATION:=}"
-: "${DOCKER_IMAGE:?}"
-: "${DOCKER_USERNAME:?}"
-: "${DOCKER_PASSWORD:?}"
+: "${DOCKER_PRIVATE_IMAGE:?}"
+: "${DOCKER_PRIVATE_USERNAME:?}"
+: "${DOCKER_PRIVATE_PASSWORD:?}"
 
 # WARNING: These tests will CREATE and then DESTROY test orgs and spaces
 testprefix=cfclitest
@@ -64,9 +64,9 @@ async_plan=$ASYNC_PLAN
 async_service_instance=$testprefix-async_service-$timestamp
 async_configuration=$ASYNC_CONFIGURATION
 
-docker_image=$DOCKER_IMAGE
-docker_username=$DOCKER_USERNAME
-docker_password=$DOCKER_PASSWORD
+docker_private_image=$DOCKER_PRIVATE_IMAGE
+docker_private_username=$DOCKER_PRIVATE_USERNAME
+docker_private_password=$DOCKER_PRIVATE_PASSWORD
 
 domain=$testprefix-domain-$timestamp.com
 
@@ -487,9 +487,9 @@ it_can_push_a_docker_image_from_a_private_registry() {
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg docker_image "$docker_image" \
-  --arg docker_username "$docker_username" \
-  --arg docker_password "$docker_password" \
+  --arg docker_image "$docker_private_image" \
+  --arg docker_username "$docker_private_username" \
+  --arg docker_password "$docker_private_password" \
   '{
     command: "push",
     org: $org,
