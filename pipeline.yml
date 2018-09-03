@@ -58,7 +58,7 @@ jobs:
         - -exc
         - |
           ln -s $PWD/service-broker /opt/service-broker
-          /opt/itest/put.sh
+          /opt/itest/run-all-tests
 
 - name: shipit
   public: true
