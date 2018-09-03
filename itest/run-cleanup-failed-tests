@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/helpers.sh
+source $test_dir/config.sh
+
+cleanup_failed_integration_tests

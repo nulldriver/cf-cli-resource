@@ -1,0 +1,158 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/helpers.sh
+source $test_dir/config.sh
+
+it_can_create_an_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service "$async_service" \
+  --arg plan "$async_plan" \
+  --arg service_instance "$async_service_instance" \
+  --arg configuration "$async_configuration" \
+  '{
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: $service,
+    plan: $plan,
+    service_instance: $service_instance,
+    configuration: $configuration,
+    wait_for_service: false
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$async_service_instance"
+}
+
+it_can_wait_for_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$async_service_instance" \
+  '{
+    command: "wait-for-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$async_service_instance"
+}
+
+it_can_bind_an_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$async_service_instance
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    command: "bind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_bound_to_service "$app_name" "$service_instance"
+}
+
+it_can_unbind_an_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$async_service_instance
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
+  '{
+    command: "unbind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_is_app_bound_to_service "$app_name" "$service_instance"
+}
+
+it_can_delete_an_asynchronous_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local service_instance=$async_service_instance
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
+  '{
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance,
+    wait_for_service: true
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$service_instance"
+}
+
+setup_integration_tests
+
+run it_can_push_an_app
+
+run it_can_create_an_asynchronous_service
+run it_can_wait_for_asynchronous_service
+# run again to prove that it won't error out if it already exists
+run it_can_create_an_asynchronous_service
+run it_can_bind_an_asynchronous_service
+run it_can_unbind_an_asynchronous_service
+run it_can_delete_an_asynchronous_service
+
+run it_can_delete_an_app
+
+teardown_integration_tests
