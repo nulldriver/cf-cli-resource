@@ -1,4 +1,4 @@
-FROM concourse/buildroot:base
+FROM concourse/buildroot:curl
 
 ADD assets/ /opt/resource/
 ADD itest/ /opt/itest/
