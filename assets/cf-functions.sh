@@ -77,19 +77,15 @@ function cf_delete_space() {
 
 function cf_user_exists() {
   local username=${1:?username null or not set}
+  local origin=${2:-uaa}
 
-  local next_url='/v2/users?order-direction=asc&page=1'
-  while [ "$next_url" != "null" ]; do
+  local uaa_endpoint=$(jq -r '.UaaEndpoint' ${CF_HOME:-$HOME}/.cf/config.json)
 
-    local output=$(CF_TRACE=false cf curl "$next_url")
-
-    if (echo $output | jq -e --arg username "$username" '.resources[] | select(.entity.username == $username) | true' >/dev/null); then
-      return 0
-    fi
-
-    next_url=$(echo "$output" | jq -r '.next_url')
-  done
-  return 1
+  curl "${uaa_endpoint}/Users?attributes=id,userName&filter=userName+Eq+%22${username}%22+and+origin+Eq+%22${origin}%22" \
+    --fail --silent --show-error \
+    -H 'Accept: application/json' \
+    -H "Authorization: $(cf oauth-token)" \
+    | jq -e '.totalResults == 1' >/dev/null
 }
 
 function cf_create_user_with_password() {
