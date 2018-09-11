@@ -12,9 +12,9 @@ it_can_run_a_task_with_disk_quota() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg task_command "echo run-task-with-disk_quota-test" \
   --arg disk_quota "756M" \
   '{
@@ -32,16 +32,16 @@ it_can_run_a_task_with_disk_quota() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
+  cf_was_task_run "$3" "run-task-with-disk_quota-test"
 }
 
 it_can_run_a_task_with_memory() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg task_command "echo run-task-with-memory-test" \
   --arg memory "512M" \
   '{
@@ -59,16 +59,16 @@ it_can_run_a_task_with_memory() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$app_name" "run-task-with-memory-test"
+  cf_was_task_run "$3" "run-task-with-memory-test"
 }
 
 it_can_run_a_task_with_name() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg task_command "echo run-task-with-name-test" \
   --arg task_name "run-task-with-name-test" \
   '{
@@ -86,16 +86,16 @@ it_can_run_a_task_with_name() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$app_name" "run-task-with-name-test"
+  cf_was_task_run "$3" "run-task-with-name-test"
 }
 
 it_can_run_a_task() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg task_command "echo run-task-test-all" \
   --arg task_name "run-task-test-all" \
   --arg memory "512M" \
@@ -117,18 +117,22 @@ it_can_run_a_task() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$app_name" "run-task-test-all"
+  cf_was_task_run "$3" "run-task-test-all"
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
+app_name=$(generate_app_name)
 
-run it_can_push_an_app
+setup_integration_tests "$org" "$space"
 
-run it_can_run_a_task_with_disk_quota
-run it_can_run_a_task_with_memory
-run it_can_run_a_task_with_name
-run it_can_run_a_task
+run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 
-run it_can_delete_an_app
+run it_can_run_a_task_with_disk_quota \"$org\" \"$space\" \"$app_name\"
+run it_can_run_a_task_with_memory \"$org\" \"$space\" \"$app_name\"
+run it_can_run_a_task_with_name \"$org\" \"$space\" \"$app_name\"
+run it_can_run_a_task \"$org\" \"$space\" \"$app_name\"
 
-teardown_integration_tests
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+
+teardown_integration_tests "$org" "$space"

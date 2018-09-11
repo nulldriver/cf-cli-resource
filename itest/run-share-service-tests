@@ -8,51 +8,12 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 source $test_dir/config.sh
 
-it_can_enable_service_instance_sharing() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+org=$(generate_org_name)
+space=$(generate_space_name)
 
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  '{
-    command: "enable-feature-flag",
-    feature_name: "service_instance_sharing"
-  }')
+setup_integration_tests "$org" "$space"
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+run it_can_disable_feature_flag \"service_instance_sharing\"
+run it_can_enable_feature_flag \"service_instance_sharing\"
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_feature_flag_enabled "service_instance_sharing"
-}
-
-it_can_disable_service_instance_sharing() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  '{
-    command: "disable-feature-flag",
-    feature_name: "service_instance_sharing"
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_feature_flag_disabled "service_instance_sharing"
-}
-
-setup_integration_tests
-
-run it_can_disable_service_instance_sharing
-run it_can_enable_service_instance_sharing
-
-teardown_integration_tests
+teardown_integration_tests "$org" "$space"

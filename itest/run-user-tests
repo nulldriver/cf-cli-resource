@@ -5,6 +5,7 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
+source $test_dir/assert.sh
 source $test_dir/helpers.sh
 source $test_dir/config.sh
 
@@ -12,10 +13,10 @@ it_can_create_a_user_with_password() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg username "$username" \
-  --arg password "$password" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg username "$3" \
+  --arg password "$4" \
   '{
     command: "create-user",
     org: $org,
@@ -30,17 +31,17 @@ it_can_create_a_user_with_password() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_exists "$username"
+  assert::success cf_user_exists "$3"
 }
 
 it_can_create_a_user_with_origin() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg username "$origin_username" \
-  --arg origin "$origin" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg username "$3" \
+  --arg origin "$4" \
   '{
     command: "create-user",
     org: $org,
@@ -55,18 +56,24 @@ it_can_create_a_user_with_origin() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_exists "$username"
+  assert::success cf_user_exists "$3" "$4"
 }
 
 it_can_create_users_from_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir -p $working_dir/input
-  echo "$users_csv" > $working_dir/input/users.csv
+
+  cat << EOF > $working_dir/input/users.csv
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+$testprefix-bulkload-user1,wasabi,$1,$2,x,x,x,x,x,x
+$testprefix-bulkload-user2,wasabi,$1,$2,,x,x,,x,x
+$testprefix-bulkload-user3,ldap,$1,$2,,,x,,,x
+EOF
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
+  --arg org "$1" \
+  --arg space "$2" \
   '{
     command: "create-users-from-file",
     org: $org,
@@ -80,18 +87,18 @@ it_can_create_users_from_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_user_exists "$testprefix-bulkload-user1"
-  cf_user_exists "$testprefix-bulkload-user2"
-  cf_user_exists "$testprefix-bulkload-user3"
+  assert::success cf_user_exists "$testprefix-bulkload-user1"
+  assert::success cf_user_exists "$testprefix-bulkload-user2"
+  assert::success cf_user_exists "$testprefix-bulkload-user3"
 }
 
 it_can_delete_a_user_with_origin() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg username "$origin_username" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg username "$3" \
   '{
     command: "delete-user",
     org: $org,
@@ -105,16 +112,16 @@ it_can_delete_a_user_with_origin() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_user_exists "$origin_username"
+  assert::failure cf_user_exists "$3"
 }
 
 it_can_delete_a_user_with_password() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg username "$username" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg username "$3" \
   '{
     command: "delete-user",
     org: $org,
@@ -128,16 +135,24 @@ it_can_delete_a_user_with_password() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_user_exists "$username"
+  assert::failure cf_user_exists "$3"
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
 
-run it_can_create_a_user_with_password
-run it_can_create_a_user_with_origin
-run it_can_create_users_from_file
+username="$testprefix-user-$timestamp"
+password=$testprefix-pass-$timestamp
+origin_username=$testprefix-originuser-$timestamp
+origin=sso
 
-run it_can_delete_a_user_with_origin
-run it_can_delete_a_user_with_password
+setup_integration_tests "$org" "$space"
 
-teardown_integration_tests
+run it_can_create_a_user_with_password \"$org\" \"$space\" \"$username\" \"$password\"
+run it_can_create_a_user_with_origin \"$org\" \"$space\" \"$origin_username\" \"$origin\"
+run it_can_create_users_from_file \"$org\" \"$space\"
+
+run it_can_delete_a_user_with_origin \"$org\" \"$space\" \"$origin_username\"
+run it_can_delete_a_user_with_password \"$org\" \"$space\" \"$username\"
+
+teardown_integration_tests "$org" "$space"

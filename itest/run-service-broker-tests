@@ -32,17 +32,17 @@ it_can_create_a_service_broker_space_scoped() {
   fi
 
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
-  cf_target "$org" "$space"
-  cf push "${broker_space_scoped_name}" -p "$broker_dir/overview-broker-$commit" #-b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
+  cf_target "$1" "$2"
+  cf push "$3" -p "$broker_dir/overview-broker-$commit" #-b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
   cf logout
 
   local params=$(jq -n \
-    --arg org "$org" \
-    --arg space "$space" \
-    --arg service_broker "${broker_space_scoped_name}" \
+    --arg org "$1" \
+    --arg space "$2" \
+    --arg service_broker "$3" \
     --arg username admin \
     --arg password password \
-    --arg url "https://${broker_space_scoped_name}.$cf_apps_domain" \
+    --arg url "https://$3.$cf_apps_domain" \
     '{
       command: "create-service-broker",
       org: $org,
@@ -60,7 +60,7 @@ it_can_create_a_service_broker_space_scoped() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_broker_exists "${broker_space_scoped_name}"
+  cf_service_broker_exists "$3"
 }
 
 it_can_create_a_service_broker() {
@@ -87,17 +87,17 @@ it_can_create_a_service_broker() {
   fi
 
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
-  cf_target "$org" "$space"
+  cf_target "$1" "$2"
   cf push "$broker_name" -p "$broker_dir/overview-broker-$commit"
   cf logout
 
   local params=$(jq -n \
-    --arg org "$org" \
-    --arg space "$space" \
-    --arg service_broker "$broker_name" \
+    --arg org "$1" \
+    --arg space "$2" \
+    --arg service_broker "$3" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$broker_name.$cf_apps_domain" \
+    --arg url "https://$3.$cf_apps_domain" \
     '{
       command: "create-service-broker",
       service_broker: $service_broker,
@@ -112,7 +112,7 @@ it_can_create_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_broker_exists "$broker_name"
+  cf_service_broker_exists "$3"
 }
 
 it_can_enable_service_access() {
@@ -120,10 +120,10 @@ it_can_enable_service_access() {
 
   local plan="simple"
   local params=$(jq -n \
-    --arg org "$org" \
-    --arg space "$space" \
-    --arg service_broker "$broker_name" \
-    --arg access_org "$org" \
+    --arg org "$1" \
+    --arg space "$2" \
+    --arg service_broker "$3" \
+    --arg access_org "$1" \
     --arg plan "$plan" \
     '{
       command: "enable-service-access",
@@ -140,7 +140,7 @@ it_can_enable_service_access() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_marketplace_service_available "$broker_name" "$plan"
+  cf_is_marketplace_service_available "$3" "$plan"
 }
 
 it_can_disable_service_access() {
@@ -148,10 +148,10 @@ it_can_disable_service_access() {
 
   local plan="simple"
   local params=$(jq -n \
-    --arg org "$org" \
-    --arg space "$space" \
-    --arg service_broker "$broker_name" \
-    --arg access_org "$org" \
+    --arg org "$1" \
+    --arg space "$2" \
+    --arg service_broker "$3" \
+    --arg access_org "$1" \
     --arg plan "$plan" \
     '{
       command: "disable-service-access",
@@ -168,16 +168,16 @@ it_can_disable_service_access() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_is_marketplace_service_available "$broker_name" "$plan"
+  ! cf_is_marketplace_service_available "$3" "$plan"
 }
 
 it_can_delete_a_service_broker() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-    --arg org "$org" \
-    --arg space "$space" \
-    --arg service_broker "$broker_name" \
+    --arg org "$1" \
+    --arg space "$2" \
+    --arg service_broker "$3" \
     '{
       command: "delete-service-broker",
       org: $org,
@@ -191,17 +191,24 @@ it_can_delete_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_service_broker_exists "$broker_name"
+  ! cf_service_broker_exists "$3"
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
 
-run it_can_create_a_service_broker_space_scoped
-run it_can_create_a_service_broker
+broker_space_scoped_name=$testprefix-space-scoped-broker-$timestamp
+broker_name=$testprefix-broker-$timestamp
+
+setup_integration_tests "$org" "$space"
+
+run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$broker_space_scoped_name\"
+run it_can_create_a_service_broker \"$org\" \"$space\" \"$broker_name\"
 # run again to prove that it won't error out if it already exists
-run it_can_create_a_service_broker
-run it_can_enable_service_access
-run it_can_disable_service_access
-run it_can_delete_a_service_broker
+run it_can_create_a_service_broker \"$org\" \"$space\" \"$broker_name\"
 
-teardown_integration_tests
+run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\"
+run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\"
+run it_can_delete_a_service_broker \"$org\" \"$space\" \"$broker_name\"
+
+teardown_integration_tests "$org" "$space"

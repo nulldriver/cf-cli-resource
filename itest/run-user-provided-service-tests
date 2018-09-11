@@ -12,9 +12,9 @@ it_can_create_a_user_provided_service_with_credentials_string() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$cups_credentials_string_si" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
   --arg credentials '{"username":"admin","password":"pa55woRD"}' \
   '{
     command: "create-user-provided-service",
@@ -30,7 +30,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$cups_credentials_string_si"
+  cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_credentials_file() {
@@ -45,9 +45,9 @@ it_can_create_a_user_provided_service_with_credentials_file() {
   }' > $working_dir/input/credentials.json
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$cups_credentials_file_si" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
   --arg credentials 'input/credentials.json' \
   '{
     command: "create-user-provided-service",
@@ -63,16 +63,16 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$cups_credentials_file_si"
+  cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_syslog() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$cups_syslog_si" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
   --arg syslog_drain_url "syslog://example.com" \
   '{
     command: "create-user-provided-service",
@@ -88,16 +88,16 @@ it_can_create_a_user_provided_service_with_syslog() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$cups_syslog_si"
+  cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_route() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg service_instance "$cups_route_si" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
   --arg route_service_url "https://example.com" \
   '{
     command: "create-user-provided-service",
@@ -113,139 +113,40 @@ it_can_create_a_user_provided_service_with_route() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$cups_route_si"
+  cf_service_exists "$3"
 }
 
-it_can_bind_user_provided_service_with_credentials_string() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+org=$(generate_org_name)
+space=$(generate_space_name)
+app_name=$(generate_app_name)
 
-  local service_instance="$cups_credentials_string_si"
+credentials_string_si=$testprefix-cups_credentials_string-$timestamp
+credentials_file_si=$testprefix-cups_credentials_file-$timestamp
+syslog_si=$testprefix-cups_syslog-$timestamp
+route_si=$testprefix-cups_route-$timestamp
 
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg service_instance "$service_instance" \
-  '{
-    command: "bind-service",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    service_instance: $service_instance
-  }')
+setup_integration_tests "$org" "$space"
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_bound_to_service "$app_name" "$service_instance"
-}
-
-it_can_bind_user_provided_service_with_credentials_file() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local service_instance="$cups_credentials_file_si"
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg service_instance "$service_instance" \
-  '{
-    command: "bind-service",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_bound_to_service "$app_name" "$service_instance"
-}
-
-it_can_bind_user_provided_service_with_syslog() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local service_instance="$cups_syslog_si"
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg service_instance "$service_instance" \
-  '{
-    command: "bind-service",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_bound_to_service "$app_name" "$service_instance"
-}
-
-it_can_bind_user_provided_service_with_route() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local service_instance="$cups_route_si"
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg service_instance "$service_instance" \
-  '{
-    command: "bind-service",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    service_instance: $service_instance
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_bound_to_service "$app_name" "$service_instance"
-}
-
-setup_integration_tests
-
-run it_can_push_an_app
+run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 
 # run first to create the ups, then again to update the ups
-run it_can_create_a_user_provided_service_with_credentials_string
-run it_can_create_a_user_provided_service_with_credentials_string
+run it_can_create_a_user_provided_service_with_credentials_string \"$org\" \"$space\" \"$credentials_string_si\"
+run it_can_create_a_user_provided_service_with_credentials_string \"$org\" \"$space\" \"$credentials_string_si\"
 
-run it_can_create_a_user_provided_service_with_credentials_file
-run it_can_create_a_user_provided_service_with_credentials_file
+run it_can_create_a_user_provided_service_with_credentials_file \"$org\" \"$space\" \"$credentials_file_si\"
+run it_can_create_a_user_provided_service_with_credentials_file \"$org\" \"$space\" \"$credentials_file_si\"
 
-run it_can_create_a_user_provided_service_with_syslog
-run it_can_create_a_user_provided_service_with_syslog
+run it_can_create_a_user_provided_service_with_syslog \"$org\" \"$space\" \"$syslog_si\"
+run it_can_create_a_user_provided_service_with_syslog \"$org\" \"$space\" \"$syslog_si\"
 
-run it_can_create_a_user_provided_service_with_route
-run it_can_create_a_user_provided_service_with_route
+run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\"
+run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\"
 
-run it_can_bind_user_provided_service_with_credentials_string
-run it_can_bind_user_provided_service_with_credentials_file
-run it_can_bind_user_provided_service_with_syslog
-run it_can_bind_user_provided_service_with_route
+run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$credentials_string_si\"
+run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$credentials_file_si\"
+run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$syslog_si\"
+run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$route_si\"
 
-run it_can_delete_an_app
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 
-teardown_integration_tests
+teardown_integration_tests "$org" "$space"

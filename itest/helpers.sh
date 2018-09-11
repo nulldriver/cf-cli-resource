@@ -1,12 +1,13 @@
-#!/bin/bash
 
 set -eu
 set -o pipefail
 
 export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
-# Use a different CF_HOME for sessions, but keep the original plugins folder
-export CF_HOME=$TMPDIR_ROOT
-export CF_PLUGIN_HOME=$HOME
+export CF_HOME=$TMPDIR_ROOT  # Use a unique CF_HOME for sessions
+export CF_PLUGIN_HOME=$HOME  # But keep the original plugins folder
+
+readonly testprefix=cfclitest
+readonly timestamp=$(date +%s)
 
 on_exit() {
   exitcode=$?
@@ -36,18 +37,21 @@ run() {
   echo ""
 }
 
-assert_equals() {
-  local expected=${1:?}
-  local actual=${2:?}
-  if [ ! "$actual" = "$expected" ]; then
-    echo "expected: $expected but was: $actual"
-    return 1
-  fi
+generate_org_name() {
+  echo "$testprefix Org $timestamp"
+}
+
+generate_space_name() {
+  echo "$testprefix Space $timestamp"
+}
+
+generate_app_name() {
+  echo "$testprefix-app-$timestamp"
 }
 
 create_static_app() {
-  local app_name=$1
-  local working_dir=$2
+  local app_name=${1:?app_name null or not set}
+  local working_dir=${2:?working_dir null or not set}
 
   mkdir -p "$working_dir/static-app/content"
 
@@ -66,8 +70,9 @@ EOF
 }
 
 put_with_params() {
-  local config=$1
-  local working_dir=$2
+  local config=${1:?config null or not set}
+  local working_dir=${2:?working_dir null or not set}
+
   echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
 }
 
@@ -75,7 +80,7 @@ it_can_create_an_org() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
+  --arg org "$1" \
   '{
     command: "create-org",
     org: $org
@@ -87,15 +92,15 @@ it_can_create_an_org() {
     .version | keys == ["timestamp"]
   '
 
-  cf_org_exists "$org"
+  cf_org_exists "$1"
 }
 
 it_can_create_a_space() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
+  --arg org "$1" \
+  --arg space "$2" \
   '{
     command: "create-space",
     org: $org,
@@ -108,7 +113,7 @@ it_can_create_a_space() {
     .version | keys == ["timestamp"]
   '
 
-  cf_space_exists "$org" "$space"
+  cf_space_exists "$1" "$2"
 }
 
 # This test showcases the multi-command syntax
@@ -116,8 +121,8 @@ it_can_delete_a_space_and_org() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
+  --arg org "$1" \
+  --arg space "$2" \
   '{
     commands: [
       {
@@ -138,19 +143,19 @@ it_can_delete_a_space_and_org() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_space_exists "$org" "$space"
-  ! cf_org_exists "$org"
+  ! cf_space_exists "$1" "$2"
+  ! cf_org_exists "$1"
 }
 
 it_can_push_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$app_name" "$working_dir"
+  create_static_app "$3" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "push",
     org: $org,
@@ -167,16 +172,16 @@ it_can_push_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$app_name"
+  cf_is_app_started "$3"
 }
 
 it_can_delete_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "delete",
     org: $org,
@@ -191,9 +196,151 @@ it_can_delete_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_app_exists "$app_name"
+  ! cf_app_exists "$3"
 }
 
+it_can_create_a_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service "$3" \
+  --arg plan "$4" \
+  --arg service_instance "$5" \
+  --arg configuration "$6" \
+  --arg wait_for_service "${7:-false}" \
+  '{
+    command: "create-service",
+    org: $org,
+    space: $space,
+    service: $service,
+    plan: $plan,
+    service_instance: $service_instance,
+    configuration: $configuration,
+    wait_for_service: $wait_for_service
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_service_exists "$5"
+}
+
+it_can_bind_a_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg service_instance "$4" \
+  '{
+    command: "bind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_app_bound_to_service "$3" "$4"
+}
+
+it_can_unbind_a_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg service_instance "$4" \
+  '{
+    command: "unbind-service",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    service_instance: $service_instance
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_is_app_bound_to_service "$3" "$4"
+}
+
+it_can_delete_a_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
+  '{
+    command: "delete-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance,
+    wait_for_service: true
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  ! cf_service_exists "$3"
+}
+
+it_can_enable_feature_flag() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg feature_flag "$1" \
+  '{
+    command: "enable-feature-flag",
+    feature_name: $feature_flag
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_feature_flag_enabled "$1"
+}
+
+it_can_disable_feature_flag() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg feature_flag "$1" \
+  '{
+    command: "disable-feature-flag",
+    feature_name: $feature_flag
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_is_feature_flag_disabled "$1"
+}
 
 cleanup_test_orgs() {
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
@@ -220,15 +367,17 @@ cleanup_test_users() {
 }
 
 setup_integration_tests() {
-  run it_can_create_an_org
-  run it_can_create_a_space
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
+  run it_can_create_an_org \"$org\"
+  run it_can_create_a_space \"$org\" \"$space\"
 }
 
 teardown_integration_tests() {
-  run it_can_delete_a_space_and_org
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
+  run it_can_delete_a_space_and_org \"$org\" \"$space\"
 }
 
-cleanup_failed_integration_tests() {
-  run cleanup_test_orgs
-  run cleanup_test_users
-}

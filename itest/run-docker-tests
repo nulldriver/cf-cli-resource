@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/assert.sh
+source $test_dir/helpers.sh
+source $test_dir/config.sh
+
+it_can_push_a_docker_image_from_a_private_registry() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local app_name=docker-$app_name
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg docker_image "$docker_private_image" \
+  --arg docker_username "$docker_private_username" \
+  --arg docker_password "$docker_private_password" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    hostname: $app_name,
+    docker_image: $docker_image,
+    docker_username: $docker_username,
+    docker_password: $docker_password
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  assert::success cf_is_app_started "$3"
+}
+
+org=$(generate_org_name)
+space=$(generate_space_name)
+app_name=$(generate_app_name)
+
+docker_private_image=$DOCKER_PRIVATE_IMAGE
+docker_private_username=$DOCKER_PRIVATE_USERNAME
+docker_private_password=$DOCKER_PRIVATE_PASSWORD
+
+setup_integration_tests "$org" "$space"
+
+run it_can_disable_feature_flag \"diego_docker\"
+run it_can_enable_feature_flag \"diego_docker\"
+
+run it_can_push_a_docker_image_from_a_private_registry \"$org\" \"$space\" \"$app_name\"
+
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+
+teardown_integration_tests "$org" "$space"

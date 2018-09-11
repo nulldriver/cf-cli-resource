@@ -8,46 +8,14 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 source $test_dir/config.sh
 
-it_can_push_a_backend_app() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local app_name=backend-$app_name
-  create_static_app "$app_name" "$working_dir"
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  '{
-    command: "push",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    hostname: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml"
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_started "$app_name"
-}
-
 it_can_add_network_policy() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local source_app=$app_name
-  local destination_app="backend-$app_name"
-
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg source_app "$app_name" \
-  --arg destination_app "backend-$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg source_app "$3" \
+  --arg destination_app "$4" \
   '{
     command: "add-network-policy",
     org: $org,
@@ -64,20 +32,17 @@ it_can_add_network_policy() {
     .version | keys == ["timestamp"]
   '
 
-  cf_network_policy_exists "$source_app" "$destination_app" "udp" "9999"
+  cf_network_policy_exists "$3" "$4" "udp" "9999"
 }
 
 it_can_remove_network_policy() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local source_app=$app_name
-  local destination_app="backend-$app_name"
-
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg source_app "$app_name" \
-  --arg destination_app "backend-$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg source_app "$3" \
+  --arg destination_app "$4" \
   '{
     command: "remove-network-policy",
     org: $org,
@@ -94,17 +59,23 @@ it_can_remove_network_policy() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_network_policy_exists "$source_app" "$destination_app" "udp" "9999"
+  ! cf_network_policy_exists "$1" "$2" "udp" "9999"
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
+source_app_name="source-$(generate_app_name)"
+destination_app_name="destination-$(generate_app_name)"
 
-run it_can_push_an_app
+setup_integration_tests "$org" "$space"
 
-run it_can_push_a_backend_app
-run it_can_add_network_policy
-run it_can_remove_network_policy
+run it_can_push_an_app \"$org\" \"$space\" \"$source_app_name\"
+run it_can_push_an_app \"$org\" \"$space\" \"$destination_app_name\"
 
-run it_can_delete_an_app
+run it_can_add_network_policy \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
+run it_can_remove_network_policy \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
 
-teardown_integration_tests
+run it_can_delete_an_app \"$org\" \"$space\" \"$destination_app_name\"
+run it_can_delete_an_app \"$org\" \"$space\" \"$source_app_name\"
+
+teardown_integration_tests "$org" "$space"

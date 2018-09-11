@@ -12,8 +12,8 @@ it_can_create_a_domain() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg domain "$domain" \
+  --arg org "$1" \
+  --arg domain "$2" \
   '{
     command: "create-domain",
     org: $org,
@@ -26,15 +26,15 @@ it_can_create_a_domain() {
     .version | keys == ["timestamp"]
   '
 
-  cf_has_private_domain "$org" "$domain"
+  cf_has_private_domain "$1" "$2"
 }
 
 it_can_delete_a_domain() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg domain "$domain" \
+  --arg org "$1" \
+  --arg domain "$2" \
   '{
     command: "delete-domain",
     org: $org,
@@ -47,7 +47,7 @@ it_can_delete_a_domain() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_has_private_domain "$org" "$domain"
+  ! cf_has_private_domain "$1" "$2"
 }
 
 it_can_map_a_route() {
@@ -78,11 +78,11 @@ it_can_map_a_route_with_hostname() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
-  --arg hostname "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
+  --arg hostname "$3" \
   '{
     command: "map-route",
     org: $org,
@@ -104,11 +104,11 @@ it_can_map_a_route_with_hostname_and_path() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
-  --arg hostname "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
+  --arg hostname "$3" \
   --arg path "foo" \
   '{
     command: "map-route",
@@ -132,11 +132,11 @@ it_can_unmap_a_route_with_hostname_and_path() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
-  --arg hostname "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
+  --arg hostname "$3" \
   --arg path "foo" \
   '{
     command: "unmap-route",
@@ -160,11 +160,11 @@ it_can_unmap_a_route_with_hostname() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
-  --arg hostname "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
+  --arg hostname "$3" \
   '{
     command: "unmap-route",
     org: $org,
@@ -186,10 +186,10 @@ it_can_unmap_a_route() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
   '{
     command: "unmap-route",
     org: $org,
@@ -206,22 +206,28 @@ it_can_unmap_a_route() {
   # TODO: check that the route was unmapped
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
+app_name=$(generate_app_name)
 
-run it_can_push_an_app
+domain=$testprefix-domain-$timestamp.com
 
-run it_can_create_a_domain
+setup_integration_tests "$org" "$space"
 
-run it_can_map_a_route
-run it_can_map_a_route_with_hostname
-run it_can_map_a_route_with_hostname_and_path
+run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 
-run it_can_unmap_a_route_with_hostname_and_path
-run it_can_unmap_a_route_with_hostname
-run it_can_unmap_a_route
+run it_can_create_a_domain \"$org\" \"$domain\"
 
-run it_can_delete_a_domain
+run it_can_map_a_route \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_map_a_route_with_hostname \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_map_a_route_with_hostname_and_path \"$org\" \"$space\" \"$app_name\" \"$domain\"
 
-run it_can_delete_an_app
+run it_can_unmap_a_route_with_hostname_and_path \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_unmap_a_route_with_hostname \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_unmap_a_route \"$org\" \"$space\" \"$app_name\" \"$domain\"
 
-teardown_integration_tests
+run it_can_delete_a_domain \"$org\" \"$domain\"
+
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+
+teardown_integration_tests "$org" "$space"

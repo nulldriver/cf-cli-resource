@@ -5,71 +5,19 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
+source $test_dir/assert.sh
 source $test_dir/helpers.sh
 source $test_dir/config.sh
-
-it_can_enable_diego_docker() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  '{
-    command: "enable-feature-flag",
-    feature_name: "diego_docker"
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_feature_flag_enabled "diego_docker"
-}
-
-it_can_push_a_docker_image_from_a_private_registry() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local app_name=docker-$app_name
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg docker_image "$docker_private_image" \
-  --arg docker_username "$docker_private_username" \
-  --arg docker_password "$docker_private_password" \
-  '{
-    command: "push",
-    org: $org,
-    space: $space,
-    app_name: $app_name,
-    hostname: $app_name,
-    docker_image: $docker_image,
-    docker_username: $docker_username,
-    docker_password: $docker_password
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_is_app_started "$app_name"
-}
 
 it_can_push_an_app_no_start() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$app_name" "$working_dir"
+  create_static_app "$3" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "push",
     org: $org,
@@ -87,16 +35,16 @@ it_can_push_an_app_no_start() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_stopped "$app_name"
+  assert::success cf_is_app_stopped "$3"
 }
 
 it_can_start_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "start",
     org: $org,
@@ -112,16 +60,16 @@ it_can_start_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$app_name"
+  assert::success cf_is_app_started "$3"
 }
 
 it_can_stop_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "stop",
     org: $org,
@@ -134,7 +82,7 @@ it_can_stop_an_app() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  cf_is_app_stopped "$app_name"
+  assert::success cf_is_app_stopped "$3"
 }
 
 it_can_zero_downtime_push() {
@@ -143,9 +91,9 @@ it_can_zero_downtime_push() {
   create_static_app "$app_name" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "zero-downtime-push",
     org: $org,
@@ -164,16 +112,16 @@ it_can_zero_downtime_push() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$app_name"
+  assert::success cf_is_app_started "$3"
 }
 
 it_can_scale_an_app_instances() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg instances "2" \
   '{
     command: "scale",
@@ -189,16 +137,16 @@ it_can_scale_an_app_instances() {
     .version | keys == ["timestamp"]
   '
 
-  assert_equals 2 "$(cf_get_app_instances "$app_name")"
+  assert::equals 2 "$(cf_get_app_instances "$3")"
 }
 
 it_can_scale_an_app_disk_quota() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg disk_quota "512M" \
   '{
     command: "scale",
@@ -214,16 +162,16 @@ it_can_scale_an_app_disk_quota() {
     .version | keys == ["timestamp"]
   '
 
-  assert_equals 512 "$(cf_get_app_disk_quota "$app_name")"
+  assert::equals 512 "$(cf_get_app_disk_quota "$3")"
 }
 
 it_can_scale_an_app_memory() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg memory "512M" \
   '{
     command: "scale",
@@ -239,16 +187,16 @@ it_can_scale_an_app_memory() {
     .version | keys == ["timestamp"]
   '
 
-  assert_equals 512 "$(cf_get_app_memory "$app_name")"
+  assert::equals 512 "$(cf_get_app_memory "$3")"
 }
 
 it_can_scale_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   --arg instances "1" \
   --arg disk_quota "1G" \
   --arg memory "1G" \
@@ -268,18 +216,18 @@ it_can_scale_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  assert_equals 1 "$(cf_get_app_instances "$app_name")"
-  assert_equals 1024 "$(cf_get_app_disk_quota "$app_name")"
-  assert_equals 1024 "$(cf_get_app_memory "$app_name")"
+  assert::equals 1 "$(cf_get_app_instances "$3")"
+  assert::equals 1024 "$(cf_get_app_disk_quota "$3")"
+  assert::equals 1024 "$(cf_get_app_memory "$3")"
 }
 
 it_can_restart_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "restart",
     org: $org,
@@ -295,16 +243,16 @@ it_can_restart_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$app_name"
+  assert::success cf_is_app_started "$3"
 }
 
 it_can_restage_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
   '{
     command: "restage",
     org: $org,
@@ -320,27 +268,28 @@ it_can_restage_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$app_name"
+  assert::success cf_is_app_started "$3"
 }
 
-setup_integration_tests
+org=$(generate_org_name)
+space=$(generate_space_name)
+app_name=$(generate_app_name)
 
-run it_can_enable_diego_docker
-run it_can_push_a_docker_image_from_a_private_registry
+setup_integration_tests "$org" "$space"
 
-run it_can_push_an_app_no_start
-run it_can_start_an_app
-run it_can_stop_an_app
-run it_can_zero_downtime_push
+run it_can_push_an_app_no_start \"$org\" \"$space\" \"$app_name\"
+run it_can_start_an_app \"$org\" \"$space\" \"$app_name\"
+run it_can_stop_an_app \"$org\" \"$space\" \"$app_name\"
+run it_can_zero_downtime_push \"$org\" \"$space\" \"$app_name\"
 
-run it_can_scale_an_app_instances
-run it_can_scale_an_app_disk_quota
-run it_can_scale_an_app_memory
-run it_can_scale_an_app
+run it_can_scale_an_app_instances \"$org\" \"$space\" \"$app_name\"
+run it_can_scale_an_app_disk_quota \"$org\" \"$space\" \"$app_name\"
+run it_can_scale_an_app_memory \"$org\" \"$space\" \"$app_name\"
+run it_can_scale_an_app \"$org\" \"$space\" \"$app_name\"
 
-run it_can_restart_an_app
-run it_can_restage_an_app
+run it_can_restart_an_app \"$org\" \"$space\" \"$app_name\"
+run it_can_restage_an_app \"$org\" \"$space\" \"$app_name\"
 
-run it_can_delete_an_app
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 
-teardown_integration_tests
+teardown_integration_tests "$org" "$space"
