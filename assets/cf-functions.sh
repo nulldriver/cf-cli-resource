@@ -1,4 +1,7 @@
 
+set -eu
+set -o pipefail
+
 function cf_login() {
   local api_endpoint=${1:?api_endpoint null or not set}
   local cf_user=${2:?cf_user null or not set}
