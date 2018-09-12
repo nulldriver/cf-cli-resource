@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.8.1 - 2018-09-11
+### Fixed
+- `push` command now properly handles `app_name` with spaces
+
+### Changed
+- refactored integration tests into multiple files targeting logical features (instead of a single 1,854 line file!)
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.37.0](https://github.com/cloudfoundry/cli/releases/tag/v6.37.0)  |
+| autopilot  | [0.0.6](https://github.com/contraband/autopilot/releases/tag/0.0.6) |
+| yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
+
 ## 2.8.0 - 2018-08-26
 ### Changed
 - `push` command now handles Docker images and private registries
