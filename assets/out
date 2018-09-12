@@ -207,16 +207,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     docker_username=$(echo $options | jq -r '.docker_username //empty')
     docker_password=$(echo $options | jq -r '.docker_password //empty')
 
-    [ -n "$hostname" ] && args+=(--hostname "$hostname")
-    [ -n "$path" ] && args+=(--path "$path")
-
     args=()
     [ -n "$app_name" ]        && args+=("$app_name")
     [ -n "$hostname" ]        && args+=(-n "$hostname")
     [ -n "$memory" ]          && args+=(-m "$memory")
     [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")
     [ -n "$instances" ]       && args+=(-i "$instances")
-    [ -n "$path" ]            && args+=(-p "$path")
+    [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
     [ -n "$buildpack" ]       && args+=(-b "$buildpack")
     [ -n "$manifest" ]        && args+=(-f "$manifest")
     [ -n "$no_start" ]        && args+=(--no-start)

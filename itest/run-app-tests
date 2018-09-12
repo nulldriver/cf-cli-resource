@@ -23,7 +23,7 @@ it_can_push_an_app_no_start() {
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-app/content",
+    path: "static-*/content",
     manifest: "static-app/manifest.yml",
     no_start: "true"
   }')
