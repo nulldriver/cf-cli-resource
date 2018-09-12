@@ -23,7 +23,6 @@ it_can_push_an_app_no_start() {
     org: $org,
     space: $space,
     app_name: $app_name,
-    hostname: $app_name,
     path: "static-app/content",
     manifest: "static-app/manifest.yml",
     no_start: "true"
@@ -271,9 +270,9 @@ it_can_restage_an_app() {
   assert::success cf_is_app_started "$3"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
 setup_integration_tests "$org" "$space"
 

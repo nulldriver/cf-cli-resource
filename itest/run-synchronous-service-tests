@@ -8,13 +8,13 @@ test_dir=$(dirname $0)
 source $test_dir/helpers.sh
 source $test_dir/config.sh
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
 service=$SYNC_SERVICE
 plan=$SYNC_PLAN
-service_instance=$testprefix-sync_service-$timestamp
+service_instance=$(generate_test_name_with_spaces "Sync Service")
 configuration=$SYNC_CONFIGURATION
 
 setup_integration_tests "$org" "$space"

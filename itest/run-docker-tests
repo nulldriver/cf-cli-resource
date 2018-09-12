@@ -41,9 +41,9 @@ it_can_push_a_docker_image_from_a_private_registry() {
   assert::success cf_is_app_started "$3"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
 docker_private_image=$DOCKER_PRIVATE_IMAGE
 docker_private_username=$DOCKER_PRIVATE_USERNAME

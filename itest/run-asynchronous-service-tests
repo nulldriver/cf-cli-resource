@@ -31,13 +31,13 @@ it_can_wait_for_service() {
   cf_service_exists "$3"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
 service=$ASYNC_SERVICE
 plan=$ASYNC_PLAN
-service_instance=$testprefix-async_service-$timestamp
+service_instance=$(generate_test_name_with_spaces "Async Service")
 configuration=$ASYNC_CONFIGURATION
 
 setup_integration_tests "$org" "$space"

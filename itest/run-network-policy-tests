@@ -62,10 +62,10 @@ it_can_remove_network_policy() {
   ! cf_network_policy_exists "$1" "$2" "udp" "9999"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-source_app_name="source-$(generate_app_name)"
-destination_app_name="destination-$(generate_app_name)"
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+source_app_name=$(generate_test_name_with_spaces "Source App")
+destination_app_name=$(generate_test_name_with_spaces "Destination App")
 
 setup_integration_tests "$org" "$space"
 

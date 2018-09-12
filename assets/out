@@ -207,23 +207,27 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     docker_username=$(echo $options | jq -r '.docker_username //empty')
     docker_password=$(echo $options | jq -r '.docker_password //empty')
 
-    args=
-    [ -n "$app_name" ]   && args="$args $app_name"
-    [ -n "$hostname" ]   && args="$args -n $hostname"
-    [ -n "$memory" ]     && args="$args -m $memory"
-    [ -n "$disk_quota" ] && args="$args -k $disk_quota"
-    [ -n "$instances" ]  && args="$args -i $instances"
-    [ -n "$path" ]       && args="$args -p $path"
-    [ -n "$buildpack" ]  && args="$args -b $buildpack"
-    [ -n "$manifest" ]   && args="$args -f $manifest"
-    [ -n "$no_start" ]   && args="$args --no-start"
-    [ -n "$docker_image" ]      && args="$args --docker-image $docker_image"
-    [ -n "$docker_username" ]   && args="$args --docker-username $docker_username"
-    [ -n "$docker_password" ]   && export CF_DOCKER_PASSWORD="$docker_password"
+    [ -n "$hostname" ] && args+=(--hostname "$hostname")
+    [ -n "$path" ] && args+=(--path "$path")
+
+    args=()
+    [ -n "$app_name" ]        && args+=("$app_name")
+    [ -n "$hostname" ]        && args+=(-n "$hostname")
+    [ -n "$memory" ]          && args+=(-m "$memory")
+    [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")
+    [ -n "$instances" ]       && args+=(-i "$instances")
+    [ -n "$path" ]            && args+=(-p "$path")
+    [ -n "$buildpack" ]       && args+=(-b "$buildpack")
+    [ -n "$manifest" ]        && args+=(-f "$manifest")
+    [ -n "$no_start" ]        && args+=(--no-start)
+    [ -n "$docker_image" ]    && args+=(--docker-image "$docker_image")
+    [ -n "$docker_username" ] && args+=(--docker-username "$docker_username")
+    [ -n "$docker_password" ] && export CF_DOCKER_PASSWORD="$docker_password"
 
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
-    cf_push "$args"
+
+    cf push "${args[@]}"
 
     [ -n "$docker_password" ]   && unset CF_DOCKER_PASSWORD
 

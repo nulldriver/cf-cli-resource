@@ -414,11 +414,6 @@ function cf_is_app_bound_to_service() {
   CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
 }
 
-function cf_push() {
-  local args=${1:?args null or not set}
-  cf push $args
-}
-
 function cf_zero_downtime_push() {
   local args=${1:?args null or not set}
   local current_app_name=${2:-}

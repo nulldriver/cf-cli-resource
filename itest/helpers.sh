@@ -37,16 +37,16 @@ run() {
   echo ""
 }
 
-generate_org_name() {
-  echo "$testprefix Org $timestamp"
+generate_test_name_with_spaces() {
+  echo "$testprefix $1 $timestamp"
 }
 
-generate_space_name() {
-  echo "$testprefix Space $timestamp"
+generate_test_name_with_hyphens() {
+  echo "$testprefix-${1// /-}-$timestamp"
 }
 
-generate_app_name() {
-  echo "$testprefix-app-$timestamp"
+app_to_hostname() {
+  echo "${1// /-}"
 }
 
 create_static_app() {

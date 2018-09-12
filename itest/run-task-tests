@@ -120,9 +120,9 @@ it_can_run_a_task() {
   cf_was_task_run "$3" "run-task-test-all"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
 setup_integration_tests "$org" "$space"
 

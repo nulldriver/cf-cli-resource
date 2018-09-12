@@ -42,7 +42,7 @@ it_can_create_a_service_broker_space_scoped() {
     --arg service_broker "$3" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$3.$cf_apps_domain" \
+    --arg url "https://$(app_to_hostname "$3").$cf_apps_domain" \
     '{
       command: "create-service-broker",
       org: $org,
@@ -97,7 +97,7 @@ it_can_create_a_service_broker() {
     --arg service_broker "$3" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$3.$cf_apps_domain" \
+    --arg url "https://$(app_to_hostname "$3").$cf_apps_domain" \
     '{
       command: "create-service-broker",
       service_broker: $service_broker,
@@ -194,11 +194,11 @@ it_can_delete_a_service_broker() {
   ! cf_service_broker_exists "$3"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
 
-broker_space_scoped_name=$testprefix-space-scoped-broker-$timestamp
-broker_name=$testprefix-broker-$timestamp
+broker_space_scoped_name=$(generate_test_name_with_spaces "Space Scoped Broker")
+broker_name=$(generate_test_name_with_spaces "Broker")
 
 setup_integration_tests "$org" "$space"
 

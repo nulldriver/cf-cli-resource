@@ -116,14 +116,14 @@ it_can_create_a_user_provided_service_with_route() {
   cf_service_exists "$3"
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
 
-credentials_string_si=$testprefix-cups_credentials_string-$timestamp
-credentials_file_si=$testprefix-cups_credentials_file-$timestamp
-syslog_si=$testprefix-cups_syslog-$timestamp
-route_si=$testprefix-cups_route-$timestamp
+credentials_string_si=$(generate_test_name_with_spaces "cups credentials string")
+credentials_file_si=$(generate_test_name_with_spaces "cups credentials file")
+syslog_si=$(generate_test_name_with_spaces "cups syslog")
+route_si=$(generate_test_name_with_spaces "cups route")
 
 setup_integration_tests "$org" "$space"
 

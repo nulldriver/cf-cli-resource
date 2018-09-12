@@ -82,7 +82,7 @@ it_can_map_a_route_with_hostname() {
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$3" \
+  --arg hostname "$(app_to_hostname "$3")" \
   '{
     command: "map-route",
     org: $org,
@@ -108,7 +108,7 @@ it_can_map_a_route_with_hostname_and_path() {
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$3" \
+  --arg hostname "$(app_to_hostname "$3")" \
   --arg path "foo" \
   '{
     command: "map-route",
@@ -136,7 +136,7 @@ it_can_unmap_a_route_with_hostname_and_path() {
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$3" \
+  --arg hostname "$(app_to_hostname "$3")" \
   --arg path "foo" \
   '{
     command: "unmap-route",
@@ -164,7 +164,7 @@ it_can_unmap_a_route_with_hostname() {
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$3" \
+  --arg hostname "$(app_to_hostname "$3")" \
   '{
     command: "unmap-route",
     org: $org,
@@ -206,11 +206,10 @@ it_can_unmap_a_route() {
   # TODO: check that the route was unmapped
 }
 
-org=$(generate_org_name)
-space=$(generate_space_name)
-app_name=$(generate_app_name)
-
-domain=$testprefix-domain-$timestamp.com
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
+domain="$(generate_test_name_with_hyphens "domain").com"
 
 setup_integration_tests "$org" "$space"
 
