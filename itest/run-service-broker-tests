@@ -92,8 +92,6 @@ it_can_create_a_service_broker() {
   cf logout
 
   local params=$(jq -n \
-    --arg org "$1" \
-    --arg space "$2" \
     --arg service_broker "$3" \
     --arg username admin \
     --arg password password \
@@ -118,20 +116,15 @@ it_can_create_a_service_broker() {
 it_can_enable_service_access() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local plan="simple"
   local params=$(jq -n \
-    --arg org "$1" \
-    --arg space "$2" \
     --arg service_broker "$3" \
-    --arg access_org "$1" \
-    --arg plan "$plan" \
+    --arg plan "${4:-}" \
+    --arg access_org "${5:-}" \
     '{
       command: "enable-service-access",
-      org: $org,
-      space: $space,
       service_broker: $service_broker,
-      access_org: $access_org,
-      plan: $plan
+      plan: $plan,
+      access_org: $access_org
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -140,7 +133,8 @@ it_can_enable_service_access() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_marketplace_service_available "$3" "$plan"
+  cf_target "$1" "$2"
+  cf_is_marketplace_service_available "$3" "${4:-}"
 }
 
 it_can_disable_service_access() {
@@ -148,18 +142,14 @@ it_can_disable_service_access() {
 
   local plan="simple"
   local params=$(jq -n \
-    --arg org "$1" \
-    --arg space "$2" \
     --arg service_broker "$3" \
-    --arg access_org "$1" \
-    --arg plan "$plan" \
+    --arg plan "${4:-}" \
+    --arg access_org "${5:-}" \
     '{
       command: "disable-service-access",
-      org: $org,
-      space: $space,
       service_broker: $service_broker,
-      access_org: $access_org,
-      plan: $plan
+      plan: $plan,
+      access_org: $access_org
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -168,7 +158,8 @@ it_can_disable_service_access() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_is_marketplace_service_available "$3" "$plan"
+  cf_target "$1" "$2"
+  ! cf_is_marketplace_service_available "$3" "${4:-}"
 }
 
 it_can_delete_a_service_broker() {
@@ -202,13 +193,22 @@ broker_name=$(generate_test_name_with_spaces "Broker")
 
 setup_integration_tests "$org" "$space"
 
-run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$broker_space_scoped_name\"
-run it_can_create_a_service_broker \"$org\" \"$space\" \"$broker_name\"
-# run again to prove that it won't error out if it already exists
 run it_can_create_a_service_broker \"$org\" \"$space\" \"$broker_name\"
 
-run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\"
 run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\"
+
+run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\" \"\" \"$org\"
+run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\" \"\" \"$org\"
+
+run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\" \"complex\" \"$org\"
+run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\" \"complex\" \"$org\"
+
+run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\"
+
 run it_can_delete_a_service_broker \"$org\" \"$space\" \"$broker_name\"
+
+# space scoped services aren't affected by enable/disable-service-access so we just test create and delete
+run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$broker_space_scoped_name\"
+run it_can_delete_a_service_broker \"$org\" \"$space\" \"$broker_space_scoped_name\"
 
 teardown_integration_tests "$org" "$space"

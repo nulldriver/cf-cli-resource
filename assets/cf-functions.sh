@@ -605,8 +605,12 @@ function cf_service_broker_exists() {
 
 function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
-  local plan=${2:?plan null or not set}
-  CF_TRACE=false cf marketplace | grep "$service_name" | grep "$plan" >/dev/null
+  local plan=${2:-}
+  if [ -n "$plan" ]; then
+    CF_TRACE=false cf marketplace | grep "$service_name" | grep -q "$plan"
+  else
+    CF_TRACE=false cf marketplace | grep -q "$service_name"
+  fi
 }
 
 function cf_enable_feature_flag() {

@@ -346,7 +346,7 @@ cleanup_test_orgs() {
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
   while read -r org; do
     cf_delete_org "$org"
-  done < <(cf orgs | grep "$testprefix Org" || true)
+  done < <(cf orgs | grep "$testprefix " || true)
 }
 
 cleanup_test_users() {
