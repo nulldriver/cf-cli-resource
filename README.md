@@ -441,8 +441,6 @@ Wait for a service instance to start
 
 Enable access to a service or service plan for one or all orgs
 
-* `org`: *Optional.* The organization to target (required if not set in the source config)
-* `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_broker`: *Required.* The marketplace service name to enable
 * `access_org`: *Optional.* Enable access for a specified organization
 * `plan`: *Optional.* Enable access to a specified service plan
@@ -461,8 +459,6 @@ Enable access to a service or service plan for one or all orgs
 
 Disable access to a service or service plan for one or all orgs
 
-* `org`: *Optional.* The organization to target (required if not set in the source config)
-* `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_broker`: *Required.* The marketplace service name to disable
 * `access_org`: *Optional.* Disable access for a specified organization
 * `plan`: *Optional.* Disable access to a specified service plan

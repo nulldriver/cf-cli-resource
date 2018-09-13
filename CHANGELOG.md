@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.8.3 - 2018-09-12
+### Fixed
+- `enable-service-access` and `disable-service-access` no longer error if you don't specify an org or space ('cause you don't have to!) 
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.37.0](https://github.com/cloudfoundry/cli/releases/tag/v6.37.0)  |
+| autopilot  | [0.0.6](https://github.com/contraband/autopilot/releases/tag/0.0.6) |
+| yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
+
 ## 2.8.2 - 2018-09-12
 ### Fixed
 - `push` changes in 2.8.1 to support `app_name` with spaces accidentally broke `path` globbing.  All fixed now (`run-app-tests` has been updated to test for this now), sorry for the inconvenience!
