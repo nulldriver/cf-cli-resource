@@ -1,0 +1,29 @@
+---
+platform: linux
+
+inputs:
+- name: service-broker
+
+params:
+  CF_SYSTEM_DOMAIN:
+  CF_APPS_DOMAIN:
+  CF_SKIP_CERT_CHECK:
+  CF_USERNAME:
+  CF_PASSWORD:
+  SYNC_SERVICE:
+  SYNC_PLAN:
+  SYNC_CONFIGURATION:
+  ASYNC_SERVICE:
+  ASYNC_PLAN:
+  ASYNC_CONFIGURATION:
+  DOCKER_PRIVATE_IMAGE:
+  DOCKER_PRIVATE_USERNAME:
+  DOCKER_PRIVATE_PASSWORD:
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    ln -s $PWD/service-broker /opt/service-broker
+    /opt/itest/run-all-tests

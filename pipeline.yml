@@ -32,33 +32,23 @@ jobs:
       passed: [build]
     - get: service-broker
   - task: test
+    file: project/ci/task.yml
     image: cf-cli-resource-image-rc
-    config:
-      platform: linux
-      inputs:
-      - name: service-broker
-      params:
-        CF_SYSTEM_DOMAIN: {{cf-system-domain}}
-        CF_APPS_DOMAIN: {{cf-apps-domain}}
-        CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
-        CF_USERNAME: ((cf.username))
-        CF_PASSWORD: ((cf.password))
-        SYNC_SERVICE: {{sync-service}}
-        SYNC_PLAN: {{sync-plan}}
-        SYNC_CONFIGURATION: {{sync-configuration}}
-        ASYNC_SERVICE: {{async-service}}
-        ASYNC_PLAN: {{async-plan}}
-        ASYNC_CONFIGURATION: {{async-configuration}}
-        DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
-        DOCKER_PRIVATE_USERNAME: ((docker-private.username))
-        DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          ln -s $PWD/service-broker /opt/service-broker
-          /opt/itest/run-all-tests
+    params:
+      CF_SYSTEM_DOMAIN: {{cf-system-domain}}
+      CF_APPS_DOMAIN: {{cf-apps-domain}}
+      CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
+      CF_USERNAME: ((cf.username))
+      CF_PASSWORD: ((cf.password))
+      SYNC_SERVICE: {{sync-service}}
+      SYNC_PLAN: {{sync-plan}}
+      SYNC_CONFIGURATION: {{sync-configuration}}
+      ASYNC_SERVICE: {{async-service}}
+      ASYNC_PLAN: {{async-plan}}
+      ASYNC_CONFIGURATION: {{async-configuration}}
+      DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
+      DOCKER_PRIVATE_USERNAME: ((docker-private.username))
+      DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
 
 - name: shipit
   public: true
