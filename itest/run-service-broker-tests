@@ -134,7 +134,7 @@ it_can_enable_service_access() {
   '
 
   cf_target "$1" "$2"
-  sleep 5
+  cf marketplace
   cf_is_marketplace_service_available "$3" "${4:-}"
 }
 
