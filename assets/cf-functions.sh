@@ -607,9 +607,11 @@ function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
   local plan=${2:-}
   if [ -n "$plan" ]; then
-    CF_TRACE=false cf marketplace | grep "$service_name" | grep -q "$plan"
+    CF_TRACE=false cf marketplace -s "$service_name" | grep -q "$plan"
+    return $?
   else
-    CF_TRACE=false cf marketplace | grep -q "$service_name"
+    CF_TRACE=false cf marketplace -s "$service_name" >/dev/null
+    return $?
   fi
 }
 
