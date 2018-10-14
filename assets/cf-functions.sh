@@ -276,6 +276,17 @@ function cf_create_service() {
   cf create-service "${args[@]}"
 }
 
+function cf_share_service() {
+  local service_instance=${1:?service_instance null or not set}
+  local other_space=${2:?other_space null or not set}
+  local other_org=${3:-}
+
+  local args=("$service_instance" -s "$other_space")
+  [ -n "$other_org" ] && args+=(-o "$other_org")
+
+  cf share-service "${args[@]}"
+}
+
 function cf_delete_service() {
   local service_instance=${1:?service_instance null or not set}
   cf delete-service "$service_instance" -f

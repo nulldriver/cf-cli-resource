@@ -46,6 +46,9 @@ jobs:
       ASYNC_SERVICE: {{async-service}}
       ASYNC_PLAN: {{async-plan}}
       ASYNC_CONFIGURATION: {{async-configuration}}
+      SHARE_SERVICE: {{share-service}}
+      SHARE_PLAN: {{share-plan}}
+      SHARE_CONFIGURATION: {{share-configuration}}
       DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
       DOCKER_PRIVATE_USERNAME: ((docker-private.username))
       DOCKER_PRIVATE_PASSWORD: ((docker-private.password))

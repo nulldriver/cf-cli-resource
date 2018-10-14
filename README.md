@@ -379,6 +379,26 @@ Delete a service instance
       wait_for_service: true
 ```
 
+#### share-service
+
+Share a service instance with another space
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The name of the service instance to share
+* `other_org`: *Optional.* Org of the other space (Default: targeted org)
+* `other_space`: *Required.* Space to share the service instance into
+
+```yml
+  - put: cf-share-service
+    resource: cf-env
+    params:
+      command: share-service
+      service_instance: my-shared-service
+      other_org: other-org
+      other_space: other-space
+```
+
 #### create-service-broker
 
 Create/Update a service broker. If a service broker already exists, updates the existing service broker.
