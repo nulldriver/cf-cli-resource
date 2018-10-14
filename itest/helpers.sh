@@ -344,6 +344,7 @@ it_can_disable_feature_flag() {
 
 cleanup_test_orgs() {
   cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+
   while read -r org; do
     cf_delete_org "$org"
   done < <(cf orgs | grep "$testprefix " || true)
@@ -364,6 +365,14 @@ cleanup_test_users() {
 
     next_url=$(echo "$output" | jq -r '.next_url')
   done
+}
+
+cleanup_service_brokers() {
+  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+
+  while read -r broker; do
+    cf_delete_service_broker "$broker"
+  done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$testprefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 setup_integration_tests() {
