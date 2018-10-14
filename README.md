@@ -399,6 +399,26 @@ Share a service instance with another space
       other_space: other-space
 ```
 
+#### unshare-service
+
+Unshare a shared service instance from a space
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The name of the service instance to unshare
+* `other_org`: *Optional.* Org of the other space (Default: targeted org)
+* `other_space`: *Required.* Space to unshare the service instance from
+
+```yml
+  - put: cf-unshare-service
+    resource: cf-env
+    params:
+      command: unshare-service
+      service_instance: my-shared-service
+      other_org: other-org
+      other_space: other-space
+```
+
 #### create-service-broker
 
 Create/Update a service broker. If a service broker already exists, updates the existing service broker.

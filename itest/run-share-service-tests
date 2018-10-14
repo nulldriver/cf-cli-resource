@@ -32,7 +32,36 @@ it_can_share_a_service() {
     .version | keys == ["timestamp"]
   '
 
+  cf_target "${5:-}" "$4"
   cf_service_exists "$3"
+}
+
+it_can_unshare_a_service() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg service_instance "$3" \
+  --arg other_space "$4" \
+  --arg other_org "${5:-}" \
+  '{
+    command: "unshare-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance,
+    other_space: $other_space,
+    other_org: $other_org
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '
+    .version | keys == ["timestamp"]
+  '
+
+  cf_target "${5:-}" "$4"
+  ! cf_service_exists "$3"
 }
 
 source_org=$(generate_test_name_with_spaces "Source Org")
@@ -56,11 +85,15 @@ run it_can_enable_feature_flag \"service_instance_sharing\"
 #it can create a service for sharing
 run it_can_create_a_service \"$source_org\" \"$source_space\" \"$service\" \"$plan\" \"$service_instance\" \"$configuration\"
 
-#it can share a service with an other space in the same org
+#it can share/unshare a service with an other space in the same org
 run it_can_share_a_service \"$source_org\" \"$source_space\" \"$service_instance\" \"$other_space\"
+run it_can_unshare_a_service \"$source_org\" \"$source_space\" \"$service_instance\" \"$other_space\"
 
 #it can share a service with an other space in an other org
 run it_can_share_a_service \"$source_org\" \"$source_space\" \"$service_instance\" \"$other_space\" \"$other_org\"
+run it_can_unshare_a_service \"$source_org\" \"$source_space\" \"$service_instance\" \"$other_space\" \"$other_org\"
+
+run it_can_delete_a_service \"$source_org\" \"$source_space\" \"$service\"
 
 teardown_integration_tests "$other_org" "$other_space"
 teardown_integration_tests "$source_org" "$source_space"
