@@ -304,6 +304,12 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
     cf_restage "$app_name" "$staging_timeout" "$startup_timeout"
+  elif [ "rename" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    new_app_name=$(echo $options | jq -r '.new_app_name //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    cf_target "$org" "$space"
+    cf_rename "$app_name" "$new_app_name"
   elif [ "add-network-policy" = "$command" ]; then
     source_app=$(echo $options | jq -r '.source_app //empty')
     destination_app=$(echo $options | jq -r '.destination_app //empty')

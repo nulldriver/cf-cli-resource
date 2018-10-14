@@ -519,6 +519,13 @@ function cf_delete() {
   fi
 }
 
+function cf_rename() {
+  local app_name=${1:?app_name null or not set}
+  local new_app_name=${2:?new_app_name null or not set}
+
+  cf rename "$app_name" "$new_app_name"
+}
+
 function cf_add_network_policy() {
   local source_app=${1:?source_app null or not set}
   local destination_app=${2:?destination_app null or not set}

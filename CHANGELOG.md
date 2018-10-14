@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `share-service` command - Share a service instance with another space
 - `unshare-service` command - Unshare a shared service instance from a space
+- `rename` command - Rename an app
 
 ### Changed
 - Test cleanup now deletes orphaned service brokers from previously failed tests

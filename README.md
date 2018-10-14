@@ -734,6 +734,24 @@ Delete an app
       delete_mapped_routes: true
 ```
 
+#### rename
+
+Rename an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `new_app_name`: *Required.* The new name of the application
+
+```yml
+  - put: cf-rename
+    resource: cf-env
+    params:
+      command: rename
+      app_name: myapp-ui
+      new_app_name: my-new-app-ui
+```
+
 #### add-network-policy
 
 Create policy to allow direct network traffic from one app to another
