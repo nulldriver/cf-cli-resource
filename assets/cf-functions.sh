@@ -17,10 +17,11 @@ function cf_login() {
 }
 
 function cf_target() {
-  local org=${1:?org null or not set}
+  local org=${1:-}
   local space=${2:-}
 
-  local args=(-o "$org")
+  local args=()
+  [ -n "$org" ]   && args+=(-o "$org")
   [ -n "$space" ] && args+=(-s "$space")
 
   cf target "${args[@]}"
@@ -285,6 +286,17 @@ function cf_share_service() {
   [ -n "$other_org" ] && args+=(-o "$other_org")
 
   cf share-service "${args[@]}"
+}
+
+function cf_unshare_service() {
+  local service_instance=${1:?service_instance null or not set}
+  local other_space=${2:?other_space null or not set}
+  local other_org=${3:-}
+
+  local args=("$service_instance" -s "$other_space")
+  [ -n "$other_org" ] && args+=(-o "$other_org")
+
+  cf unshare-service -f "${args[@]}"
 }
 
 function cf_delete_service() {
