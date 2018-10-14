@@ -4,14 +4,14 @@ ADD assets/ /opt/resource/
 ADD itest/ /opt/itest/
 
 # Install Cloud Foundry cli
-ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.37.0 /tmp/cf-cli.tgz
+ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.40.0 /tmp/cf-cli.tgz
 RUN mkdir -p /usr/local/bin && \
   tar -xzf /tmp/cf-cli.tgz -C /usr/local/bin && \
   cf --version && \
   rm -f /tmp/cf-cli.tgz
 
 # Install cf cli Autopilot plugin
-ADD https://github.com/contraband/autopilot/releases/download/0.0.6/autopilot-linux /tmp/autopilot-linux
+ADD https://github.com/contraband/autopilot/releases/download/0.0.8/autopilot-linux /tmp/autopilot-linux
 RUN chmod +x /tmp/autopilot-linux && \
   cf install-plugin /tmp/autopilot-linux -f && \
   rm -f /tmp/autopilot-linux
