@@ -7,13 +7,15 @@ function cf_login() {
   local cf_user=${2:?cf_user null or not set}
   local cf_pass=${3:?cf_pass null or not set}
   local skip_ssl_validation=${4:-false}
+  local client_credentials=${5:-false}
 
-  local args=("$api_endpoint")
-  [ "$skip_ssl_validation" = "true" ] && args+=(--skip-ssl-validation)
+  local api_args=("$api_endpoint")
+  [ "$skip_ssl_validation" = "true" ] && api_args+=(--skip-ssl-validation)
+  cf api "${api_args[@]}"
 
-  cf api "${args[@]}"
-
-  cf auth "$cf_user" "$cf_pass"
+  local api_auth=("$cf_user" "$cf_pass")
+  [ "$client_credentials" = "true" ] && api_auth+=(--client-credentials)
+  cf auth "${api_auth[@]}"
 }
 
 function cf_target() {

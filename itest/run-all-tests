@@ -6,6 +6,7 @@ set -o pipefail
 test_dir=$(dirname $0)
 
 $test_dir/run-cleanup-failed-tests
+$test_dir/run-auth-client-credentials-tests
 $test_dir/run-app-tests
 $test_dir/run-docker-tests
 $test_dir/run-route-tests

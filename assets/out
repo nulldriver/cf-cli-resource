@@ -33,6 +33,8 @@ api=$(jq -r '.source.api //empty' < $payload)
 skip_cert_check=$(jq -r '.source.skip_cert_check //false' < $payload)
 username=$(jq -r '.source.username //empty' < $payload)
 password=$(jq -r '.source.password //empty' < $payload)
+client_id=$(jq -r '.source.client_id //empty' < $payload)
+client_secret=$(jq -r '.source.client_secret //empty' < $payload)
 source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
 params=$(jq -r '.params //empty' < $payload)
@@ -46,13 +48,18 @@ if [ -z "$api" ]; then
   exit 1
 fi
 
-if [ -z "$username" ]; then
-  printf '\e[91m[ERROR]\e[0m invalid payload (missing username)\n'
+if [ -n "$username" ] && [ -n "$client_id" ]; then
+  printf '\e[91m[ERROR]\e[0m invalid payload (must specify only username or client_id)\n'
   exit 1
 fi
 
-if [ -z "$password" ]; then
+if [ -n "$username" ] && [ -z "$password" ]; then
   printf '\e[91m[ERROR]\e[0m invalid payload (missing password)\n'
+  exit 1
+fi
+
+if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
+  printf '\e[91m[ERROR]\e[0m invalid payload (missing client_secret)\n'
   exit 1
 fi
 
@@ -84,7 +91,12 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
 
   if ! $cf_logged_in; then
-    cf_login $api "$username" "$password" $skip_cert_check
+    if [ -n "$client_id" ]; then
+      client_credentials="true"
+      cf_login "$api" "$client_id" "$client_secret" "$skip_cert_check" "$client_credentials"
+    else
+      cf_login "$api" "$username" "$password" "$skip_cert_check"
+    fi
     cf_logged_in=true
   fi
 

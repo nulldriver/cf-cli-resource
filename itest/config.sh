@@ -12,6 +12,8 @@ fi
 : "${CF_SKIP_CERT_CHECK:?}"
 : "${CF_USERNAME:?}"
 : "${CF_PASSWORD:?}"
+: "${CF_CLIENT_ID:?}"
+: "${CF_CLIENT_SECRET:?}"
 : "${SYNC_SERVICE:?}"
 : "${SYNC_PLAN:?}"
 : "${SYNC_CONFIGURATION:=}"
@@ -27,6 +29,8 @@ cf_apps_domain=$CF_APPS_DOMAIN
 cf_skip_cert_check=$CF_SKIP_CERT_CHECK
 cf_username=$CF_USERNAME
 cf_password=$CF_PASSWORD
+cf_client_id=$CF_CLIENT_ID
+cf_client_secret=$CF_CLIENT_SECRET
 cf_color=true
 cf_dial_timeout=5
 cf_trace=false

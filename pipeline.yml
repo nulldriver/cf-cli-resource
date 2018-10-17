@@ -40,6 +40,8 @@ jobs:
       CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
       CF_USERNAME: ((cf.username))
       CF_PASSWORD: ((cf.password))
+      CF_CLIENT_ID: ((cf_client_id))
+      CF_CLIENT_SECRET: ((cf_client_secret))
       SYNC_SERVICE: {{sync-service}}
       SYNC_PLAN: {{sync-plan}}
       SYNC_CONFIGURATION: {{sync-configuration}}

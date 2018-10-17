@@ -7,9 +7,13 @@ An output only resource capable of running lots of Cloud Foundry cli commands.
 
 ## Source Configuration
 
+Note: you must provide either `username` and `password` or `client_id` and `client_secret`.
+
 * `api`: *Required.* The address of the Cloud Controller in the Cloud Foundry deployment.
-* `username`: *Required.* The username used to authenticate.
-* `password`: *Required.* The password used to authenticate.
+* `username`: *Optional.* The username used to authenticate.
+* `password`: *Optional.* The password used to authenticate.
+* `client_id`: *Optional.* The client id used to authenticate.
+* `client_secret`: *Optional.* The client secret used to authenticate.
 * `skip_cert_check`: *Optional.* Check the validity of the CF SSL cert. Defaults to `false`.
 * `org`: *Optional.* Sets the default organization to target (can be overridden in the params config).
 * `space`: *Optional.* Sets the default space to target (can be overridden in the params config).
