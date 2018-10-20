@@ -5,8 +5,9 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-source $test_dir/helpers.sh
 source $test_dir/config.sh
+source $test_dir/helpers.sh
+source $test_dir/assert.sh
 
 it_can_run_a_task_with_disk_quota() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -32,7 +33,7 @@ it_can_run_a_task_with_disk_quota() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$3" "run-task-with-disk_quota-test"
+  assert::success cf_was_task_run "$3" "run-task-with-disk_quota-test"
 }
 
 it_can_run_a_task_with_memory() {
@@ -59,7 +60,7 @@ it_can_run_a_task_with_memory() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$3" "run-task-with-memory-test"
+  assert::success cf_was_task_run "$3" "run-task-with-memory-test"
 }
 
 it_can_run_a_task_with_name() {
@@ -86,7 +87,7 @@ it_can_run_a_task_with_name() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$3" "run-task-with-name-test"
+  assert::success cf_was_task_run "$3" "run-task-with-name-test"
 }
 
 it_can_run_a_task() {
@@ -117,7 +118,7 @@ it_can_run_a_task() {
     .version | keys == ["timestamp"]
   '
 
-  cf_was_task_run "$3" "run-task-test-all"
+  assert::success cf_was_task_run "$3" "run-task-test-all"
 }
 
 org=$(generate_test_name_with_spaces "Org")

@@ -7,6 +7,7 @@ test_dir=$(dirname $0)
 
 source $test_dir/config.sh
 source $test_dir/helpers.sh
+source $test_dir/assert.sh
 
 it_can_share_a_service() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -33,7 +34,7 @@ it_can_share_a_service() {
   '
 
   cf_target "${5:-}" "$4"
-  cf_service_exists "$3"
+  assert::success cf_service_exists "$3"
 }
 
 it_can_unshare_a_service() {
@@ -61,7 +62,7 @@ it_can_unshare_a_service() {
   '
 
   cf_target "${5:-}" "$4"
-  ! cf_service_exists "$3"
+  assert::failure cf_service_exists "$3"
 }
 
 source_org=$(generate_test_name_with_spaces "Source Org")

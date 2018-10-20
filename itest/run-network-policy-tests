@@ -5,8 +5,9 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-source $test_dir/helpers.sh
 source $test_dir/config.sh
+source $test_dir/helpers.sh
+source $test_dir/assert.sh
 
 it_can_add_network_policy() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -32,7 +33,7 @@ it_can_add_network_policy() {
     .version | keys == ["timestamp"]
   '
 
-  cf_network_policy_exists "$3" "$4" "udp" "9999"
+  assert::success cf_network_policy_exists "$3" "$4" "udp" "9999"
 }
 
 it_can_remove_network_policy() {
@@ -59,7 +60,7 @@ it_can_remove_network_policy() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_network_policy_exists "$1" "$2" "udp" "9999"
+  assert::failure cf_network_policy_exists "$1" "$2" "udp" "9999"
 }
 
 org=$(generate_test_name_with_spaces "Org")

@@ -5,8 +5,9 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-source $test_dir/helpers.sh
 source $test_dir/config.sh
+source $test_dir/helpers.sh
+source $test_dir/assert.sh
 
 it_can_create_a_user_provided_service_with_credentials_string() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -30,7 +31,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$3"
+  assert::success cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_credentials_file() {
@@ -63,7 +64,7 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$3"
+  assert::success cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_syslog() {
@@ -88,7 +89,7 @@ it_can_create_a_user_provided_service_with_syslog() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$3"
+  assert::success cf_service_exists "$3"
 }
 
 it_can_create_a_user_provided_service_with_route() {
@@ -113,7 +114,7 @@ it_can_create_a_user_provided_service_with_route() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$3"
+  assert::success cf_service_exists "$3"
 }
 
 org=$(generate_test_name_with_spaces "Org")

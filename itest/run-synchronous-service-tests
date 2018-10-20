@@ -5,8 +5,8 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-source $test_dir/helpers.sh
 source $test_dir/config.sh
+source $test_dir/helpers.sh
 
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")

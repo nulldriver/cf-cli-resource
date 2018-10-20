@@ -5,8 +5,9 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-source $test_dir/helpers.sh
 source $test_dir/config.sh
+source $test_dir/helpers.sh
+source $test_dir/assert.sh
 
 it_can_create_a_service_broker_space_scoped() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
@@ -60,7 +61,7 @@ it_can_create_a_service_broker_space_scoped() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_broker_exists "$3"
+  assert::success cf_service_broker_exists "$3"
 }
 
 it_can_create_a_service_broker() {
@@ -110,7 +111,7 @@ it_can_create_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_broker_exists "$3"
+  assert::success cf_service_broker_exists "$3"
 }
 
 it_can_enable_service_access() {
@@ -134,8 +135,7 @@ it_can_enable_service_access() {
   '
 
   cf_target "$1" "$2"
-  cf marketplace
-  cf_is_marketplace_service_available "$3" "${4:-}"
+  assert::success cf_is_marketplace_service_available "$3" "${4:-}"
 }
 
 it_can_disable_service_access() {
@@ -160,7 +160,7 @@ it_can_disable_service_access() {
   '
 
   cf_target "$1" "$2"
-  ! cf_is_marketplace_service_available "$3" "${4:-}"
+  assert::failure cf_is_marketplace_service_available "$3" "${4:-}"
 }
 
 it_can_delete_a_service_broker() {
@@ -183,7 +183,7 @@ it_can_delete_a_service_broker() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_service_broker_exists "$3"
+  assert::failure cf_service_broker_exists "$3"
 }
 
 org=$(generate_test_name_with_spaces "Org")
