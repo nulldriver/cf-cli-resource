@@ -12,6 +12,7 @@ Note: you must provide either `username` and `password` or `client_id` and `clie
 * `api`: *Required.* The address of the Cloud Controller in the Cloud Foundry deployment.
 * `username`: *Optional.* The username used to authenticate.
 * `password`: *Optional.* The password used to authenticate.
+* `origin`: *Optional.* The identity provider to be used for authentication (only valid for `username` & `password` authentication)
 * `client_id`: *Optional.* The client id used to authenticate.
 * `client_secret`: *Optional.* The client secret used to authenticate.
 * `skip_cert_check`: *Optional.* Check the validity of the CF SSL cert. Defaults to `false`.

@@ -2,20 +2,30 @@
 set -eu
 set -o pipefail
 
-function cf_login() {
-  local api_endpoint=${1:?api_endpoint null or not set}
-  local cf_user=${2:?cf_user null or not set}
-  local cf_pass=${3:?cf_pass null or not set}
-  local skip_ssl_validation=${4:-false}
-  local client_credentials=${5:-false}
+function cf_api() {
+  local url=${1:?url null or not set}
+  local skip_ssl_validation=${2:-false}
 
-  local api_args=("$api_endpoint")
-  [ "$skip_ssl_validation" = "true" ] && api_args+=(--skip-ssl-validation)
-  cf api "${api_args[@]}"
+  local args=("$url")
+  [ "$skip_ssl_validation" = "true" ] && args+=(--skip-ssl-validation)
+  cf api "${args[@]}"
+}
 
-  local api_auth=("$cf_user" "$cf_pass")
-  [ "$client_credentials" = "true" ] && api_auth+=(--client-credentials)
-  cf auth "${api_auth[@]}"
+function cf_auth_user() {
+  local username=${1:?username null or not set}
+  local password=${2:?password null or not set}
+  local origin=${3:-}
+
+  local args=("$username" "$password")
+  [ -n "$origin" ] && args+=(--origin "$origin")
+  cf auth "${args[@]}"
+}
+
+function cf_auth_client() {
+  local client_id=${1:?client_id null or not set}
+  local client_secret=${2:?client_secret null or not set}
+
+  cf auth "$client_id" "$client_secret" --client-credentials
 }
 
 function cf_target() {

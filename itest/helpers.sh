@@ -343,7 +343,8 @@ it_can_disable_feature_flag() {
 }
 
 cleanup_test_orgs() {
-  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
 
   while read -r org; do
     cf_delete_org "$org"
@@ -351,7 +352,8 @@ cleanup_test_orgs() {
 }
 
 cleanup_test_users() {
-  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
 
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
@@ -368,7 +370,8 @@ cleanup_test_users() {
 }
 
 cleanup_service_brokers() {
-  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
 
   while read -r broker; do
     cf_delete_service_broker "$broker"

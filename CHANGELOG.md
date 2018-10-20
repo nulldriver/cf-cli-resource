@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `share-service` command - Share a service instance with another space
 - `unshare-service` command - Unshare a shared service instance from a space
 - `rename` command - Rename an app
+- Source configuration now supports `origin` for `username` & `password` authentication
 - Source configuration now supports `client_id` and `client_secret` for authentication
 
 ### Changed
 - Test cleanup now deletes orphaned service brokers from previously failed tests
+- With the authentication changes in this release, the `cf_login` function was getting a bit overloaded, so it's now gone in favor of separate `cf_api`, `cf_auth_user`, and `cf_auth_client` functions
 - Updated to [cf cli v6.40.0](https://github.com/cloudfoundry/cli/releases/tag/v6.40.0)
 - Updated to [autopilot cf plugin v0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8)
 

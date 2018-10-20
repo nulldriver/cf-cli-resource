@@ -33,6 +33,7 @@ api=$(jq -r '.source.api //empty' < $payload)
 skip_cert_check=$(jq -r '.source.skip_cert_check //false' < $payload)
 username=$(jq -r '.source.username //empty' < $payload)
 password=$(jq -r '.source.password //empty' < $payload)
+origin=$(jq -r '.source.origin //empty' < $payload)
 client_id=$(jq -r '.source.client_id //empty' < $payload)
 client_secret=$(jq -r '.source.client_secret //empty' < $payload)
 source_org=$(jq -r '.source.org //empty' < $payload)
@@ -91,11 +92,11 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
 
   if ! $cf_logged_in; then
+    cf_api "$api" "$skip_cert_check"
     if [ -n "$client_id" ]; then
-      client_credentials="true"
-      cf_login "$api" "$client_id" "$client_secret" "$skip_cert_check" "$client_credentials"
+      cf_auth_client "$client_id" "$client_secret"
     else
-      cf_login "$api" "$username" "$password" "$skip_cert_check"
+      cf_auth_user "$username" "$password" "$origin"
     fi
     cf_logged_in=true
   fi
@@ -113,14 +114,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$space"
     cf_delete_space "$org" "$space"
   elif [ "create-user" = "$command" ]; then
-    username=$(echo $options | jq -r '.username //empty')
-    password=$(echo $options | jq -r '.password //empty')
-    origin=$(echo $options | jq -r '.origin //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$username"
-    if [ -n "$password" ]; then
-      cf_create_user_with_password "$username" "$password"
-    elif [ -n "$origin" ]; then
-      cf_create_user_with_origin "$username" "$origin"
+    new_username=$(echo $options | jq -r '.username //empty')
+    new_password=$(echo $options | jq -r '.password //empty')
+    new_origin=$(echo $options | jq -r '.origin //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$new_username"
+    if [ -n "$new_password" ]; then
+      cf_create_user_with_password "$new_username" "$new_password"
+    elif [ -n "$new_origin" ]; then
+      cf_create_user_with_origin "$new_username" "$new_origin"
     else
       printf '\e[91m[ERROR]\e[0m Invalid config: Must specify password or origin\n'
     fi

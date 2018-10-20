@@ -32,7 +32,8 @@ it_can_create_a_service_broker_space_scoped() {
     unzip $broker_dir/overview-broker.zip -d $broker_dir
   fi
 
-  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
   cf_target "$1" "$2"
   cf push "$3" -p "$broker_dir/overview-broker-$commit" #-b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
   cf logout
@@ -87,7 +88,8 @@ it_can_create_a_service_broker() {
     unzip $broker_dir/overview-broker.zip -d $broker_dir
   fi
 
-  cf_login "$cf_api" "$cf_username" "$cf_password" "$cf_skip_cert_check"
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
   cf_target "$1" "$2"
   cf push "$broker_name" -p "$broker_dir/overview-broker-$commit"
   cf logout
