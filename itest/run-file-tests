@@ -25,10 +25,10 @@ it_can_push_an_app_no_start_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -53,10 +53,10 @@ it_can_start_an_app_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -79,10 +79,10 @@ it_can_stop_an_app_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -105,10 +105,10 @@ it_can_delete_an_app_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -129,10 +129,10 @@ it_can_create_an_org_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -154,10 +154,10 @@ it_can_create_a_space_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
@@ -183,10 +183,10 @@ it_can_delete_a_space_and_org_with_file() {
 	EOF
 
   local params=$(jq -n \
-  --arg dir "$working_dir/params.yml" \
+  --arg command_file "$working_dir/params.yml" \
   '{
     command: "invalid-XXXXXX",
-    file: $dir
+    command_file: $command_file
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')

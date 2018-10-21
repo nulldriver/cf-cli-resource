@@ -92,7 +92,7 @@ it gets even simpler:
 
 This resource supports file inputs.  This allows the pipeline to parameterize and generate commands during pipeline execution.
 
-* `file`: *Optional.* Contains path to a YAML file that contains the same fields as `params`; including `command` and `commands`.  If used, this resource uses only the configuration listed in this file.  All other configurations specified in the `params` section will be ignored. The `file` field (if exists) is ignored within the content of the file itself.
+* `command_file`: *Optional.* Contains path to a YAML file that contains the same fields as `params`; including `command` or `commands`.  If used, this resource uses only the configuration listed in this file.  All other configurations specified in the `params` section will be ignored. The `command_file` field (if exists) is ignored within the content of the file itself.
 
 ```yml
   - task: configure
@@ -118,9 +118,8 @@ This resource supports file inputs.  This allows the pipeline to parameterize an
     resource: cf-env
     params:
       command: delete
-      file: cf_command/params.yml
+      command_file: cf_command/params.yml
 ```
-
 
 ## Behavior
 
