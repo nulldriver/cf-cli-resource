@@ -88,6 +88,40 @@ it gets even simpler:
 ```
 
 
+## Command via file input
+
+This resource supports file inputs.  This allows the pipeline to parameterize and generate commands during pipeline execution.
+
+* `file`: *Optional.* Contains path to a YAML file that contains the same fields as `params`; including `command` and `commands`.  If used, this resource uses only the configuration listed in this file.  All other configurations specified in the `params` section will be ignored. The `file` field (if exists) is ignored within the content of the file itself.
+
+```yml
+  - task: configure
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu
+      run:
+        path: bash
+        args:
+        - -excl
+        - |-
+          cat > cf_command/params.yml <<EOF
+          command: delete
+          app_name: app
+          delete_mapped_routes: true
+          EOF
+      outputs:
+        - name: cf_command
+  - put: cf-delete
+    resource: cf-env
+    params:
+      command: delete
+      file: cf_command/params.yml
+```
+
+
 ## Behavior
 
 ### `out`: Run a cf cli command.

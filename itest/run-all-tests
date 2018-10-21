@@ -19,3 +19,4 @@ $test_dir/run-asynchronous-service-tests
 $test_dir/run-share-service-tests
 $test_dir/run-task-tests
 $test_dir/run-user-tests
+$test_dir/run-file-tests

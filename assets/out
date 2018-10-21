@@ -17,7 +17,7 @@ if [ -z "$working_dir" ]; then
 fi
 
 # for jq
-PATH=/usr/local/bin:$PATH
+PATH=/usr/local/bin:$PATH:.
 
 TMPDIR=${TMPDIR:-/tmp}
 payload=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
@@ -43,6 +43,7 @@ params=$(jq -r '.params //empty' < $payload)
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
 cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
+file=$(echo "$params" | jq -r '.file //empty')
 
 if [ -z "$api" ]; then
   printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
@@ -65,6 +66,15 @@ if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
 fi
 
 cd "$working_dir"
+
+if [ -n "$file" ]; then
+  printf '\e[92m[INFO]\e[0m %s\n' "Populating params from file (overwriting params in pipeline definition): "$file""
+  yaml_content=$(cat "$file")
+  printf '\e[92m[INFO]\e[33mOriginal content\e[0m: \n%s\n' "$yaml_content"
+  params=$(yq r -j "$file")
+  printf '\e[92m[INFO]\e[33mJson representation\e[0m: \n%s\n' "$params"
+fi
+
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf --version)"
 
