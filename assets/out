@@ -66,11 +66,8 @@ if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
 fi
 
 if [ -r "$command_file" ]; then
-  printf '\e[92m[INFO]\e[0m %s\n' "Populating params from file (overwriting params in pipeline definition): "$command_file""
-  yaml_content=$(cat "$command_file")
-  printf '\e[92m[INFO]\e[33mOriginal content\e[0m: \n%s\n' "$yaml_content"
+  printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
   params=$(yq r -j "$command_file")
-  printf '\e[92m[INFO]\e[33mJson representation\e[0m: \n%s\n' "$params"
 fi
 
 cd "$working_dir"
