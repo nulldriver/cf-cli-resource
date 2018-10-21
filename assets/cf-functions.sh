@@ -124,12 +124,9 @@ function cf_create_users_from_file() {
     exit 1
   fi
 
-  oldifs=$IFS
-  IFS=,
-
   # First line is the header row, so skip it and start processing at line 2
   linenum=1
-  sed 1d "$file" | while read -r Username Password Org Space OrgManager BillingManager OrgAuditor SpaceManager SpaceDeveloper SpaceAuditor
+  sed 1d "$file" | while IFS=, read -r Username Password Org Space OrgManager BillingManager OrgAuditor SpaceManager SpaceDeveloper SpaceAuditor
   do
     (( linenum++ ))
 
@@ -142,21 +139,18 @@ function cf_create_users_from_file() {
       cf create-user "$Username" "$Password"
     fi
 
-
     if [ -n "$Org" ]; then
-      [ -n "$OrgManager" ]     && cf set-org-role "$Username" "$Org" OrgManager
-      [ -n "$BillingManager" ] && cf set-org-role "$Username" "$Org" BillingManager
-      [ -n "$OrgAuditor" ]     && cf set-org-role "$Username" "$Org" OrgAuditor
+      [ -n "$OrgManager" ]     && cf set-org-role "$Username" "$Org" OrgManager || true
+      [ -n "$BillingManager" ] && cf set-org-role "$Username" "$Org" BillingManager || true
+      [ -n "$OrgAuditor" ]     && cf set-org-role "$Username" "$Org" OrgAuditor || true
 
       if [ -n "$Space" ]; then
-        [ -n "$SpaceManager" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceManager
-        [ -n "$SpaceDeveloper" ] && cf set-space-role "$Username" "$Org" "$Space" SpaceDeveloper
-        [ -n "$SpaceAuditor" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceAuditor
+        [ -n "$SpaceManager" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceManager || true
+        [ -n "$SpaceDeveloper" ] && cf set-space-role "$Username" "$Org" "$Space" SpaceDeveloper || true
+        [ -n "$SpaceAuditor" ]   && cf set-space-role "$Username" "$Org" "$Space" SpaceAuditor || true
       fi
     fi
   done
-
-  IFS=$oldifs
 }
 
 function cf_delete_user() {

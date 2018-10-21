@@ -68,7 +68,7 @@ it_can_create_users_from_file() {
 Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
 $testprefix-bulkload-user1,wasabi,$1,$2,x,x,x,x,x,x
 $testprefix-bulkload-user2,wasabi,$1,$2,,x,x,,x,x
-$testprefix-bulkload-user3,ldap,$1,$2,,,x,,,x
+$testprefix-bulkload-user3,ldap,$1,$2,,,x,,x,
 EOF
 
   local params=$(jq -n \
