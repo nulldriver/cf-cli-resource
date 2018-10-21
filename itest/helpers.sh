@@ -65,8 +65,7 @@ applications:
   disk_quota: 64M
   instances: 1
   path: content
-  buildpacks:
-  - staticfile_buildpack
+  buildpack: staticfile_buildpack
 EOF
 }
 
