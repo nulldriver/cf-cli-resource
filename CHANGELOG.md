@@ -4,13 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.9.0 - Unreleased
+## 2.9.0 - 2018-10-21
 ### Added
 - `share-service` command - Share a service instance with another space
 - `unshare-service` command - Unshare a shared service instance from a space
 - `rename` command - Rename an app
 - Source configuration now supports `origin` for `username` & `password` authentication
 - Source configuration now supports `client_id` and `client_secret` for authentication
+- `command_file` support - You can now configure `command` or `commands` in an external yaml file, thanks to a PR by [@senglin](https://github.com/senglin)
 
 ### Changed
 - Test cleanup now deletes orphaned service brokers from previously failed tests
