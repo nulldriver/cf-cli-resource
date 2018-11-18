@@ -158,6 +158,20 @@ function cf_delete_user() {
   cf delete-user -f "$username"
 }
 
+cf_is_app_mapped_to_route() {
+  local app_name=${1:?app_name null or not set}
+  local route=${2:?route null or not set}
+
+  local app_guid=$(cf_get_app_guid "$app_name")
+
+  local output
+  if ! output=$(CF_TRACE=false cf curl "/v2/apps/$app_guid/stats"); then
+    echo "$output" && exit 1
+  fi
+
+  echo $output | jq -e --arg route "$route" '."0".stats | select(.uris[] == $route)' >/dev/null
+}
+
 cf_has_private_domain() {
   local org=${1:?org null or not set}
   local domain=${2:?domain null or not set}

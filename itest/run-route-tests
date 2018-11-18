@@ -55,10 +55,10 @@ it_can_map_a_route() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  --arg domain "$domain" \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg domain "$4" \
   '{
     command: "map-route",
     org: $org,
@@ -72,18 +72,21 @@ it_can_map_a_route() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was mapped
+
+  assert::success cf_is_app_mapped_to_route "$3" "${4}"
 }
 
 it_can_map_a_route_with_hostname() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
+  local hostname=$(app_to_hostname "$3")
+
   local params=$(jq -n \
   --arg org "$1" \
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$(app_to_hostname "$3")" \
+  --arg hostname "$hostname" \
   '{
     command: "map-route",
     org: $org,
@@ -98,18 +101,21 @@ it_can_map_a_route_with_hostname() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was mapped
+
+  assert::success cf_is_app_mapped_to_route "$3" "${hostname}.${4}"
 }
 
 it_can_map_a_route_with_hostname_and_path() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
+  local hostname=$(app_to_hostname "$3")
+
   local params=$(jq -n \
   --arg org "$1" \
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$(app_to_hostname "$3")" \
+  --arg hostname "$hostname" \
   --arg path "foo" \
   '{
     command: "map-route",
@@ -126,18 +132,21 @@ it_can_map_a_route_with_hostname_and_path() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was mapped
+
+  assert::success cf_is_app_mapped_to_route "$3" "${hostname}.${4}/foo"
 }
 
 it_can_unmap_a_route_with_hostname_and_path() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local hostname=$(app_to_hostname "$3")
 
   local params=$(jq -n \
   --arg org "$1" \
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$(app_to_hostname "$3")" \
+  --arg hostname "$hostname" \
   --arg path "foo" \
   '{
     command: "unmap-route",
@@ -154,18 +163,20 @@ it_can_unmap_a_route_with_hostname_and_path() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was unmapped
+  assert::failure cf_is_app_mapped_to_route "$3" "${hostname}.${4}/foo"
 }
 
 it_can_unmap_a_route_with_hostname() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local hostname=$(app_to_hostname "$3")
 
   local params=$(jq -n \
   --arg org "$1" \
   --arg space "$2" \
   --arg app_name "$3" \
   --arg domain "$4" \
-  --arg hostname "$(app_to_hostname "$3")" \
+  --arg hostname "$hostname" \
   '{
     command: "unmap-route",
     org: $org,
@@ -180,7 +191,8 @@ it_can_unmap_a_route_with_hostname() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was unmapped
+
+  assert::failure cf_is_app_mapped_to_route "$3" "${hostname}.${4}"
 }
 
 it_can_unmap_a_route() {
@@ -204,7 +216,8 @@ it_can_unmap_a_route() {
   put_with_params "$config" "$working_dir" | jq -e '
     .version | keys == ["timestamp"]
   '
-  # TODO: check that the route was unmapped
+
+  assert::failure cf_is_app_mapped_to_route "$3" "$4"
 }
 
 org=$(generate_test_name_with_spaces "Org")

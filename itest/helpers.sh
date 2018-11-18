@@ -46,7 +46,7 @@ generate_test_name_with_hyphens() {
 }
 
 app_to_hostname() {
-  echo "${1// /-}"
+  echo "${1// /-}" | awk '{print tolower($0)}'
 }
 
 create_static_app() {
