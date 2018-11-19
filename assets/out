@@ -67,12 +67,14 @@ fi
 
 cd "$working_dir"
 
-if [ -r "$command_file" ]; then
-  printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
-  params=$(yq r --tojson "$command_file")
-else
-  printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
-  exit 1
+if [ -n "$command_file" ]; then
+  if [ -r "$command_file" ]; then
+    printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
+    params=$(yq r --tojson "$command_file")
+  else
+    printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
+    exit 1
+  fi
 fi
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf version)"
