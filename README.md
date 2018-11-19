@@ -368,7 +368,7 @@ Make a user-provided service instance available to CF apps
       # route service url
       - command: create-user-provided-service
         service_instance: my-route-service
-        syslog_drain_url: https://example.com
+        route_service_url: https://example.com
 ```
 
 #### create-service
