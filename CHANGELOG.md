@@ -4,10 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.10.0 - Unreleased
-### Changed
+## 2.9.1 - Unreleased
+### Fixed
+- Fixed `create-user-provided-service` example for specifying a `route_service_url`, thanks to a PR by [@eruvanos](https://github.com/eruvanos)
 - `run-route-tests` now properly test if an app is mapped to a route
-- Updated to [cf cli v6.40.0](https://github.com/cloudfoundry/cli/releases/tag/v6.40.0)
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
