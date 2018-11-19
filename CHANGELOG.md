@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.9.1 - Unreleased
+## 2.9.1 - 2018-11-18
 ### Fixed
 - `command_file` previously only worked by specifying an absolute file path.  This is fixed to correctly support relative paths and the tests have been updated accordingly, thanks to a PR by [@renbeynolds](https://github.com/renbeynolds)
 - Fixed `create-user-provided-service` example for specifying a `route_service_url`, thanks to a PR by [@eruvanos](https://github.com/eruvanos)
