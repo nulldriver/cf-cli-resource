@@ -5,18 +5,18 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-#$test_dir/run-cleanup-failed-tests
-#$test_dir/run-auth-client-credentials-tests
-#$test_dir/run-auth-origin-tests
-#$test_dir/run-app-tests
-#$test_dir/run-docker-tests
-#$test_dir/run-route-tests
-#$test_dir/run-network-policy-tests
-#$test_dir/run-service-broker-tests
-#$test_dir/run-user-provided-service-tests
-#$test_dir/run-synchronous-service-tests
-#$test_dir/run-asynchronous-service-tests
-#$test_dir/run-share-service-tests
-#$test_dir/run-task-tests
-#$test_dir/run-user-tests
+$test_dir/run-cleanup-failed-tests
+$test_dir/run-auth-client-credentials-tests
+$test_dir/run-auth-origin-tests
+$test_dir/run-app-tests
+$test_dir/run-docker-tests
+$test_dir/run-route-tests
+$test_dir/run-network-policy-tests
+$test_dir/run-service-broker-tests
+$test_dir/run-user-provided-service-tests
+$test_dir/run-synchronous-service-tests
+$test_dir/run-asynchronous-service-tests
+$test_dir/run-share-service-tests
+$test_dir/run-task-tests
+$test_dir/run-user-tests
 $test_dir/run-file-tests
