@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.9.1 - Unreleased
 ### Fixed
-- `command_file` only worked with explicit paths specified for the file.  This is fixed now and the tests have been updated accordingly, thanks to a PR by [@renbeynolds](https://github.com/renbeynolds)
+- `command_file` previously only worked by specifying an absolute file path.  This is fixed to correctly support relative paths and the tests have been updated accordingly, thanks to a PR by [@renbeynolds](https://github.com/renbeynolds)
 - Fixed `create-user-provided-service` example for specifying a `route_service_url`, thanks to a PR by [@eruvanos](https://github.com/eruvanos)
 - `run-route-tests` now properly test if an app is mapped to a route
 
