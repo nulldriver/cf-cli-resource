@@ -14,8 +14,6 @@ working_dir=${1:-}
 if [ -z "$working_dir" ]; then
   printf '\e[91m[ERROR]\e[0m usage: %s <path/to/source>\n' "$0"
   exit 1
-else
-  cd $1
 fi
 
 # for jq
@@ -67,14 +65,17 @@ if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
   exit 1
 fi
 
-if [ -r "$command_file" ]; then
-  printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
-  params=$(yq r -j "$command_file")
-fi
-
 cd "$working_dir"
 
-printf '\e[92m[INFO]\e[0m %s\n' "$(cf --version)"
+if [ -r "$command_file" ]; then
+  printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
+  params=$(yq r --tojson "$command_file")
+else
+  printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
+  exit 1
+fi
+
+printf '\e[92m[INFO]\e[0m %s\n' "$(cf version)"
 
 cf_logged_in=false
 

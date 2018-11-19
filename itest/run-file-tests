@@ -14,18 +14,19 @@ it_can_push_an_app_no_start_with_file() {
 
   create_static_app "$3" "$working_dir"
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "push"
-		org: "$1"
-		space: "$2"
-		app_name: "$3"
-		path: "static-*/content"
-		manifest: "static-app/manifest.yml"
-		no_start: "true"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: push
+org: $1
+space: $2
+app_name: $3
+path: static-*/content
+manifest: static-app/manifest.yml
+no_start: true
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -40,20 +41,22 @@ it_can_push_an_app_no_start_with_file() {
   assert::success cf_is_app_stopped "$3"
 }
 
+
 it_can_start_an_app_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "start"
-		org: "$1"
-		space: "$2"
-		app_name: "$3"
-		staging_timeout: 15
-		startup_timeout: 5
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: start
+org: $1
+space: $2
+app_name: $3
+staging_timeout: 15
+startup_timeout: 5
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -71,15 +74,16 @@ it_can_start_an_app_with_file() {
 it_can_stop_an_app_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "stop"
-		org: "$1"
-		space: "$2"
-		app_name: "$3"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: stop
+org: $1
+space: $2
+app_name: $3
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -96,16 +100,17 @@ it_can_stop_an_app_with_file() {
 it_can_delete_an_app_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "delete"
-		org: "$1"
-		space: "$2"
-		app_name: "$3"
-		delete_mapped_routes: "true"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: delete
+org: $1
+space: $2
+app_name: $3
+delete_mapped_routes: true
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -117,19 +122,20 @@ it_can_delete_an_app_with_file() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_app_exists "$3"
+  assert::failure cf_app_exists "$3"
 }
 
 it_can_create_an_org_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "create-org"
-		org: "$1"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: create-org
+org: $1
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -141,20 +147,21 @@ it_can_create_an_org_with_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_org_exists "$1"
+  assert::success cf_org_exists "$1"
 }
 
 it_can_create_a_space_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		command: "create-space"
-		org: "$1"
-		space: "$2"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+command: create-space
+org: $1
+space: $2
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -166,24 +173,25 @@ it_can_create_a_space_with_file() {
     .version | keys == ["timestamp"]
   '
 
-  cf_space_exists "$1" "$2"
+  assert::success cf_space_exists "$1" "$2"
 }
 
 # This test showcases the multi-command syntax
 it_can_delete_a_space_and_org_with_file() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-	cat > "$working_dir/params.yml" <<-EOF
-		commands:
-		- command: "delete-space"
-		  org: "$1"
-		  space: "$2"
-		- command: "delete-org"
-		  org: "$1"
-	EOF
+  mkdir "$working_dir/file-tests"
+  cat > "$working_dir/file-tests/commands.yml" <<-EOF
+commands:
+- command: delete-space
+  org: $1
+  space: $2
+- command: delete-org
+  org: $1
+EOF
 
   local params=$(jq -n \
-  --arg command_file "$working_dir/params.yml" \
+  --arg command_file "file-tests/commands.yml" \
   '{
     command: "invalid-XXXXXX",
     command_file: $command_file
@@ -195,8 +203,8 @@ it_can_delete_a_space_and_org_with_file() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_space_exists "$1" "$2"
-  ! cf_org_exists "$1"
+  assert::failure cf_space_exists "$1" "$2"
+  assert::failure cf_org_exists "$1"
 }
 
 
