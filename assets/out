@@ -233,33 +233,33 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     fi
   elif [ "push" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
-    startup_command=$(echo $options | jq -r '.startup_command //empty')
-    hostname=$(echo $options | jq -r '.hostname //empty')
-    memory=$(echo $options | jq -r '.memory //empty')
-    disk_quota=$(echo $options | jq -r '.disk_quota //empty')
-    instances=$(echo $options | jq -r '.instances //empty')
-    path=$(echo $options | jq -r '.path //empty')
     buildpack=$(echo $options | jq -r '.buildpack //empty')
-    no_start=$(echo $options | jq -r '.no_start //empty')
-    manifest=$(echo $options | jq -r '.manifest //empty')
+    startup_command=$(echo $options | jq -r '.startup_command //empty')
     docker_image=$(echo $options | jq -r '.docker_image //empty')
     docker_username=$(echo $options | jq -r '.docker_username //empty')
     docker_password=$(echo $options | jq -r '.docker_password //empty')
+    manifest=$(echo $options | jq -r '.manifest //empty')
+    hostname=$(echo $options | jq -r '.hostname //empty')
+    instances=$(echo $options | jq -r '.instances //empty')
+    disk_quota=$(echo $options | jq -r '.disk_quota //empty')
+    memory=$(echo $options | jq -r '.memory //empty')
+    no_start=$(echo $options | jq -r '.no_start //empty')
+    path=$(echo $options | jq -r '.path //empty')
 
     args=()
     [ -n "$app_name" ]        && args+=("$app_name")
-    [ -n "$startup_command" ] && args+=(-c "$startup_command")
-    [ -n "$hostname" ]        && args+=(-n "$hostname")
-    [ -n "$memory" ]          && args+=(-m "$memory")
-    [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")
-    [ -n "$instances" ]       && args+=(-i "$instances")
-    [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
     [ -n "$buildpack" ]       && args+=(-b "$buildpack")
-    [ -n "$manifest" ]        && args+=(-f "$manifest")
-    [ -n "$no_start" ]        && args+=(--no-start)
+    [ -n "$startup_command" ] && args+=(-c "$startup_command")
     [ -n "$docker_image" ]    && args+=(--docker-image "$docker_image")
     [ -n "$docker_username" ] && args+=(--docker-username "$docker_username")
     [ -n "$docker_password" ] && export CF_DOCKER_PASSWORD="$docker_password"
+    [ -n "$manifest" ]        && args+=(-f "$manifest")
+    [ -n "$hostname" ]        && args+=(-n "$hostname")
+    [ -n "$instances" ]       && args+=(-i "$instances")
+    [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")
+    [ -n "$memory" ]          && args+=(-m "$memory")
+    [ -n "$no_start" ]        && args+=(--no-start)
+    [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
 
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
