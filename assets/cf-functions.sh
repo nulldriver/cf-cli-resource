@@ -648,6 +648,27 @@ function cf_scale() {
   cf scale "${args[@]}"
 }
 
+function cf_curl() {
+  local path=${1:?path null or not set}
+  CF_TRACE=false cf curl "$path"
+}
+
+function cf_has_error_code() {
+  local output=${1:?output null or not set}
+  echo $output | jq -e 'has("error_code")' >/dev/null
+}
+
+function cf_get_app_startup_command() {
+  local app_name=${1:?app_name null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/summary") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo $output | jq -r '.command'
+}
+
 function cf_service_broker_exists() {
   local service_broker=${1:?service_broker null or not set}
   CF_TRACE=false cf curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null

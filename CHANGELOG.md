@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.10.0 - Unreleased
+###
+- `push` command now supports additional cli options:
+  - `startup_command`: Startup command, set to null to reset to default start command
+
 ## 2.9.1 - 2018-11-18
 ### Fixed
 - `command_file` previously only worked by specifying an absolute file path.  This is fixed to correctly support relative paths and the tests have been updated accordingly, thanks to a PR by [@renbeynolds](https://github.com/renbeynolds)

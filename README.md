@@ -626,6 +626,7 @@ Push a new app or sync changes to an existing app
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
+* `startup_command`: *Optional.* Startup command, set to null to reset to default start command
 * `hostname`: *Optional.* Hostname (e.g. my-subdomain)
 * `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
 * `disk_quota`: *Optional.* Disk limit (e.g. 256M, 1024M, 1G)
@@ -644,14 +645,10 @@ Push a new app or sync changes to an existing app
     params:
       command: push
       app_name: myapp-ui
-      hostname: myapp
-      memory: 512M
-      disk_quota: 1G
-      instances: 1
+      memory: 1G
       path: path/to/myapp-*.jar
       buildpack: java_buildpack
       manifest: path/to/manifest.yml
-      no_start: true
 ```
 
 #### zero-downtime-push

@@ -233,6 +233,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     fi
   elif [ "push" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
+    startup_command=$(echo $options | jq -r '.startup_command //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
     memory=$(echo $options | jq -r '.memory //empty')
     disk_quota=$(echo $options | jq -r '.disk_quota //empty')
@@ -247,6 +248,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
 
     args=()
     [ -n "$app_name" ]        && args+=("$app_name")
+    [ -n "$startup_command" ] && args+=(-c "$startup_command")
     [ -n "$hostname" ]        && args+=(-n "$hostname")
     [ -n "$memory" ]          && args+=(-m "$memory")
     [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")

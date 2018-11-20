@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/assert.sh
+source $test_dir/helpers.sh
+source $test_dir/config.sh
+
+it_can_push_an_app_with_startup_command() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  create_static_app "$3" "$working_dir"
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: "static-app/content",
+    manifest: "static-app/manifest.yml"
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  echo "push with default default command"; {
+    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+    assert::success cf_is_app_started "$3"
+  }
+
+  local default_startup_command=$(cf_get_app_startup_command "$3")
+  local custom_startup_command='$HOME/boot.sh --dummy-flag'
+
+  echo "push with custom startup command"; {
+    config=$(echo $config | jq --arg startup_command "$custom_startup_command" '.params.startup_command = $startup_command')
+    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+    assert::success cf_is_app_started "$3"
+    assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$3")"
+  }
+
+  echo "push and reset to default startup command"; {
+    config=$(echo $config | jq --arg startup_command "null" '.params.startup_command = $startup_command')
+    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+    assert::success cf_is_app_started "$3"
+    assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$3")"
+  }
+}
+
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+original_app_name=$(generate_test_name_with_spaces "Original App")
+app_name=$(generate_test_name_with_spaces "App")
+
+setup_integration_tests "$org" "$space"
+
+run it_can_push_an_app_with_startup_command \"$org\" \"$space\" \"$app_name\"
+
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+
+teardown_integration_tests "$org" "$space"
