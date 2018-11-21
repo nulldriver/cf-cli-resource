@@ -245,8 +245,8 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     memory=$(echo $options | jq -r '.memory //empty')
     no_start=$(echo $options | jq -r '.no_start //empty')
     path=$(echo $options | jq -r '.path //empty')
-    staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
-    startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
+    staging_timeout=$(echo $options | jq -r '.staging_timeout //0')
+    startup_timeout=$(echo $options | jq -r '.startup_timeout //0')
 
     args=()
     [ -n "$app_name" ]        && args+=("$app_name")
