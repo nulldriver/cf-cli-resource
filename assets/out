@@ -245,6 +245,8 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     memory=$(echo $options | jq -r '.memory //empty')
     no_start=$(echo $options | jq -r '.no_start //empty')
     path=$(echo $options | jq -r '.path //empty')
+    staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
+    startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
 
     args=()
     [ -n "$app_name" ]        && args+=("$app_name")
@@ -264,8 +266,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
 
+    [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
+    [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
+
     cf push "${args[@]}"
 
+    unset CF_STAGING_TIMEOUT
+    unset CF_STARTUP_TIMEOUT
     [ -n "$docker_password" ]   && unset CF_DOCKER_PASSWORD
 
   elif [ "zero-downtime-push" = "$command" ]; then

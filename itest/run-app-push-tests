@@ -24,7 +24,9 @@ it_can_push_an_app_with_startup_command() {
     space: $space,
     app_name: $app_name,
     path: "static-app/content",
-    manifest: "static-app/manifest.yml"
+    manifest: "static-app/manifest.yml",
+    staging_timeout: 15,
+    startup_timeout: 5
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')

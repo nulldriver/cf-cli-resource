@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - `push` command now supports additional cli options:
   - `startup_command`: Startup command, set to null to reset to default start command
+  - `staging_timeout`: Max wait time for buildpack staging, in minutes
+  - `startup_timeout`: Max wait time for app instance startup, in minutes
 
 ## 2.9.1 - 2018-11-18
 ### Fixed
