@@ -304,6 +304,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$current_app_name"
     cf_target "$org" "$space"
     cf_zero_downtime_push "$args" "$current_app_name"
+  elif [ "set-env" = "$command" ]; then
+    app_name=$(echo $options | jq -r '.app_name //empty')
+    env_var_name=$(echo $options | jq -r '.env_var_name //empty')
+    env_var_value=$(echo $options | jq -r '.env_var_value //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    cf_target "$org" "$space"
+    cf_set_env "$app_name" "$env_var_name" "$env_var_value"
   elif [ "start" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')

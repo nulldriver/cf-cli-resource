@@ -675,6 +675,26 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
         key2: value2
 ```
 
+#### set-env
+
+Set an env variable for an app
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `app_name`: *Required.* The name of the application
+* `env_var_name`: *Optional.* Environment variable name
+* `env_var_value`: *Optional.* Environment variable value
+
+```yml
+  - put: cf-set-env
+    resource: cf-env
+    params:
+      command: set-env
+      app_name: myapp-ui
+      env_var_name: JBP_CONFIG_OPEN_JDK_JRE
+      env_var_value: '{ jre: { version: 1.8.0_+ }, memory_calculator: { stack_threads: 200 } }'
+```
+
 #### start
 
 Start an app

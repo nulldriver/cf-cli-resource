@@ -246,6 +246,33 @@ it_can_scale_an_app() {
   assert::equals 1024 "$(cf_get_app_memory "$3")"
 }
 
+it_can_set_env() {
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local env_var_name=JBP_CONFIG_OPEN_JDK_JRE
+  local env_var_value='{ jre: { version: 1.8.0_+ }, memory_calculator: { stack_threads: 200 } }'j
+
+  local params=$(jq -n \
+  --arg org "$1" \
+  --arg space "$2" \
+  --arg app_name "$3" \
+  --arg env_var_name "$env_var_name" \
+  --arg env_var_value "$env_var_value" \
+  '{
+    command: "set-env",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    env_var_name: $env_var_name,
+    env_var_value: $env_var_value
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_has_env "$3" "$env_var_name" "$env_var_value"
+}
+
 it_can_restart_an_app() {
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
@@ -313,6 +340,8 @@ run it_can_scale_an_app_instances \"$org\" \"$space\" \"$app_name\"
 run it_can_scale_an_app_disk_quota \"$org\" \"$space\" \"$app_name\"
 run it_can_scale_an_app_memory \"$org\" \"$space\" \"$app_name\"
 run it_can_scale_an_app \"$org\" \"$space\" \"$app_name\"
+
+run it_can_set_env \"$org\" \"$space\" \"$app_name\"
 
 run it_can_restart_an_app \"$org\" \"$space\" \"$app_name\"
 run it_can_restage_an_app \"$org\" \"$space\" \"$app_name\"

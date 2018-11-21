@@ -468,17 +468,34 @@ function cf_zero_downtime_push() {
   fi
 }
 
+function cf_set_env() {
+  local app_name=${1:?app_name null or not set}
+  local env_var_name=${2:?env_var_name null or not set}
+  local env_var_value=${3:?env_var_value null or not set}
+
+  cf set-env "$app_name" "$env_var_name" "$env_var_value"
+}
+
+function cf_has_env() {
+  local app_name=${1:?app_name null or not set}
+  local env_var_name=${2:?env_var_name null or not set}
+  local env_var_value=${3:?env_var_value null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/env") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo $output | jq -e --arg key "$env_var_name" --arg value "$env_var_value" '.environment_json[$key] == $value'
+}
+
 function cf_start() {
   local app_name=${1:?app_name null or not set}
   local staging_timeout=${2:-0}
   local startup_timeout=${3:-0}
 
-  if [ "$staging_timeout" -gt "0" ]; then
-    export CF_STAGING_TIMEOUT=$staging_timeout
-  fi
-  if [ "$startup_timeout" -gt "0" ]; then
-    export CF_STARTUP_TIMEOUT=$startup_timeout
-  fi
+  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
+  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
   cf start "$app_name"
 
@@ -497,12 +514,8 @@ function cf_restart() {
   local staging_timeout=${2:-0}
   local startup_timeout=${3:-0}
 
-  if [ "$staging_timeout" -gt "0" ]; then
-    export CF_STAGING_TIMEOUT=$staging_timeout
-  fi
-  if [ "$startup_timeout" -gt "0" ]; then
-    export CF_STARTUP_TIMEOUT=$startup_timeout
-  fi
+  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
+  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
   cf restart "$app_name"
 
@@ -515,12 +528,8 @@ function cf_restage() {
   local staging_timeout=${2:-0}
   local startup_timeout=${3:-0}
 
-  if [ "$staging_timeout" -gt "0" ]; then
-    export CF_STAGING_TIMEOUT=$staging_timeout
-  fi
-  if [ "$startup_timeout" -gt "0" ]; then
-    export CF_STARTUP_TIMEOUT=$startup_timeout
-  fi
+  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
+  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
   cf restage "$app_name"
 

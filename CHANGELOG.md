@@ -5,7 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## 2.10.0 - Unreleased
-###
+### Added
+- `set-env` command - Set an env variable for an app
+
+### Changed
 - `push` command now supports additional cli options:
   - `startup_command`: Startup command, set to null to reset to default start command
 
