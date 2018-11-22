@@ -201,6 +201,19 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     if [ "true" = "$wait" ]; then
       cf_wait_for_service_instance "$service_instance" "$timeout"
     fi
+  elif [ "update-service" = "$command" ]; then
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    plan=$(echo $options | jq -r '.plan //empty')
+    configuration=$(echo $options | jq -r '.configuration //empty')
+    tags=$(echo $options | jq -r '.tags //empty')
+    timeout=$(echo $options | jq -r '.timeout //empty')
+    wait=$(echo $options | jq -r '.wait_for_service //"false"')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    cf_target "$org" "$space"
+    cf_update_service "$service_instance" "$plan" "$configuration" "$tags"
+    if [ "true" = "$wait" ]; then
+      cf_wait_for_service_instance "$service_instance" "$timeout"
+    fi
   elif [ "share-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     other_space=$(echo $options | jq -r '.other_space //empty')

@@ -393,7 +393,34 @@ Create a service instance
       service: p-config-server
       plan: standard
       service_instance: my-config-server
-      configuration: '{"count":3}'
+      configuration: '{"count":1}'
+      tags: 'list, of, tags'
+      timeout: 300
+      wait_for_service: true
+```
+
+#### update-service
+
+Update a service instance
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The name of the service instance
+* `plan`: *Required.* Change service plan for a service instance
+* `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
+* `tags`: *Optional.* User provided tags
+* `timeout`: *Optional.* Max wait time for service update, in seconds. Defaults to `600` (10 minutes)
+* `wait_for_service`: *Optional.* Wait for the asynchronous service to update. Defaults to `false`.
+
+```yml
+  - put: cf-update-service
+    resource: cf-env
+    params:
+      command: update-service
+      service: p-config-server
+      plan: pro
+      service_instance: my-config-server
+      configuration: '{"count":2}'
       tags: 'list, of, tags'
       timeout: 300
       wait_for_service: true

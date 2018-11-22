@@ -2,6 +2,9 @@
 set -eu
 set -o pipefail
 
+# Return if assert lib already loaded.
+declare -f "assert::success" >/dev/null && return 0
+
 assert::success() {
   local command=${1:?command null or not set}
   set +e
@@ -12,7 +15,7 @@ assert::success() {
     printf '  Command            :\e[91m%s\e[0m\n' "$( echo "$@")"
     printf '  Expected exit code :\e[91m%s\e[0m\n' "0"
     printf '  Actual exit code   :\e[91m%s\e[0m\n' "$status"
-    return 1
+    exit 1
   fi
 }
 
@@ -26,7 +29,7 @@ assert::failure() {
     printf '  Command            :\e[91m%s\e[0m\n' "$( echo "$@")"
     printf '  Expected exit code :\e[91m%s\e[0m\n' "(non-zero)"
     printf '  Actual exit code   :\e[91m%s\e[0m\n' "$status"
-    return 1
+    exit 1
   fi
 }
 
@@ -38,7 +41,7 @@ assert::equals() {
     printf '\e[91mAssertion Failure:\e[0m\n'
     printf '  Expected :\e[91m%s\e[0m\n' "$expected"
     printf '  Actual   :\e[91m%s\e[0m\n' "$actual"
-    return 1
+    exit 1
   fi
 }
 
@@ -50,6 +53,6 @@ assert::matches() {
     printf '\e[91mAssertion Failure:\e[0m\n'
     printf '  Pattern :\e[91m%s\e[0m\n' "$pattern"
     printf '  Actual  :\e[91m%s\e[0m\n' "$actual"
-    return 1
+    exit 1
   fi
 }

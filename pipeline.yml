@@ -43,11 +43,15 @@ jobs:
       CF_CLIENT_ID: ((cf_client_id))
       CF_CLIENT_SECRET: ((cf_client_secret))
       SYNC_SERVICE: {{sync-service}}
-      SYNC_PLAN: {{sync-plan}}
-      SYNC_CONFIGURATION: {{sync-configuration}}
+      SYNC_PLAN_1: {{sync-plan-1}}
+      SYNC_PLAN_2: {{sync-plan-2}}
+      SYNC_CONFIGURATION_1: {{sync-configuration-1}}
+      SYNC_CONFIGURATION_2: {{sync-configuration-2}}
       ASYNC_SERVICE: {{async-service}}
-      ASYNC_PLAN: {{async-plan}}
-      ASYNC_CONFIGURATION: {{async-configuration}}
+      ASYNC_PLAN_1: {{async-plan-1}}
+      ASYNC_PLAN_2: {{async-plan-2}}
+      ASYNC_CONFIGURATION_1: {{async-configuration-1}}
+      ASYNC_CONFIGURATION_2: {{async-configuration-2}}
       SHARE_SERVICE: {{share-service}}
       SHARE_PLAN: {{share-plan}}
       SHARE_CONFIGURATION: {{share-configuration}}

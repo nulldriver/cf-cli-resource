@@ -292,9 +292,50 @@ function cf_create_service() {
 
   local args=("$service" "$plan" "$service_instance")
   [ -n "$configuration" ] && args+=(-c "$configuration")
-  [ -n "$tags" ] && args+=(-t "$tags")
+  [ -n "$tags" ]          && args+=(-t "$tags")
 
   cf create-service "${args[@]}"
+}
+
+function cf_get_service_instance_tags() {
+  local service_instance=${1:?service_instance null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo $output | jq -r '.entity.tags | join(", ")'
+}
+
+function cf_get_service_instance_plan() {
+  local service_instance=${1:?service_instance null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  local service_plan_url=$(echo $output | jq -r '.entity.service_plan_url')
+  if ! output=$(cf_curl "$service_plan_url") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo $output | jq -r '.entity.name'
+}
+
+function cf_update_service() {
+  local service_instance=${1:?service_instance null or not set}
+  local plan=${2:-}
+  local configuration=${3:-}
+  local tags=${4:-}
+
+  local args=("$service_instance")
+  [ -n "$plan" ]          && args+=(-p "$plan")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+  [ -n "$tags" ]          && args+=(-t "$tags")
+
+  cf update-service "${args[@]}"
 }
 
 function cf_share_service() {

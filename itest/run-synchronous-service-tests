@@ -13,17 +13,19 @@ space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
 
 service=$SYNC_SERVICE
-plan=$SYNC_PLAN
+plan_1=$SYNC_PLAN_1
+plan_2=$SYNC_PLAN_2
 service_instance=$(generate_test_name_with_spaces "Sync Service")
-configuration=$SYNC_CONFIGURATION
+configuration_1=$SYNC_CONFIGURATION_1
+configuration_2=$SYNC_CONFIGURATION_2
+tags="list, of, tags"
 
 setup_integration_tests "$org" "$space"
 
-run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
+run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan_1\" \"$service_instance\" \"$configuration_1\"
+run it_can_update_a_service \"$org\" \"$space\" \"$service_instance\" \"$plan_2\" \"$configuration_2\" \"$tags\"
 
-run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan\" \"$service_instance\" \"$configuration\"
-# run again to prove that it won't error out if it already exists
-run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan\" \"$service_instance\" \"$configuration\"
+run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 
 run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$service_instance\"
 run it_can_unbind_a_service \"$org\" \"$space\" \"$app_name\" \"$service_instance\"

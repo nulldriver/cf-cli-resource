@@ -27,6 +27,7 @@ else
 fi
 
 source $resource_dir/cf-functions.sh
+source $(dirname $0)/assert.sh
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
@@ -92,7 +93,7 @@ it_can_create_an_org() {
     .version | keys == ["timestamp"]
   '
 
-  cf_org_exists "$1"
+  assert::success cf_org_exists "$1"
 }
 
 it_can_create_a_space() {
@@ -113,7 +114,7 @@ it_can_create_a_space() {
     .version | keys == ["timestamp"]
   '
 
-  cf_space_exists "$1" "$2"
+  assert::success cf_space_exists "$1" "$2"
 }
 
 # This test showcases the multi-command syntax
@@ -143,8 +144,8 @@ it_can_delete_a_space_and_org() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_space_exists "$1" "$2"
-  ! cf_org_exists "$1"
+  assert::failure cf_space_exists "$1" "$2"
+  assert::failure cf_org_exists "$1"
 }
 
 it_can_push_an_app() {
@@ -172,7 +173,7 @@ it_can_push_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_started "$3"
+  assert::success cf_is_app_started "$3"
 }
 
 it_can_delete_an_app() {
@@ -196,7 +197,7 @@ it_can_delete_an_app() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_app_exists "$3"
+  assert::failure cf_app_exists "$3"
 }
 
 it_can_create_a_service() {
@@ -227,7 +228,48 @@ it_can_create_a_service() {
     .version | keys == ["timestamp"]
   '
 
-  cf_service_exists "$5"
+  assert::success cf_service_exists "$5"
+}
+
+it_can_update_a_service() {
+  set -eu
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local plan=${4:-}
+  local configuration=${5:-}
+  local tags=${6:-}
+  local wait_for_service=${7:-false}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
+  --arg plan "$plan" \
+  --arg configuration "$configuration" \
+  --arg tags "$tags" \
+  --arg wait_for_service "$wait_for_service" \
+  '{
+    command: "update-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance,
+    plan: $plan,
+    configuration: $configuration,
+    tags: $tags,
+    wait_for_service: $wait_for_service
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_service_exists "${service_instance}"
+  assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
+  assert::equals "$tags" "$(cf_get_service_instance_tags "$service_instance")"
+  #TODO: currently there is no way that I know of to retrieve an si's configuration...
 }
 
 it_can_bind_a_service() {
@@ -252,7 +294,7 @@ it_can_bind_a_service() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_app_bound_to_service "$3" "$4"
+  assert::success cf_is_app_bound_to_service "$3" "$4"
 }
 
 it_can_unbind_a_service() {
@@ -277,7 +319,7 @@ it_can_unbind_a_service() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_is_app_bound_to_service "$3" "$4"
+  assert::failure cf_is_app_bound_to_service "$3" "$4"
 }
 
 it_can_delete_a_service() {
@@ -301,7 +343,7 @@ it_can_delete_a_service() {
     .version | keys == ["timestamp"]
   '
 
-  ! cf_service_exists "$3"
+  assert::failure cf_service_exists "$3"
 }
 
 it_can_enable_feature_flag() {
@@ -320,7 +362,7 @@ it_can_enable_feature_flag() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_feature_flag_enabled "$1"
+  assert::success cf_is_feature_flag_enabled "$1"
 }
 
 it_can_disable_feature_flag() {
@@ -339,7 +381,7 @@ it_can_disable_feature_flag() {
     .version | keys == ["timestamp"]
   '
 
-  cf_is_feature_flag_disabled "$1"
+  assert::success cf_is_feature_flag_disabled "$1"
 }
 
 cleanup_test_orgs() {

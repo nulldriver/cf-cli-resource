@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2.10.0 - Unreleased
 ### Added
 - `set-env` command - Set an env variable for an app
+- `update-service` command - Update a service instance
 
 ### Changed
-- `push` command now supports additional cli options:
+- `push` command now supports additional options:
   - `startup_command`: Startup command, set to null to reset to default start command
   - `staging_timeout`: Max wait time for buildpack staging, in minutes
   - `startup_timeout`: Max wait time for app instance startup, in minutes
