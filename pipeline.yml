@@ -24,6 +24,17 @@ test-params: &test-params
   DOCKER_PRIVATE_USERNAME: ((docker-private.username))
   DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
 
+test-gets: &test-gets
+- get: project
+  resource: cf-cli-resource
+  passed: [build]
+- get: cf-cli-resource-image-rc
+  trigger: true
+  passed: [build]
+- get: version
+  passed: [build]
+- get: service-broker
+
 test-jobs: &test-jobs
 - run-app-push-tests
 - run-app-tests
@@ -62,16 +73,7 @@ jobs:
 - name: run-app-push-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -82,16 +84,7 @@ jobs:
 - name: run-app-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -102,16 +95,7 @@ jobs:
 - name: run-asynchronous-service-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -122,16 +106,7 @@ jobs:
 - name: run-auth-client-credentials-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -142,16 +117,7 @@ jobs:
 - name: run-auth-origin-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -162,16 +128,7 @@ jobs:
 - name: run-docker-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -182,16 +139,7 @@ jobs:
 - name: run-file-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -202,16 +150,7 @@ jobs:
 - name: run-network-policy-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -222,16 +161,7 @@ jobs:
 - name: run-route-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -242,16 +172,7 @@ jobs:
 - name: run-service-broker-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -262,16 +183,7 @@ jobs:
 - name: run-share-service-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -282,16 +194,7 @@ jobs:
 - name: run-synchronous-service-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -302,16 +205,7 @@ jobs:
 - name: run-task-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -322,16 +216,7 @@ jobs:
 - name: run-user-provided-service-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -342,16 +227,7 @@ jobs:
 - name: run-user-tests
   public: true
   plan:
-  - aggregate:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-    - get: service-broker
+  - aggregate: *test-gets
   - task: test
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
