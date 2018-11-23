@@ -1,7 +1,10 @@
-FROM concourse/buildroot:curl
+FROM alpine:3.8
 
 ADD assets/ /opt/resource/
 ADD itest/ /opt/itest/
+
+# Install uuidgen
+RUN apk add --no-cache util-linux
 
 # Install Cloud Foundry cli
 ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.40.0 /tmp/cf-cli.tgz

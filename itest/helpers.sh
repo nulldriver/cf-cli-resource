@@ -2,12 +2,14 @@
 set -eu
 set -o pipefail
 
+test_dir=$(dirname $0)
+
 export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
 export CF_HOME=$TMPDIR_ROOT  # Use a unique CF_HOME for sessions
 export CF_PLUGIN_HOME=$HOME  # But keep the original plugins folder
 
-readonly testprefix=cfclitest
-readonly timestamp=$(date +%s)
+readonly test_prefix=cfclitest
+readonly test_id=$($test_dir/bashids -e -s "$(uuidgen)" -l 10 "$RANDOM")
 
 on_exit() {
   exitcode=$?
@@ -39,11 +41,11 @@ run() {
 }
 
 generate_test_name_with_spaces() {
-  echo "$testprefix $1 $timestamp"
+  echo "$test_prefix $1 $test_id"
 }
 
 generate_test_name_with_hyphens() {
-  echo "$testprefix-${1// /-}-$timestamp"
+  echo "$test_prefix-${1// /-}-$test_id"
 }
 
 app_to_hostname() {
@@ -390,7 +392,7 @@ cleanup_test_orgs() {
 
   while read -r org; do
     cf_delete_org "$org"
-  done < <(cf orgs | grep "$testprefix " || true)
+  done < <(cf orgs | grep "$test_prefix " || true)
 }
 
 cleanup_test_users() {
@@ -405,7 +407,7 @@ cleanup_test_users() {
 
     while read -r username; do
       cf_delete_user "$username"
-    done < <(echo "$output" | jq -r --arg userprefix "$testprefix-" '.resources[] | select(.entity.username|startswith($userprefix)?) | .entity.username')
+    done < <(echo "$output" | jq -r --arg userprefix "$test_prefix-" '.resources[] | select(.entity.username|startswith($userprefix)?) | .entity.username')
 
     next_url=$(echo "$output" | jq -r '.next_url')
   done
@@ -417,7 +419,7 @@ cleanup_service_brokers() {
 
   while read -r broker; do
     cf_delete_service_broker "$broker"
-  done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$testprefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
+  done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 setup_integration_tests() {

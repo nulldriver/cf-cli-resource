@@ -66,9 +66,9 @@ it_can_create_users_from_file() {
 
   cat << EOF > $working_dir/input/users.csv
 Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-$testprefix-bulkload-user1,wasabi,$1,$2,x,x,x,x,x,x
-$testprefix-bulkload-user2,wasabi,$1,$2,,x,x,,x,x
-$testprefix-bulkload-user3,ldap,$1,$2,,,x,,x,
+$test_prefix-bulkload-user1,wasabi,$1,$2,x,x,x,x,x,x
+$test_prefix-bulkload-user2,wasabi,$1,$2,,x,x,,x,x
+$test_prefix-bulkload-user3,ldap,$1,$2,,,x,,x,
 EOF
 
   local params=$(jq -n \
@@ -87,9 +87,9 @@ EOF
     .version | keys == ["timestamp"]
   '
 
-  assert::success cf_user_exists "$testprefix-bulkload-user1"
-  assert::success cf_user_exists "$testprefix-bulkload-user2"
-  assert::success cf_user_exists "$testprefix-bulkload-user3"
+  assert::success cf_user_exists "$test_prefix-bulkload-user1"
+  assert::success cf_user_exists "$test_prefix-bulkload-user2"
+  assert::success cf_user_exists "$test_prefix-bulkload-user3"
 }
 
 it_can_delete_a_user_with_origin() {
