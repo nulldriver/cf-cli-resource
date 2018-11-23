@@ -1,4 +1,29 @@
 ---
+test-params: &test-params
+  CF_SYSTEM_DOMAIN: {{cf-system-domain}}
+  CF_APPS_DOMAIN: {{cf-apps-domain}}
+  CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
+  CF_USERNAME: ((cf.username))
+  CF_PASSWORD: ((cf.password))
+  CF_CLIENT_ID: ((cf_client_id))
+  CF_CLIENT_SECRET: ((cf_client_secret))
+  SYNC_SERVICE: {{sync-service}}
+  SYNC_PLAN_1: {{sync-plan-1}}
+  SYNC_PLAN_2: {{sync-plan-2}}
+  SYNC_CONFIGURATION_1: {{sync-configuration-1}}
+  SYNC_CONFIGURATION_2: {{sync-configuration-2}}
+  ASYNC_SERVICE: {{async-service}}
+  ASYNC_PLAN_1: {{async-plan-1}}
+  ASYNC_PLAN_2: {{async-plan-2}}
+  ASYNC_CONFIGURATION_1: {{async-configuration-1}}
+  ASYNC_CONFIGURATION_2: {{async-configuration-2}}
+  SHARE_SERVICE: {{share-service}}
+  SHARE_PLAN: {{share-plan}}
+  SHARE_CONFIGURATION: {{share-configuration}}
+  DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
+  DOCKER_PRIVATE_USERNAME: ((docker-private.username))
+  DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
+
 jobs:
 - name: build
   public: true
@@ -17,7 +42,7 @@ jobs:
       tag: version/version
       tag_as_latest: false
 
-- name: test
+- name: run-app-push-tests
   public: true
   serial_groups: [version]
   plan:
@@ -35,29 +60,29 @@ jobs:
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
-      CF_SYSTEM_DOMAIN: {{cf-system-domain}}
-      CF_APPS_DOMAIN: {{cf-apps-domain}}
-      CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
-      CF_USERNAME: ((cf.username))
-      CF_PASSWORD: ((cf.password))
-      CF_CLIENT_ID: ((cf_client_id))
-      CF_CLIENT_SECRET: ((cf_client_secret))
-      SYNC_SERVICE: {{sync-service}}
-      SYNC_PLAN_1: {{sync-plan-1}}
-      SYNC_PLAN_2: {{sync-plan-2}}
-      SYNC_CONFIGURATION_1: {{sync-configuration-1}}
-      SYNC_CONFIGURATION_2: {{sync-configuration-2}}
-      ASYNC_SERVICE: {{async-service}}
-      ASYNC_PLAN_1: {{async-plan-1}}
-      ASYNC_PLAN_2: {{async-plan-2}}
-      ASYNC_CONFIGURATION_1: {{async-configuration-1}}
-      ASYNC_CONFIGURATION_2: {{async-configuration-2}}
-      SHARE_SERVICE: {{share-service}}
-      SHARE_PLAN: {{share-plan}}
-      SHARE_CONFIGURATION: {{share-configuration}}
-      DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
-      DOCKER_PRIVATE_USERNAME: ((docker-private.username))
-      DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
+      <<: *test-params
+      TEST_SCRIPT: run-app-push-tests
+
+- name: run-app-tests
+  public: true
+  serial_groups: [version]
+  plan:
+  - aggregate:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
+    - get: cf-cli-resource-image-rc
+      trigger: true
+      passed: [build]
+    - get: version
+      passed: [build]
+    - get: service-broker
+  - task: test
+    file: project/ci/task.yml
+    image: cf-cli-resource-image-rc
+    params:
+      <<: *test-params
+      TEST_SCRIPT: run-app-tests
 
 - name: shipit
   public: true

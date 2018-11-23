@@ -5,6 +5,7 @@ inputs:
 - name: service-broker
 
 params:
+  TEST_SCRIPT:
   CF_SYSTEM_DOMAIN:
   CF_APPS_DOMAIN:
   CF_SKIP_CERT_CHECK:
@@ -35,4 +36,4 @@ run:
   - -exc
   - |
     ln -s $PWD/service-broker /opt/service-broker
-    /opt/itest/run-all-tests
+    /opt/itest/$TEST_SCRIPT
