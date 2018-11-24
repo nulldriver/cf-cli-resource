@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `startup_command`: Startup command, set to null to reset to default start command
   - `staging_timeout`: Max wait time for buildpack staging, in minutes
   - `startup_timeout`: Max wait time for app instance startup, in minutes
+- The build pipeline has been updated to run the integration tests in parallel, reducing the test time from ~15 minutes down to ~2.5 minutes :-)
 
 ## 2.9.1 - 2018-11-18
 ### Fixed
