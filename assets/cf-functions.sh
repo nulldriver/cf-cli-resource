@@ -158,6 +158,69 @@ function cf_delete_user() {
   cf delete-user -f "$username"
 }
 
+function cf_get_private_domain_guid() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/organizations/$(cf_get_org_guid "$org")/private_domains?inline-relations-depth=1&q=name:$domain") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  if echo $output | jq -e '.total_results == 0' >/dev/null; then
+    return
+  fi
+  echo "$output" | jq -r '.resources[].metadata.guid'
+}
+
+function cf_get_shared_domain_guid() {
+  local domain=${1:?domain null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/shared_domains?inline-relations-depth=1&q=name:$domain")  || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  if echo $output | jq -e '.total_results == 0' >/dev/null; then
+    return
+  fi
+  echo "$output" | jq -r '.resources[].metadata.guid'
+}
+
+function cf_get_domain_guid() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+
+  local domain_guid=$(cf_get_private_domain_guid "$org" "$domain")
+  if [ -z "$domain_guid" ]; then
+    domain_guid=$(cf_get_shared_domain_guid "$domain")
+  fi
+  echo "$domain_guid"
+}
+
+function cf_check_route() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+  local host=${3:-}
+  local path=${4:-}
+
+  local domain_guid=$(cf_get_domain_guid "$org" "$domain")
+  if [ -z "$domain_guid" ]; then
+    return 1
+  fi
+
+  local url="/v2/routes/reserved/domain/$domain_guid"
+  [ -n "$host" ] && url+="/host/$host"
+  [ -n "$path" ] && url+="?path=%2F$path"
+
+  local output
+  if ! output=$(CF_TRACE=false cf curl "$url" -i); then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo "$output" | grep -q '204 No Content'
+}
+
 cf_is_app_mapped_to_route() {
   local app_name=${1:?app_name null or not set}
   local route=${2:?route null or not set}
@@ -190,6 +253,31 @@ function cf_delete_domain() {
   cf delete-domain -f "$domain"
 }
 
+function cf_create_route() {
+  local space=${1:?space null or not set}
+  local domain=${2:?domain null or not set}
+  local hostname=${3:-}
+  local path=${4:-}
+
+  local args=("$space" "$domain")
+  [ -n "$hostname" ] && args+=(--hostname "$hostname")
+  [ -n "$path" ]     && args+=(--path "$path")
+
+  cf create-route "${args[@]}"
+}
+
+function cf_delete_route() {
+  local domain=${1:?domain null or not set}
+  local hostname=${2:-}
+  local path=${3:-}
+
+  local args=("$domain")
+  [ -n "$hostname" ] && args+=(--hostname "$hostname")
+  [ -n "$path" ]     && args+=(--path "$path")
+
+  cf delete-route -f "${args[@]}"
+}
+
 function cf_map_route() {
   local app_name=${1:?app_name null or not set}
   local domain=${2:?domain null or not set}
@@ -198,7 +286,7 @@ function cf_map_route() {
 
   local args=("$app_name" "$domain")
   [ -n "$hostname" ] && args+=(--hostname "$hostname")
-  [ -n "$path" ] && args+=(--path "$path")
+  [ -n "$path" ]     && args+=(--path "$path")
 
   cf map-route "${args[@]}"
 }

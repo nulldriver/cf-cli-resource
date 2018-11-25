@@ -156,6 +156,21 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
     cf_target "$org" "$space"
     cf_delete_domain "$domain"
+  elif [ "create-route" = "$command" ]; then
+    other_space=$(echo $options | jq -r '.other_space //empty')
+    domain=$(echo $options | jq -r '.domain //empty')
+    hostname=$(echo $options | jq -r '.hostname //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    cf_target "$org" "$space"
+    cf_create_route "${other_space:-$space}" "$domain" "$hostname" "$path"
+  elif [ "delete-route" = "$command" ]; then
+    domain=$(echo $options | jq -r '.domain //empty')
+    hostname=$(echo $options | jq -r '.hostname //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    cf_target "$org" "$space"
+    cf_delete_route "$domain" "$hostname" "$path"
   elif [ "map-route" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     domain=$(echo $options | jq -r '.domain //empty')

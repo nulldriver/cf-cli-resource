@@ -219,6 +219,27 @@ Delete a domain
       domain: example.com
 ```
 
+#### create-route
+
+Create a url route in a space for later use
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `other_space`: *Optional.* The space for the route (if not set the source or params specified `space` will be used)
+* `domain`: *Required.* Domain for the HTTP route
+* `hostname`: *Optional.* Hostname for the HTTP route (required for shared domains)
+* `path`: *Optional.* Path for the HTTP route
+
+```yml
+  - put: cf-create-route
+    resource: cf-env
+    params:
+      command: create-route
+      domain: example.com
+      hostname: myhost
+      path: foo
+```
+
 #### map-route
 
 Add a url route to an app
@@ -258,6 +279,26 @@ Remove a url route from an app
     params:
       command: unmap-route
       app_name: myapp-ui
+      domain: example.com
+      hostname: myhost
+      path: foo
+```
+
+#### delete-route
+
+Delete a route
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `domain`: *Required.* Domain used to identify the HTTP route
+* `hostname`: *Optional.* Hostname used to identify the HTTP route
+* `path`: *Optional.* Path used to identify the HTTP route
+
+```yml
+  - put: cf-delete-route
+    resource: cf-env
+    params:
+      command: delete-route
       domain: example.com
       hostname: myhost
       path: foo

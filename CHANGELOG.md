@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `set-env` command - Set an env variable for an app
 - `update-service` command - Update a service instance
+- `create-route` command - Create a url route in a space for later use
+- `delete-route` command - Delete a route
 
 ### Changed
 - `push` command now supports additional options:

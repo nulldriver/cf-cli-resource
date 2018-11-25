@@ -10,11 +10,14 @@ source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
 it_can_create_a_domain() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg domain "$2" \
+  --arg org "$org" \
+  --arg domain "$domain" \
   '{
     command: "create-domain",
     org: $org,
@@ -22,20 +25,20 @@ it_can_create_a_domain() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_has_private_domain "$1" "$2"
+  assert::success cf_has_private_domain "$org" "$domain"
 }
 
 it_can_delete_a_domain() {
+  local org=${1:?org null or not set}
+  local domain=${2:?domain null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg domain "$2" \
+  --arg org "$org" \
+  --arg domain "$domain" \
   '{
     command: "delete-domain",
     org: $org,
@@ -43,204 +46,395 @@ it_can_delete_a_domain() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
+  assert::failure cf_has_private_domain "$org" "$domain"
+}
 
-  assert::failure cf_has_private_domain "$1" "$2"
+it_can_create_a_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local other_space=${4:-}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg other_space "$other_space" \
+  --arg domain "$domain" \
+  '{
+    command: "create-route",
+    org: $org,
+    space: $space,
+    other_space: $other_space,
+    domain: $domain
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_check_route "$org" "$domain"
+}
+
+it_can_create_a_route_with_hostname() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local hostname=${4:?hostname null or not set}
+  local other_space=${5:-}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg other_space "$other_space" \
+  --arg domain "$domain" \
+  --arg hostname "$hostname" \
+  '{
+    command: "create-route",
+    org: $org,
+    space: $space,
+    other_space: $other_space,
+    domain: $domain,
+    hostname: $hostname
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_check_route "$org" "$domain" "$hostname"
+}
+
+it_can_create_a_route_with_hostname_and_path() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local hostname=${4:?hostname null or not set}
+  local path=${5:?path null or not set}
+  local other_space=${6:-}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg other_space "$other_space" \
+  --arg domain "$domain" \
+  --arg hostname "$hostname" \
+  --arg path "$path" \
+  '{
+    command: "create-route",
+    org: $org,
+    space: $space,
+    other_space: $other_space,
+    domain: $domain,
+    hostname: $hostname,
+    path: $path
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_check_route "$org" "$domain" "$hostname" "$path"
 }
 
 it_can_map_a_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
   '{
     command: "map-route",
     org: $org,
     space: $space,
-    app_name: $app_name,
-    domain: $domain
+    domain: $domain,
+    app_name: $app_name
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_mapped_to_route "$3" "${4}"
+  assert::success cf_is_app_mapped_to_route "$app_name" "$domain"
 }
 
 it_can_map_a_route_with_hostname() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+  local hostname=${5:?hostname null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local hostname=$(app_to_hostname "$3")
-
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
   --arg hostname "$hostname" \
   '{
     command: "map-route",
     org: $org,
     space: $space,
-    app_name: $app_name,
     domain: $domain,
+    app_name: $app_name,
     hostname: $hostname
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_mapped_to_route "$3" "${hostname}.${4}"
+  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
 
 it_can_map_a_route_with_hostname_and_path() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+  local hostname=${5:?hostname null or not set}
+  local path=${6:?path null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local hostname=$(app_to_hostname "$3")
-
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
   --arg hostname "$hostname" \
-  --arg path "foo" \
+  --arg path "$path" \
   '{
     command: "map-route",
     org: $org,
     space: $space,
-    app_name: $app_name,
     domain: $domain,
+    app_name: $app_name,
     hostname: $hostname,
     path: $path
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_mapped_to_route "$3" "${hostname}.${4}/foo"
+  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
 
-it_can_unmap_a_route_with_hostname_and_path() {
+it_can_unmap_a_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local hostname=$(app_to_hostname "$3")
-
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
-  --arg hostname "$hostname" \
-  --arg path "foo" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
   '{
     command: "unmap-route",
     org: $org,
     space: $space,
-    app_name: $app_name,
     domain: $domain,
-    hostname: $hostname,
-    path: $path
+    app_name: $app_name
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-  assert::failure cf_is_app_mapped_to_route "$3" "${hostname}.${4}/foo"
+  assert::failure cf_is_app_mapped_to_route "$app_name" "$domain"
 }
 
 it_can_unmap_a_route_with_hostname() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+  local hostname=${5:?hostname null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  local hostname=$(app_to_hostname "$3")
-
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
   --arg hostname "$hostname" \
   '{
     command: "unmap-route",
     org: $org,
     space: $space,
-    app_name: $app_name,
     domain: $domain,
+    app_name: $app_name,
     hostname: $hostname
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_is_app_mapped_to_route "$3" "${hostname}.${4}"
+  assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
 
-it_can_unmap_a_route() {
+it_can_unmap_a_route_with_hostname_and_path() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local app_name=${4:?app_name null or not set}
+  local hostname=${5:?hostname null or not set}
+  local path=${6:?path null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg domain "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg app_name "$app_name" \
+  --arg hostname "$hostname" \
+  --arg path "$path" \
   '{
     command: "unmap-route",
     org: $org,
     space: $space,
+    domain: $domain,
     app_name: $app_name,
+    hostname: $hostname,
+    path: $path
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
+}
+
+it_can_delete_a_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  '{
+    command: "delete-route",
+    org: $org,
+    space: $space,
     domain: $domain
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
+  assert::failure cf_check_route "$org" "$domain"
+}
 
-  assert::failure cf_is_app_mapped_to_route "$3" "$4"
+it_can_delete_a_route_with_hostname() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local hostname=${4:?hostname null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg hostname "$hostname" \
+  '{
+    command: "delete-route",
+    org: $org,
+    space: $space,
+    domain: $domain,
+    hostname: $hostname
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::failure cf_check_route "$org" "$domain" "$hostname"
+}
+
+it_can_delete_a_route_with_hostname_and_path() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local hostname=${4:?hostname null or not set}
+  local path=${5:?path null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg hostname "$hostname" \
+  --arg path "$path" \
+  '{
+    command: "delete-route",
+    org: $org,
+    space: $space,
+    domain: $domain,
+    hostname: $hostname,
+    path: $path
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::failure cf_check_route "$org" "$domain" "$hostname" "$path"
 }
 
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
-app_name=$(generate_test_name_with_spaces "App")
 domain="$(generate_test_name_with_hyphens "domain").com"
+app_name=$(generate_test_name_with_spaces "App")
+hostname=$(app_to_hostname "$app_name")
+path="foo"
+other_space=$(generate_test_name_with_spaces "Other Space")
 
 setup_integration_tests "$org" "$space"
-
-run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
+setup_integration_tests "$org" "$other_space"
 
 run it_can_create_a_domain \"$org\" \"$domain\"
 
-run it_can_map_a_route \"$org\" \"$space\" \"$app_name\" \"$domain\"
-run it_can_map_a_route_with_hostname \"$org\" \"$space\" \"$app_name\" \"$domain\"
-run it_can_map_a_route_with_hostname_and_path \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_create_a_route \"$org\" \"$space\" \"$domain\" \"$other_space\"
+run it_can_create_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$other_space\"
+run it_can_create_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\" \"$other_space\"
 
-run it_can_unmap_a_route_with_hostname_and_path \"$org\" \"$space\" \"$app_name\" \"$domain\"
-run it_can_unmap_a_route_with_hostname \"$org\" \"$space\" \"$app_name\" \"$domain\"
-run it_can_unmap_a_route \"$org\" \"$space\" \"$app_name\" \"$domain\"
+run it_can_push_an_app \"$org\" \"$other_space\" \"$app_name\"
+
+run it_can_map_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
+run it_can_map_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
+run it_can_map_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
+
+run it_can_unmap_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
+run it_can_unmap_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
+run it_can_unmap_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
+
+run it_can_delete_an_app \"$org\" \"$other_space\" \"$app_name\"
+
+run it_can_delete_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\"
+run it_can_delete_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\"
+run it_can_delete_a_route \"$org\" \"$space\" \"$domain\"
 
 run it_can_delete_a_domain \"$org\" \"$domain\"
-
-run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 
 teardown_integration_tests "$org" "$space"
