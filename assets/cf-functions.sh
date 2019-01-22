@@ -818,7 +818,7 @@ function cf_get_app_startup_command() {
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
-  echo $output | jq -r '.command'
+  echo $output | jq -r '.command // empty'
 }
 
 function cf_service_broker_exists() {
