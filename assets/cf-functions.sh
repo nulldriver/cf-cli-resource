@@ -371,20 +371,6 @@ function cf_create_or_update_user_provided_service_route() {
   fi
 }
 
-function cf_create_service() {
-  local service=${1:?service null or not set}
-  local plan=${2:?plan null or not set}
-  local service_instance=${3:?service_instance null or not set}
-  local configuration=${4:-}
-  local tags=${5:-}
-
-  local args=("$service" "$plan" "$service_instance")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-  [ -n "$tags" ]          && args+=(-t "$tags")
-
-  cf create-service "${args[@]}"
-}
-
 function cf_get_service_instance_tags() {
   local service_instance=${1:?service_instance null or not set}
 
@@ -412,6 +398,20 @@ function cf_get_service_instance_plan() {
   echo $output | jq -r '.entity.name'
 }
 
+function cf_create_service() {
+  local service=${1:?service null or not set}
+  local plan=${2:?plan null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local configuration=${4:-}
+  local tags=${5:-}
+
+  local args=("$service" "$plan" "$service_instance")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+  [ -n "$tags" ]          && args+=(-t "$tags")
+
+  cf create-service "${args[@]}"
+}
+
 function cf_update_service() {
   local service_instance=${1:?service_instance null or not set}
   local plan=${2:-}
@@ -424,6 +424,20 @@ function cf_update_service() {
   [ -n "$tags" ]          && args+=(-t "$tags")
 
   cf update-service "${args[@]}"
+}
+
+function cf_create_or_update_service() {
+  local service=${1:?service null or not set}
+  local plan=${2:?plan null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local configuration=${4:-}
+  local tags=${5:-}
+
+  if cf_service_exists "$service_instance"; then
+    cf_update_service "$service_instance" "$plan" "$configuration" "$tags"
+  else
+    cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+  fi
 }
 
 function cf_share_service() {

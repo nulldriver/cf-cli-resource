@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `delete-route` command - Delete a route
 
 ### Changed
+- `create-service` command now supports `update_service` param to update a service instance if it already exists, defaults to `false`.
 - `push` command now supports additional options:
   - `startup_command`: Startup command, set to null to reset to default start command
   - `staging_timeout`: Max wait time for buildpack staging, in minutes

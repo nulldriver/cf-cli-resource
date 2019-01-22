@@ -210,9 +210,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     tags=$(echo $options | jq -r '.tags //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
+    update_service=$(echo $options | jq -r '.update_service //"false"')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
-    cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+    if [ "true" = "$update_service" ]; then
+      cf_create_or_update_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+    else
+      cf_create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+    fi
     if [ "true" = "$wait" ]; then
       cf_wait_for_service_instance "$service_instance" "$timeout"
     fi
