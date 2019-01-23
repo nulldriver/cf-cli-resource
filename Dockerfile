@@ -7,7 +7,7 @@ ADD itest/ /opt/itest/
 RUN apk add --no-cache ca-certificates curl bash jq util-linux
 
 # Install Cloud Foundry cli
-ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.40.0 /tmp/cf-cli.tgz
+ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.42.0 /tmp/cf-cli.tgz
 RUN mkdir -p /usr/local/bin && \
   tar -xzf /tmp/cf-cli.tgz -C /usr/local/bin && \
   cf --version && \

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.11.0 - Unreleased
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.42.0](https://github.com/cloudfoundry/cli/releases/tag/v6.42.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
+
+
 ## 2.10.0 - 2019-01-22
 ### Added
 - `set-env` command - Set an env variable for an app
@@ -18,6 +28,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `staging_timeout`: Max wait time for buildpack staging, in minutes
   - `startup_timeout`: Max wait time for app instance startup, in minutes
 - The build pipeline has been updated to run the integration tests in parallel, reducing the test time from ~15 minutes down to ~2.5 minutes :-)
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.40.0](https://github.com/cloudfoundry/cli/releases/tag/v6.40.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
 
 ## 2.9.1 - 2018-11-18
 ### Fixed
