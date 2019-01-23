@@ -5,7 +5,7 @@ set -o pipefail
 
 test_dir=$(dirname $0)
 
-$test_dir/run-cleanup-failed-tests
+$test_dir/cleanup-failed-tests
 
 $test_dir/run-app-push-tests
 $test_dir/run-app-tests
