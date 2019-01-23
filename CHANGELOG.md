@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.10.0 - Unreleased
+## 2.10.0 - 2019-01-22
 ### Added
 - `set-env` command - Set an env variable for an app
 - `update-service` command - Update a service instance
@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.8.3 - 2018-09-18
 ### Fixed
-- `enable-service-access` and `disable-service-access` no longer error if you don't specify an org or space ('cause you don't have to!) 
+- `enable-service-access` and `disable-service-access` no longer error if you don't specify an org or space ('cause you don't have to!)
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
