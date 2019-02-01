@@ -203,34 +203,41 @@ it_can_delete_an_app() {
 }
 
 it_can_create_a_service() {
+  local org=${1:?org is null or not set}
+  local space=${2:?space is null or not set}
+  local service=${3:?service is null or not set}
+  local plan=${4:?plan is null or not set}
+  local service_instance=${5:?service_instance is null or not set}
+  local configuration=${6:-}
+  local wait_for_service=${7:-}
+  local update_service=${8:-}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service "$3" \
-  --arg plan "$4" \
-  --arg service_instance "$5" \
-  --arg configuration "$6" \
-  --arg wait_for_service "${7:-false}" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service "$service" \
+  --arg plan "$plan" \
+  --arg service_instance "$service_instance" \
   '{
     command: "create-service",
     org: $org,
     space: $space,
     service: $service,
     plan: $plan,
-    service_instance: $service_instance,
-    configuration: $configuration,
-    wait_for_service: $wait_for_service
+    service_instance: $service_instance
   }')
 
+  [ -n "$configuration" ]    && params=$(echo $params | jq --arg value "$configuration"    '.configuration    = $value')
+  [ -n "$wait_for_service" ] && params=$(echo $params | jq --arg value "$wait_for_service" '.wait_for_service = $value')
+  [ -n "$update_service" ]   && params=$(echo $params | jq --arg value "$update_service"   '.update_service   = $value')
+
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_service_exists "$5"
+  assert::success cf_service_exists "$service_instance"
+  assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
 }
 
 it_can_update_a_service() {

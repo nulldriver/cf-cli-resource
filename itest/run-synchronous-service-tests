@@ -8,6 +8,22 @@ test_dir=$(dirname $0)
 source $test_dir/config.sh
 source $test_dir/helpers.sh
 
+it_can_create_a_service_that_does_not_exist() {
+  it_can_create_a_service "$@"
+}
+
+it_can_create_a_service_that_already_exists() {
+  it_can_create_a_service "$@"
+}
+
+it_can_create_a_service_that_already_exists_and_update_with_changes() {
+  it_can_create_a_service "$@"
+}
+
+it_can_create_a_service_that_already_exists_and_update_without_changes() {
+  it_can_create_a_service "$@"
+}
+
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
@@ -19,11 +35,17 @@ service_instance=$(generate_test_name_with_spaces "Sync Service")
 configuration_1=$SYNC_CONFIGURATION_1
 configuration_2=$SYNC_CONFIGURATION_2
 tags="list, of, tags"
+wait_for_service="false"
+update_service="true"
 
 setup_integration_tests "$org" "$space"
 
-run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan_1\" \"$service_instance\" \"$configuration_1\"
-run it_can_update_a_service \"$org\" \"$space\" \"$service_instance\" \"$plan_2\" \"$configuration_2\" \"$tags\"
+run it_can_create_a_service_that_does_not_exist \"$org\" \"$space\" \"$service\" \"$plan_1\" \"$service_instance\" \"$configuration_1\"
+run it_can_create_a_service_that_already_exists \"$org\" \"$space\" \"$service\" \"$plan_1\" \"$service_instance\" \"$configuration_1\"
+run it_can_create_a_service_that_already_exists_and_update_with_changes \"$org\" \"$space\" \"$service\" \"$plan_2\" \"$service_instance\" \"$configuration_2\" \"$wait_for_service\" \"$update_service\"
+run it_can_create_a_service_that_already_exists_and_update_without_changes \"$org\" \"$space\" \"$service\" \"$plan_2\" \"$service_instance\" \"$configuration_2\" \"$wait_for_service\" \"$update_service\"
+
+run it_can_update_a_service \"$org\" \"$space\" \"$service_instance\" \"$plan_1\" \"$configuration_1\" \"$tags\"
 
 run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 

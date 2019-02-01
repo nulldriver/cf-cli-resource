@@ -425,6 +425,7 @@ Create a service instance
 * `tags`: *Optional.* User provided tags
 * `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
 * `wait_for_service`: *Optional.* Wait for the asynchronous service to start. Defaults to `false`.
+* `update_service`: *Optional.* Update service instance if it already exists. Defaults to `false`.
 
 ```yml
   - put: cf-create-service
