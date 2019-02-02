@@ -272,7 +272,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     cf_target "$org" "$space"
     cf_create_service_key "$service_instance" "$service_key" "$configuration"
   elif [ "delete-service-key" = "$command" ]; then
-    service_key=$(echo $options | jq -r '.service //empty')
+    service_key=$(echo $options | jq -r '.service_key //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_key"
     cf_target "$org" "$space"
