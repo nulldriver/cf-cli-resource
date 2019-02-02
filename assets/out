@@ -265,7 +265,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
       cf_wait_for_delete_service_instance "$service_instance" "$timeout"
     fi
   elif [ "create-service-key" = "$command" ]; then
-    service_key=$(echo $options | jq -r '.service //empty')
+    service_key=$(echo $options | jq -r '.service_key //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     configuration=$(echo $options | jq -r '.configuration //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_key"
