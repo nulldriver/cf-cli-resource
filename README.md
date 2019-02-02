@@ -526,6 +526,43 @@ Unshare a shared service instance from a space
       other_space: other-space
 ```
 
+#### create-service-key
+
+Create a service key
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The name of the service instance for which the key is to be created
+* `service_key`: *Required.* The name to give the service key
+* `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
+
+```yml
+  - put: cf-create-service-key
+    resource: cf-env
+    params:
+      command: create-service-key
+      service_instance: my-db
+      service_instance: my-db-service-key
+```
+
+#### delete-service-key
+
+Delete a service key
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `service_instance`: *Required.* The service instance that has the service key
+* `service_key`: *Required.* The service key to delete
+
+```yml
+  - put: cf-delete-service-key
+    resource: cf-env
+    params:
+      command: delete-service-key
+      service_instance: my-db
+      service_key: my-db-service-key
+```
+
 #### create-service-broker
 
 Create/Update a service broker. If a service broker already exists, updates the existing service broker.
