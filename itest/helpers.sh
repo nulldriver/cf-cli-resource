@@ -203,11 +203,11 @@ it_can_delete_an_app() {
 }
 
 it_can_create_a_service() {
-  local org=${1:?org is null or not set}
-  local space=${2:?space is null or not set}
-  local service=${3:?service is null or not set}
-  local plan=${4:?plan is null or not set}
-  local service_instance=${5:?service_instance is null or not set}
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service=${3:?service null or not set}
+  local plan=${4:?plan null or not set}
+  local service_instance=${5:?service_instance null or not set}
   local configuration=${6:-}
   local wait_for_service=${7:-}
   local update_service=${8:-}
@@ -241,7 +241,6 @@ it_can_create_a_service() {
 }
 
 it_can_update_a_service() {
-  set -eu
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}

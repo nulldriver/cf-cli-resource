@@ -10,9 +10,9 @@ source $test_dir/helpers.sh
 source $test_dir/config.sh
 
 it_can_wait_for_service() {
-  local org=${1:?org is null or not set}
-  local space=${2:?space is null or not set}
-  local service_instance=${3:?service_instance is null or not set}
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
 
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
