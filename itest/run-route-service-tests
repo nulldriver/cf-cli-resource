@@ -16,14 +16,32 @@ it_can_push_the_logger_app() {
 
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  git clone https://github.com/nulldriver/logging-route-service.git $working_dir/logging-route-service
+  local commit=e6c61e141bc0fc0b0a482d207a2f53dfbe5b4aa1
+
+  # if tests are running in concourse, the logging-route-service.zip is provided
+  # by the pipeline.  Otherwise, if we are running locally, we'll need to
+  # download it.
+  local app_dir=$working_dir/logging-route-service
+  if [ -d "/opt/logging-route-service" ]; then
+    app_dir=/opt/logging-route-service
+  else
+    mkdir -p $app_dir
+  fi
+
+  if [ ! -f "$app_dir/logging-route-service.zip" ]; then
+    wget https://github.com/nulldriver/logging-route-service/archive/$commit.zip -O $app_dir/logging-route-service.zip
+  fi
+
+  if [ ! -d "$app_dir/logging-route-service-$commit" ]; then
+    unzip $app_dir/logging-route-service.zip -d $app_dir
+  fi
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg path "$working_dir/logging-route-service" \
-  --arg manifest "$working_dir/logging-route-service/manifest.yml" \
+  --arg path "$app_dir" \
+  --arg manifest "$app_dir/manifest.yml" \
   '{
     command: "push",
     org: $org,

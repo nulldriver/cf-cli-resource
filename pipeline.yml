@@ -34,6 +34,7 @@ test-gets: &test-gets
 - get: version
   passed: [build]
 - get: service-broker
+- get: logging-route-service
 
 test-jobs: &test-jobs
 - run-app-push-tests
@@ -370,6 +371,12 @@ resources:
   source:
     url: https://github.com/mattmcneeney/overview-broker/archive/dddec578676b8dcbe06158e3ac0b34edc6f5de6e.zip
     filename: overview-broker.zip
+
+- name: logging-route-service
+  type: file-url
+  source:
+    url: https://github.com/nulldriver/logging-route-service/archive/e6c61e141bc0fc0b0a482d207a2f53dfbe5b4aa1.zip
+    filename: logging-route-service.zip
 
 resource_types:
 - name: file-url
