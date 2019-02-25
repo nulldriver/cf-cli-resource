@@ -1,0 +1,99 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/config.sh
+source $test_dir/helpers.sh
+source $test_dir/assert.sh
+
+it_can_push_the_logger_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  git clone https://github.com/nulldriver/logging-route-service.git $working_dir/logging-route-service
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg path "$working_dir/logging-route-service" \
+  --arg manifest "$working_dir/logging-route-service/manifest.yml" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    memory: "64M",
+    path: $path,
+    manifest: $manifest
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_is_app_started "$app_name"
+}
+
+it_can_create_the_logger_route_service() {
+  it_can_create_a_user_provided_service_with_route "$@"
+}
+
+it_can_push_the_app_to_be_logged() {
+  it_can_push_an_app "$@"
+}
+
+it_can_bind_logger_route_service_to_logged_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local domain=${3:?domain null or not set}
+  local service_instance=${4:?service_instance null or not set}
+  local app_name=${5:?app_name null or not set}
+  local path=${6:-}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg domain "$domain" \
+  --arg service_instance "$service_instance" \
+  --arg hostname "$(app_to_hostname "$app_name")" \
+  '{
+    command: "bind-route-service",
+    org: $org,
+    space: $space,
+    domain: $domain,
+    service_instance: $service_instance,
+    hostname: $hostname
+  }')
+
+  [ -n "$path" ] && params=$(echo $params | jq --arg value "$path" '.path = $value')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
+}
+
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+logger_app_name=$(generate_test_name_with_spaces "Logger")
+domain=$CF_APPS_DOMAIN
+logger_route_service_url="https://$(app_to_hostname "$logger_app_name").$domain"
+logged_app_name=$(generate_test_name_with_spaces "Logged")
+service_instance=mylogger
+
+setup_integration_tests "$org" "$space"
+
+run it_can_push_the_logger_app \"$org\" \"$space\" \"$logger_app_name\"
+run it_can_create_the_logger_route_service \"$org\" \"$space\" \"mylogger\" \"$logger_route_service_url\"
+run it_can_push_the_app_to_be_logged \"$org\" \"$space\" \"$logged_app_name\"
+run it_can_bind_logger_route_service_to_logged_app \"$org\" \"$space\" \"$domain\" \"$service_instance\" \"$logged_app_name\"
+
+teardown_integration_tests "$org" "$space"

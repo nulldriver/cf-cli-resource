@@ -240,6 +240,33 @@ it_can_create_a_service() {
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
 }
 
+it_can_create_a_user_provided_service_with_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local route_service_url=${4:?route_service_url null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
+  --arg route_service_url "$route_service_url" \
+  '{
+    command: "create-user-provided-service",
+    org: $org,
+    space: $space,
+    service_instance: $service_instance,
+    route_service_url: $route_service_url
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_service_exists "$service_instance"
+}
+
 it_can_update_a_service() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}

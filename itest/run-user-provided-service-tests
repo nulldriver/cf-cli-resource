@@ -92,31 +92,6 @@ it_can_create_a_user_provided_service_with_syslog() {
   assert::success cf_service_exists "$3"
 }
 
-it_can_create_a_user_provided_service_with_route() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
-  --arg route_service_url "https://example.com" \
-  '{
-    command: "create-user-provided-service",
-    org: $org,
-    space: $space,
-    service_instance: $service_instance,
-    route_service_url: $route_service_url
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_service_exists "$3"
-}
-
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
@@ -125,6 +100,7 @@ credentials_string_si=$(generate_test_name_with_spaces "cups credentials string"
 credentials_file_si=$(generate_test_name_with_spaces "cups credentials file")
 syslog_si=$(generate_test_name_with_spaces "cups syslog")
 route_si=$(generate_test_name_with_spaces "cups route")
+route_service_url="https://example.com"
 
 setup_integration_tests "$org" "$space"
 
@@ -140,8 +116,8 @@ run it_can_create_a_user_provided_service_with_credentials_file \"$org\" \"$spac
 run it_can_create_a_user_provided_service_with_syslog \"$org\" \"$space\" \"$syslog_si\"
 run it_can_create_a_user_provided_service_with_syslog \"$org\" \"$space\" \"$syslog_si\"
 
-run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\"
-run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\"
+run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\" \"$route_service_url\"
+run it_can_create_a_user_provided_service_with_route \"$org\" \"$space\" \"$route_si\" \"$route_service_url\"
 
 run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$credentials_string_si\"
 run it_can_bind_a_service \"$org\" \"$space\" \"$app_name\" \"$credentials_file_si\"

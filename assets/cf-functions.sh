@@ -592,12 +592,35 @@ function cf_unbind_service() {
   cf unbind-service "$app_name" "$service_instance"
 }
 
+function cf_bind_route_service() {
+  local domain=${1:?domain null or not set}
+  local service_instance=${2:?service_instance null or not set}
+  local hostname=${3:-}
+
+  local args=("$domain" "$service_instance")
+  [ -n "$hostname" ] && args+=(--hostname "$hostname")
+
+  cf bind-route-service "${args[@]}"
+}
+
 function cf_is_app_bound_to_service() {
   local app_name=${1:?app_name null or not set}
   local service_instance=${2:?service_instance null or not set}
   local app_guid=$(cf_get_app_guid "$app_name")
   local si_guid=$(CF_TRACE=false cf service "$service_instance" --guid)
   CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
+}
+
+function cf_is_app_bound_to_route_service() {
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
+  local org=${3:?org null or not set}
+  local space=${4:?space null or not set}
+  local space_guid=$(cf_get_space_guid "$org" "$space")
+  CF_TRACE=false \
+    cf curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | \
+    jq -e --arg app_name "$app_name" 'select (.resources[].entity.apps[].entity.name == $app_name)' | \
+    jq -e --arg service_instance "$service_instance" 'select (.resources[].entity.service_instance.entity.name == $service_instance) | true' >/dev/null
 }
 
 function cf_zero_downtime_push() {

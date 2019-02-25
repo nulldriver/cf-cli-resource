@@ -658,6 +658,26 @@ Unbind a service instance from an app
       service_instance: mydb
 ```
 
+#### bind-route-service
+
+Bind a service instance to an HTTP route
+
+* `org`: *Optional.* The organization to target (required if not set in the source config)
+* `space`: *Optional.* The space to target (required if not set in the source config)
+* `domain`: *Required.* The domain to bind the route to
+* `service_instance`: *Required.* The service instance to bind the route to
+* `hostname`: *Optional.* Hostname used in combination with `domain` to specify the route to bind
+
+```yml
+  - put: cf-bind-route-service
+    resource: cf-env
+    params:
+      command: bind-route-service
+      domain: example.com
+      service_instance: mylogger
+      hostname: myhost
+```
+
 #### enable-feature-flag
 
 Allow use of a feature

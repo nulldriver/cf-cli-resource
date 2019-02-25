@@ -435,6 +435,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
     cf_target "$org" "$space"
     cf_unbind_service "$app_name" "$service_instance"
+  elif [ "bind-route-service" = "$command" ]; then
+    domain=$(echo $options | jq -r '.domain //empty')
+    service_instance=$(echo $options | jq -r '.service_instance //empty')
+    hostname=$(echo $options | jq -r '.hostname //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    cf_target "$org" "$space"
+    cf_bind_route_service "$domain" "$service_instance" "$hostname"
   elif [ "create-service-broker" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
     username=$(echo $options | jq -r '.username //empty')

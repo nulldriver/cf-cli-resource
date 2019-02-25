@@ -15,6 +15,7 @@ $test_dir/run-auth-origin-tests
 $test_dir/run-docker-tests
 $test_dir/run-file-tests
 $test_dir/run-network-policy-tests
+$test_dir/run-route-service-tests
 $test_dir/run-route-tests
 $test_dir/run-service-broker-tests
 $test_dir/run-share-service-tests
