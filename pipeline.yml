@@ -44,6 +44,7 @@ test-jobs: &test-jobs
 - run-docker-tests
 - run-file-tests
 - run-network-policy-tests
+- run-route-service-tests
 - run-route-tests
 - run-service-broker-tests
 - run-share-service-tests
@@ -157,6 +158,17 @@ jobs:
     params:
       <<: *test-params
       TEST_SCRIPT: run-network-policy-tests
+
+- name: run-route-service-tests
+  public: true
+  plan:
+  - aggregate: *test-gets
+  - task: test
+    file: project/ci/task.yml
+    image: cf-cli-resource-image-rc
+    params:
+      <<: *test-params
+      TEST_SCRIPT: run-route-service-tests
 
 - name: run-route-tests
   public: true
