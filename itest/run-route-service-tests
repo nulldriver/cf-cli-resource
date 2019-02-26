@@ -40,8 +40,8 @@ it_can_push_the_logger_app() {
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg path "$app_dir" \
-  --arg manifest "$app_dir/manifest.yml" \
+  --arg path "$app_dir/logging-route-service-$commit" \
+  --arg manifest "$app_dir/logging-route-service-$commit/manifest.yml" \
   '{
     command: "push",
     org: $org,
