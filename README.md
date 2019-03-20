@@ -542,7 +542,7 @@ Create a service key
     params:
       command: create-service-key
       service_instance: my-db
-      service_instance: my-db-service-key
+      service_key: my-db-service-key
 ```
 
 #### delete-service-key

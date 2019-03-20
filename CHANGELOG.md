@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.12.0 - Unreleased
+
+### Added
+- `create-service-key` - Create key for a service instance (thanks to a PR by [@brentdemark](https://github.com/brentdemark))
+- `delete-service-key` - Delete a service key (thanks to a PR by [@brentdemark](https://github.com/brentdemark))
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.42.0](https://github.com/cloudfoundry/cli/releases/tag/v6.42.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
+
 ## 2.11.0 - 2019-02-25
 ### Added
 - `bind-route-service` command - Bind a service instance to an HTTP route
@@ -17,7 +30,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 | cf cli     | [6.42.0](https://github.com/cloudfoundry/cli/releases/tag/v6.42.0)  |
 | autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
 | yq         | [2.1.0](https://github.com/mikefarah/yq/releases/tag/2.1.0)         |
-
 
 ## 2.10.0 - 2019-01-22
 ### Added

@@ -10,13 +10,18 @@ source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
 it_can_create_a_service_key() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local service_key=${4:?service_key null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
-  --arg service_key "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
+  --arg service_key "$service_key" \
   '{
     command: "create-service-key",
     org: $org,
@@ -26,23 +31,24 @@ it_can_create_a_service_key() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_target "${5:-}" "$4"
-  assert::success cf_service_key_exists "$3"
+  assert::success cf_service_key_exists "$service_instance" "$service_key"
 }
 
 it_can_delete_a_service_key() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local service_key=${4:?service_key null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
-  --arg service_key "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
+  --arg service_key "$service_key" \
   '{
     command: "delete-service-key",
     org: $org,
@@ -52,33 +58,26 @@ it_can_delete_a_service_key() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_target "${5:-}" "$4"
-  assert::failure cf_service_key_exists "$3"
-  assert::failure cf_service_exists "$3"
+  assert::failure cf_service_key_exists "$service_instance" "$service_key"
 }
 
-source_org=$(generate_test_name_with_spaces "Source Org")
-source_space=$(generate_test_name_with_spaces "Source Space")
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
 
 service=$SERVICE_KEY_SERVICE
 plan=$SERVICE_KEY_PLAN
 service_instance=$(generate_test_name_with_spaces "Service For Service Key")
-service_key=$(generate_test_name_with_spaces "Service Key"
+service_key=$(generate_test_name_with_spaces "Service Key")
 
-setup_integration_tests "$source_org" "$source_space"
+setup_integration_tests "$org" "$space"
 
-#it can create a service for creating a key on
-run it_can_create_a_service \"$source_org\" \"$source_space\" \"$service\" \"$plan\" \"$service_instance\"
+run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan\" \"$service_instance\"
 
-#it can share/unshare a service with an other space in the same org
-run it_can_create_a_service_key \"$source_org\" \"$source_space\" \"$service_instance\" \"$service_key\"
-run it_can_delete_a_service_key \"$source_org\" \"$source_space\" \"$service_instance\" \"$service_key\"
+run it_can_create_a_service_key \"$org\" \"$space\" \"$service_instance\" \"$service_key\"
+run it_can_delete_a_service_key \"$org\" \"$space\" \"$service_instance\" \"$service_key\"
 
-run it_can_delete_a_service \"$source_org\" \"$source_space\" \"$service\"
+run it_can_delete_a_service \"$org\" \"$space\" \"$service_instance\"
 
-teardown_integration_tests "$source_org" "$source_space"
+teardown_integration_tests "$org" "$space"

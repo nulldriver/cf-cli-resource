@@ -27,6 +27,8 @@ fi
 : "${DOCKER_PRIVATE_IMAGE:?}"
 : "${DOCKER_PRIVATE_USERNAME:?}"
 : "${DOCKER_PRIVATE_PASSWORD:?}"
+: "${SERVICE_KEY_SERVICE:?}"
+: "${SERVICE_KEY_PLAN:?}"
 
 cf_api="https://api.$CF_SYSTEM_DOMAIN"
 cf_apps_domain=$CF_APPS_DOMAIN

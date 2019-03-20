@@ -544,6 +544,27 @@ function cf_delete_service_key() {
   cf delete-service-key "$service_instance" "$service_key" -f
 }
 
+function cf_get_service_key_guid() {
+  local service_instance=${1:?service_instance null or not set}
+  local service_key=${2:?service_key null or not set}
+
+  # swallow "FAILED" stdout if service_instance not found
+  local guid=
+  if guid=$(CF_TRACE=false cf service-key "$service_instance" "$service_key" --guid 2>/dev/null); then
+    # cf v6.42.0 returns an empty string with newline if the service key does not exist
+    if [ -n "$guid" ]; then
+      echo "$guid"
+    fi
+  fi
+}
+
+function cf_service_key_exists() {
+  local service_instance=${1:?service_instance null or not set}
+  local service_key=${2:?service_key null or not set}
+
+  [ -n "$(cf_get_service_key_guid "$service_instance" "$service_key")" ]
+}
+
 function cf_create_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   local username=${2:?username null or not set}
