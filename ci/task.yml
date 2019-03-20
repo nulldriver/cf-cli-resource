@@ -3,6 +3,9 @@ platform: linux
 
 inputs:
 - name: service-broker
+  optional: true
+- name: logging-route-service
+  optional: true
 
 params:
   TEST_SCRIPT:
@@ -29,11 +32,14 @@ params:
   DOCKER_PRIVATE_IMAGE:
   DOCKER_PRIVATE_USERNAME:
   DOCKER_PRIVATE_PASSWORD:
+  SERVICE_KEY_SERVICE:
+  SERVICE_KEY_PLAN:
 
 run:
   path: sh
   args:
   - -exc
   - |
-    ln -s $PWD/service-broker /opt/service-broker
+    test -d $PWD/service-broker && ln -s $PWD/service-broker /opt/service-broker
+    test -d $PWD/logging-route-service && ln -s $PWD/logging-route-service /opt/logging-route-service
     /opt/itest/$TEST_SCRIPT
