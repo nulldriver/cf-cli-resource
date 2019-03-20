@@ -527,6 +527,23 @@ function cf_wait_for_delete_service_instance() {
   done
 }
 
+function cf_create_service_key() {
+  local service_instance=${1:?service_instance null or not set}
+  local service_key=${2:?service_key null or not set}
+  local configuration=${3:-}
+
+  local args=("$service_instance" "$service_key")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+
+  cf create-service-key "${args[@]}"
+}
+
+function cf_delete_service_key() {
+  local service_instance=${1:?service_instance null or not set}
+  local service_key=${2:?service_key null or not set}
+  cf delete-service-key "$service_instance" "$service_key" -f
+}
+
 function cf_create_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   local username=${2:?username null or not set}

@@ -17,6 +17,8 @@ test-params: &test-params
   ASYNC_PLAN_2: {{async-plan-2}}
   ASYNC_CONFIGURATION_1: {{async-configuration-1}}
   ASYNC_CONFIGURATION_2: {{async-configuration-2}}
+  SERVICE_KEY_SERVICE: {{service-key-service}}
+  SERVICE_KEY_PLAN: {{service-key-plan}}
   SHARE_SERVICE: {{share-service}}
   SHARE_PLAN: {{share-plan}}
   SHARE_CONFIGURATION: {{share-configuration}}
@@ -49,6 +51,7 @@ test-jobs: &test-jobs
 - run-route-tests
 - run-service-broker-tests
 - run-share-service-tests
+- run-service-key-tests
 - run-synchronous-service-tests
 - run-task-tests
 - run-user-provided-service-tests
@@ -203,6 +206,18 @@ jobs:
     params:
       <<: *test-params
       TEST_SCRIPT: run-share-service-tests
+
+- name: run-service-key-tests
+  public: true
+  plan:
+  - aggregate: *test-gets
+  - task: test
+    file: project/ci/task.yml
+    image: cf-cli-resource-image-rc
+    params:
+      <<: *test-params
+      TEST_SCRIPT: run-service-key-tests
+
 
 - name: run-synchronous-service-tests
   public: true
