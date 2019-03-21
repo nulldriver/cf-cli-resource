@@ -10,14 +10,18 @@ source $test_dir/helpers.sh
 source $test_dir/config.sh
 
 it_can_push_an_app_no_start() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$3" "$working_dir"
+  create_static_app "$app_name" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "push",
     org: $org,
@@ -29,22 +33,24 @@ it_can_push_an_app_no_start() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_stopped "$3"
+  assert::success cf_is_app_stopped "$app_name"
 }
 
 it_can_rename_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+  local new_app_name=${4:?new_app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg new_app_name "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg new_app_name "$new_app_name" \
   '{
     command: "rename",
     org: $org,
@@ -54,22 +60,23 @@ it_can_rename_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_app_exists "$3"
-  assert::success cf_app_exists "$4"
+  assert::failure cf_app_exists "$app_name"
+  assert::success cf_app_exists "$new_app_name"
 }
 
 it_can_start_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "start",
     org: $org,
@@ -80,21 +87,22 @@ it_can_start_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 it_can_stop_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "stop",
     org: $org,
@@ -103,22 +111,24 @@ it_can_stop_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-  assert::success cf_is_app_stopped "$3"
+  assert::success cf_is_app_stopped "$app_name"
 }
 
 it_can_zero_downtime_push() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   create_static_app "$app_name" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "zero-downtime-push",
     org: $org,
@@ -132,21 +142,22 @@ it_can_zero_downtime_push() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 it_can_scale_an_app_instances() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg instances "2" \
   '{
     command: "scale",
@@ -157,21 +168,22 @@ it_can_scale_an_app_instances() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::equals 2 "$(cf_get_app_instances "$3")"
+  assert::equals 2 "$(cf_get_app_instances "$app_name")"
 }
 
 it_can_scale_an_app_disk_quota() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg disk_quota "512M" \
   '{
     command: "scale",
@@ -182,21 +194,22 @@ it_can_scale_an_app_disk_quota() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::equals 512 "$(cf_get_app_disk_quota "$3")"
+  assert::equals 512 "$(cf_get_app_disk_quota "$app_name")"
 }
 
 it_can_scale_an_app_memory() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg memory "512M" \
   '{
     command: "scale",
@@ -207,21 +220,22 @@ it_can_scale_an_app_memory() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::equals 512 "$(cf_get_app_memory "$3")"
+  assert::equals 512 "$(cf_get_app_memory "$app_name")"
 }
 
 it_can_scale_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg instances "1" \
   --arg disk_quota "1G" \
   --arg memory "1G" \
@@ -236,26 +250,27 @@ it_can_scale_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::equals 1 "$(cf_get_app_instances "$3")"
-  assert::equals 1024 "$(cf_get_app_disk_quota "$3")"
-  assert::equals 1024 "$(cf_get_app_memory "$3")"
+  assert::equals 1 "$(cf_get_app_instances "$app_name")"
+  assert::equals 1024 "$(cf_get_app_disk_quota "$app_name")"
+  assert::equals 1024 "$(cf_get_app_memory "$app_name")"
 }
 
 it_can_set_env() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local env_var_name=JBP_CONFIG_OPEN_JDK_JRE
   local env_var_value='{ jre: { version: 1.8.0_+ }, memory_calculator: { stack_threads: 200 } }'j
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg env_var_name "$env_var_name" \
   --arg env_var_value "$env_var_value" \
   '{
@@ -270,16 +285,20 @@ it_can_set_env() {
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
   put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_has_env "$3" "$env_var_name" "$env_var_value"
+  assert::success cf_has_env "$app_name" "$env_var_name" "$env_var_value"
 }
 
 it_can_restart_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "restart",
     org: $org,
@@ -290,21 +309,22 @@ it_can_restart_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 it_can_restage_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "restage",
     org: $org,
@@ -315,12 +335,9 @@ it_can_restage_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 org=$(generate_test_name_with_spaces "Org")
