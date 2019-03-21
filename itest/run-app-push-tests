@@ -10,14 +10,18 @@ source $test_dir/helpers.sh
 source $test_dir/config.sh
 
 it_can_push_an_app_with_startup_command() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$3" "$working_dir"
+  create_static_app "$app_name" "$working_dir"
 
   local params=$(jq -n \
   --arg org "$1" \
   --arg space "$2" \
-  --arg app_name "$3" \
+  --arg app_name "$app_name" \
   '{
     command: "push",
     org: $org,
@@ -33,32 +37,31 @@ it_can_push_an_app_with_startup_command() {
 
   echo "push with default default command"; {
     put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
-    assert::success cf_is_app_started "$3"
+    assert::success cf_is_app_started "$app_name"
   }
 
-  local default_startup_command=$(cf_get_app_startup_command "$3")
+  local default_startup_command=$(cf_get_app_startup_command "$app_name")
   local custom_startup_command='$HOME/boot.sh --dummy-flag'
 
   echo "push with custom startup command"; {
     config=$(echo $config | jq --arg startup_command "$custom_startup_command" '.params.startup_command = $startup_command')
     put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-    assert::success cf_is_app_started "$3"
-    assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$3")"
+    assert::success cf_is_app_started "$app_name"
+    assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$app_name")"
   }
 
   echo "push and reset to default startup command"; {
     config=$(echo $config | jq --arg startup_command "null" '.params.startup_command = $startup_command')
     put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-    assert::success cf_is_app_started "$3"
-    assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$3")"
+    assert::success cf_is_app_started "$app_name"
+    assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$app_name")"
   }
 }
 
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
-original_app_name=$(generate_test_name_with_spaces "Original App")
 app_name=$(generate_test_name_with_spaces "App")
 
 setup_integration_tests "$org" "$space"
