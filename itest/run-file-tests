@@ -10,16 +10,20 @@ source $test_dir/helpers.sh
 source $test_dir/config.sh
 
 it_can_push_an_app_no_start_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$3" "$working_dir"
+  create_static_app "$app_name" "$working_dir"
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: push
-org: $1
-space: $2
-app_name: $3
+org: $org
+space: $space
+app_name: $app_name
 path: static-*/content
 manifest: static-app/manifest.yml
 no_start: true
@@ -33,24 +37,24 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_stopped "$3"
+  assert::success cf_is_app_stopped "$app_name"
 }
 
-
 it_can_start_an_app_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: start
-org: $1
-space: $2
-app_name: $3
+org: $org
+space: $space
+app_name: $app_name
 staging_timeout: 15
 startup_timeout: 5
 EOF
@@ -63,23 +67,24 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 it_can_stop_an_app_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: stop
-org: $1
-space: $2
-app_name: $3
+org: $org
+space: $space
+app_name: $app_name
 EOF
 
   local params=$(jq -n \
@@ -90,22 +95,24 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-  assert::success cf_is_app_stopped "$3"
+  assert::success cf_is_app_stopped "$app_name"
 }
 
 it_can_delete_an_app_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: delete
-org: $1
-space: $2
-app_name: $3
+org: $org
+space: $space
+app_name: $app_name
 delete_mapped_routes: true
 EOF
 
@@ -117,21 +124,20 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_app_exists "$3"
+  assert::failure cf_app_exists "$app_name"
 }
 
 it_can_create_an_org_with_file() {
+  local org=${1:?org null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: create-org
-org: $1
+org: $org
 EOF
 
   local params=$(jq -n \
@@ -142,22 +148,22 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_org_exists "$1"
+  assert::success cf_org_exists "$org"
 }
 
 it_can_create_a_space_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 command: create-space
-org: $1
-space: $2
+org: $org
+space: $space
 EOF
 
   local params=$(jq -n \
@@ -168,26 +174,26 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_space_exists "$1" "$2"
+  assert::success cf_space_exists "$org" "$space"
 }
 
 # This test showcases the multi-command syntax
 it_can_delete_a_space_and_org_with_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   mkdir "$working_dir/file-tests"
   cat > "$working_dir/file-tests/commands.yml" <<-EOF
 commands:
 - command: delete-space
-  org: $1
-  space: $2
+  org: $org
+  space: $space
 - command: delete-org
-  org: $1
+  org: $org
 EOF
 
   local params=$(jq -n \
@@ -198,15 +204,11 @@ EOF
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_space_exists "$1" "$2"
-  assert::failure cf_org_exists "$1"
+  assert::failure cf_space_exists "$org" "$space"
+  assert::failure cf_org_exists "$org"
 }
-
 
 setup_integration_tests_with_file() {
   local org=${1:?org null or not set}
