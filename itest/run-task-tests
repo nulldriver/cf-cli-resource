@@ -10,12 +10,16 @@ source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
 it_can_run_a_task_with_disk_quota() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg task_command "echo run-task-with-disk_quota-test" \
   --arg disk_quota "756M" \
   '{
@@ -28,21 +32,22 @@ it_can_run_a_task_with_disk_quota() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_was_task_run "$3" "run-task-with-disk_quota-test"
+  assert::success cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
 }
 
 it_can_run_a_task_with_memory() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg task_command "echo run-task-with-memory-test" \
   --arg memory "512M" \
   '{
@@ -55,21 +60,22 @@ it_can_run_a_task_with_memory() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_was_task_run "$3" "run-task-with-memory-test"
+  assert::success cf_was_task_run "$app_name" "run-task-with-memory-test"
 }
 
 it_can_run_a_task_with_name() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg task_command "echo run-task-with-name-test" \
   --arg task_name "run-task-with-name-test" \
   '{
@@ -82,21 +88,22 @@ it_can_run_a_task_with_name() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_was_task_run "$3" "run-task-with-name-test"
+  assert::success cf_was_task_run "$app_name" "run-task-with-name-test"
 }
 
 it_can_run_a_task() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg task_command "echo run-task-test-all" \
   --arg task_name "run-task-test-all" \
   --arg memory "512M" \
@@ -113,12 +120,9 @@ it_can_run_a_task() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_was_task_run "$3" "run-task-test-all"
+  assert::success cf_was_task_run "$app_name" "run-task-test-all"
 }
 
 org=$(generate_test_name_with_spaces "Org")
