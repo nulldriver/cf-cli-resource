@@ -10,13 +10,18 @@ source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
 it_can_add_network_policy() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local source_app_name=${3:?source_app_name null or not set}
+  local destination_app_name=${4:?destination_app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg source_app "$3" \
-  --arg destination_app "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg source_app "$source_app_name" \
+  --arg destination_app "$destination_app_name" \
   '{
     command: "add-network-policy",
     org: $org,
@@ -28,22 +33,24 @@ it_can_add_network_policy() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_network_policy_exists "$3" "$4" "udp" "9999"
+  assert::success cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
 
 it_can_remove_network_policy() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local source_app_name=${3:?source_app_name null or not set}
+  local destination_app_name=${4:?destination_app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg source_app "$3" \
-  --arg destination_app "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg source_app "$source_app_name" \
+  --arg destination_app "$destination_app_name" \
   '{
     command: "remove-network-policy",
     org: $org,
@@ -55,12 +62,9 @@ it_can_remove_network_policy() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_network_policy_exists "$1" "$2" "udp" "9999"
+  assert::failure cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
 
 org=$(generate_test_name_with_spaces "Org")
