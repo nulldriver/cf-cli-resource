@@ -10,14 +10,20 @@ source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
 it_can_share_a_service() {
+  local source_org=${1:?source_org null or not set}
+  local source_space=${2:?source_space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local other_space=${4:?other_space null or not set}
+  local other_org=${5:-}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
-  --arg other_space "$4" \
-  --arg other_org "${5:-}" \
+  --arg org "$source_org" \
+  --arg space "$source_space" \
+  --arg service_instance "$service_instance" \
+  --arg other_space "$other_space" \
+  --arg other_org "$other_org" \
   '{
     command: "share-service",
     org: $org,
@@ -28,24 +34,27 @@ it_can_share_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_target "${5:-}" "$4"
-  assert::success cf_service_exists "$3"
+  cf_target "$other_org" "$other_space"
+  assert::success cf_service_exists "$service_instance"
 }
 
 it_can_unshare_a_service() {
+  local source_org=${1:?source_org null or not set}
+  local source_space=${2:?source_space null or not set}
+  local service_instance=${3:?service_instance null or not set}
+  local other_space=${4:?other_space null or not set}
+  local other_org=${5:-}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
-  --arg other_space "$4" \
-  --arg other_org "${5:-}" \
+  --arg org "$source_org" \
+  --arg space "$source_space" \
+  --arg service_instance "$service_instance" \
+  --arg other_space "$other_space" \
+  --arg other_org "$other_org" \
   '{
     command: "unshare-service",
     org: $org,
@@ -56,13 +65,10 @@ it_can_unshare_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  cf_target "${5:-}" "$4"
-  assert::failure cf_service_exists "$3"
+  cf_target "$other_org" "$other_space"
+  assert::failure cf_service_exists "$service_instance"
 }
 
 source_org=$(generate_test_name_with_spaces "Source Org")
