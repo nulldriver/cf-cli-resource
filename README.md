@@ -764,6 +764,8 @@ Push a new app or sync changes to an existing app
 * `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
 * `no_start`: *Optional.* Do not start an app after pushing. Defaults to `false`.
 * `path`: *Optional.* Path to app directory or to a zip file of the contents of the app directory
+* `vars`: *Optional.* Map of variables to pass to manifest
+* `vars_files`: *Optional.* List of variables files to pass to manifest
 * `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
 * `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
 
@@ -777,6 +779,10 @@ Push a new app or sync changes to an existing app
       path: path/to/myapp-*.jar
       buildpack: java_buildpack
       manifest: path/to/manifest.yml
+      vars:
+        instances: 3
+      vars_files:
+      - path/to/vars.yml
 ```
 
 #### zero-downtime-push

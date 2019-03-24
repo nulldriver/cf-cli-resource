@@ -291,6 +291,8 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     memory=$(echo $options | jq -r '.memory //empty')
     no_start=$(echo $options | jq -r '.no_start //empty')
     path=$(echo $options | jq -r '.path //empty')
+    vars=$(echo $options | jq -r '.vars //empty')
+    vars_files=$(echo $options | jq -r '.vars_files //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //0')
     startup_timeout=$(echo $options | jq -r '.startup_timeout //0')
 
@@ -308,6 +310,15 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ -n "$memory" ]          && args+=(-m "$memory")
     [ -n "$no_start" ]        && args+=(--no-start)
     [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
+
+    for key in $(echo $vars | jq -r 'keys[]'); do
+      value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
+      args+=(--var "$key=$value")
+    done
+
+    for vars_file in $(echo $vars_files | jq -r '.[]'); do
+      args+=(--vars-file "$vars_file")
+    done
 
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
     cf_target "$org" "$space"
