@@ -847,6 +847,21 @@ function cf_get_app_disk_quota() {
   cf curl "/v2/apps/$guid" | jq -r '.entity.disk_quota'
 }
 
+function cf_get_app_stack() {
+  local app_name=${1:?app_name null or not set}
+
+  local output
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  if ! output=$(cf_curl "$(echo $output | jq -r '.entity.stack_url')") || cf_has_error_code "$output"; then
+    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+  fi
+
+  echo $output | jq -r '.entity.name'
+}
+
 function cf_scale() {
   local app_name=${1:?app_name null or not set}
   local instances=${2:-}

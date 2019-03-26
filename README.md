@@ -764,6 +764,7 @@ Push a new app or sync changes to an existing app
 * `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
 * `no_start`: *Optional.* Do not start an app after pushing. Defaults to `false`.
 * `path`: *Optional.* Path to app directory or to a zip file of the contents of the app directory
+* `stack`: *Optional.* Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 * `vars`: *Optional.* Map of variables to pass to manifest
 * `vars_files`: *Optional.* List of variables files to pass to manifest
 * `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes

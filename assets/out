@@ -291,6 +291,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     memory=$(echo $options | jq -r '.memory //empty')
     no_start=$(echo $options | jq -r '.no_start //empty')
     path=$(echo $options | jq -r '.path //empty')
+    stack=$(echo $options | jq -r '.stack //empty')
     vars=$(echo $options | jq -r '.vars //empty')
     vars_files=$(echo $options | jq -r '.vars_files //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //0')
@@ -310,6 +311,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ -n "$memory" ]          && args+=(-m "$memory")
     [ -n "$no_start" ]        && args+=(--no-start)
     [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
+    [ -n "$stack" ]           && args+=(-s "$stack")
 
     for key in $(echo $vars | jq -r 'keys[]'); do
       value=$(echo $vars | jq -r --arg key "$key" '.[$key]')

@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2.13.0 - Unreleased
 
 ### Changed
-- `push` command now supports `vars` and `vars_files` for manifest variable substitution
+- `push` command now supports `vars` and `vars_files` options for manifest variable substitution
+- `push` command now supports `stack` option
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
