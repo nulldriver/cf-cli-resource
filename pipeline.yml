@@ -480,14 +480,14 @@ resources:
     private_key: ((git_key.private_key))
 
 - name: cf-cli-resource-image-rc
-  type: docker-image
+  type: registry-image
   source:
     repository: {{docker-repository-rc}}
     username: ((docker.username))
     password: ((docker.password))
 
 - name: cf-cli-resource-image-final
-  type: docker-image
+  type: registry-image
   source:
     repository: {{docker-repository-final}}
     username: ((docker.username))
@@ -520,7 +520,7 @@ resources:
 
 resource_types:
 - name: file-url
-  type: docker-image
+  type: registry-image
   source:
     repository: pivotalservices/concourse-curl-resource
     tag: latest
