@@ -385,7 +385,7 @@ Make a user-provided service instance available to CF apps
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `service_instance`: *Required.* The name to give the service instance
 * Options: *Only specify one.*
-  * `credentials`: Credentials, provided inline or in a file, to be exposed in the VCAP_SERVICES environment variable for bound applications
+  * `credentials`: Credentials, provided as YAML, inline json or in a file, to be exposed in the VCAP_SERVICES environment variable for bound applications
   * `syslog_drain_url`: URL to which logs for bound applications will be streamed
   * `route_service_url`: URL to which requests for bound routes will be forwarded. Scheme for this URL must be https
 
@@ -394,11 +394,17 @@ Make a user-provided service instance available to CF apps
     resource: cf-env
     params:
       commands:
-      # inline json
+      # credentials as YAML
+      - command: create-user-provided-service
+        service_instance: my-db-mine
+        credentials:
+          username: admin
+          password: pa55woRD
+      # credentials as inline json
       - command: create-user-provided-service
         service_instance: my-db-mine
         credentials: '{"username":"admin","password":"pa55woRD"}'
-      # json file
+      # credentials as json file
       - command: create-user-provided-service
         service_instance: another-db-mine
         credentials: path/to/credentials.json
