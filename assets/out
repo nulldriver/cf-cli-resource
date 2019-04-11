@@ -40,46 +40,58 @@ source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
 params=$(jq -r '.params //empty' < $payload)
 
+cf_config_path=$(jq -r '.params.cf_config_path //empty' < $payload)
+
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
 cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
 command_file=$(echo "$params" | jq -r '.command_file //empty')
 
-if [ -z "$api" ]; then
-  printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
-  exit 1
-fi
 
-if [ -n "$username" ] && [ -n "$client_id" ]; then
-  printf '\e[91m[ERROR]\e[0m invalid payload (must specify only username or client_id)\n'
-  exit 1
-fi
+if [ -n "$cf_config_path" ]; then
+    cp "$cf_config_path" ~/.cf/config.json
 
-if [ -n "$username" ] && [ -z "$password" ]; then
-  printf '\e[91m[ERROR]\e[0m invalid payload (missing password)\n'
-  exit 1
-fi
+    source_org=$(cat ~/.cf/config.json | jq -r .OrganizationFields.Name)
+    source_space=$(cat ~/.cf/config.json | jq -r .SpaceFields.Name)
 
-if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
-  printf '\e[91m[ERROR]\e[0m invalid payload (missing client_secret)\n'
-  exit 1
-fi
+    cf_logged_in=true
+else
+    if [ -z "$api" ]; then
+      printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
+      exit 1
+    fi
 
-cd "$working_dir"
+    if [ -n "$username" ] && [ -n "$client_id" ]; then
+      printf '\e[91m[ERROR]\e[0m invalid payload (must specify only username or client_id)\n'
+      exit 1
+    fi
 
-if [ -n "$command_file" ]; then
-  if [ -r "$command_file" ]; then
-    printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
-    params=$(yq r --tojson "$command_file")
-  else
-    printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
-    exit 1
-  fi
+    if [ -n "$username" ] && [ -z "$password" ]; then
+      printf '\e[91m[ERROR]\e[0m invalid payload (missing password)\n'
+      exit 1
+    fi
+
+    if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
+      printf '\e[91m[ERROR]\e[0m invalid payload (missing client_secret)\n'
+      exit 1
+    fi
+
+    cd "$working_dir"
+
+    if [ -n "$command_file" ]; then
+      if [ -r "$command_file" ]; then
+        printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
+        params=$(yq r --tojson "$command_file")
+      else
+        printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
+        exit 1
+      fi
+    fi
+
+    cf_logged_in=false
 fi
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf version)"
-
-cf_logged_in=false
 
 # convert the single command into a single element array
 if echo $params | jq -e 'has("command")' >/dev/null; then
