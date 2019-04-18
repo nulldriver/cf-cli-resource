@@ -762,8 +762,8 @@ function cf_rename() {
 function cf_add_network_policy() {
   local source_app=${1:?source_app null or not set}
   local destination_app=${2:?destination_app null or not set}
-  local protocol=${3:?protocol null or not set}
-  local port=${4:?port null or not set}
+  local protocol=$3
+  local port=$4
 
   local args=("$source_app" --destination-app "$destination_app")
   [ -n "$protocol" ] && args+=(--protocol "$protocol")
