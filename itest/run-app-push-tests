@@ -191,7 +191,7 @@ it_can_push_an_app_with_stack() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
-stack=cflinuxfs2
+stack=cflinuxfs3
 
 setup_integration_tests "$org" "$space"
 
