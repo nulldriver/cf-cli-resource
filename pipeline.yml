@@ -506,7 +506,7 @@ resources:
 
 - name: github-release
   type: github-release
-  icon: github-box
+  icon: package-variant-closed
   source:
     owner: {{github-release-user}}
     repository: cf-cli-resource
