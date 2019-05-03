@@ -339,6 +339,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     path=$(echo $options | jq -r '.path //empty')
     current_app_name=$(echo $options | jq -r '.current_app_name //empty')
     environment_variables=$(echo $options | jq -r '.environment_variables //empty')
+    stack=$(echo $options | jq -r '.stack //empty')
 
     if [ ! -f "$manifest" ]; then
       printf '\e[91m[ERROR]\e[0m invalid payload (manifest is not a file: %s)\n' "$manifest"
@@ -353,12 +354,19 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
       done
     fi
 
-    args="-f $manifest"
-    [ -n "$path" ] && args="$args -p $path"
+    args=(-f "$manifest")
+    [ -n "$path" ]  && args+=(-p $path) # don't quote so we can support globbing
+    [ -n "$stack" ] && args+=(-s "$stack")
 
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$current_app_name"
     cf_target "$org" "$space"
-    cf_zero_downtime_push "$args" "$current_app_name"
+
+    if [ -n "$current_app_name" ]; then
+      # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
+      CF_TRACE=false cf zero-downtime-push "$current_app_name" "${args[@]}"
+    else
+      cf push "${args[@]}"
+    fi
   elif [ "set-env" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     env_var_name=$(echo $options | jq -r '.env_var_name //empty')

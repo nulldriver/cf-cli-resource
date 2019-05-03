@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Cleaned up the code for adding environment variables to `zero-downtime-push` and included better tests
+- `zero-downtime-push` command now supports the `stack` option
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |

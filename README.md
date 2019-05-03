@@ -800,6 +800,7 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `manifest`: *Required.* Path to a application manifest file.
 * `path`: *Optional.* Path to the application to push. If this isn't set then it will be read from the manifest instead.
+* `stack`: *Optional.* Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
 * `environment_variables`: *Optional.*  Environment variable key/value pairs to add to the manifest.
 
