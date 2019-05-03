@@ -116,37 +116,6 @@ it_can_stop_an_app() {
   assert::success cf_is_app_stopped "$app_name"
 }
 
-it_can_zero_downtime_push() {
-  local org=${1:?org null or not set}
-  local space=${2:?space null or not set}
-  local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
-
-  local params=$(jq -n \
-  --arg org "$org" \
-  --arg space "$space" \
-  --arg app_name "$app_name" \
-  '{
-    command: "zero-downtime-push",
-    org: $org,
-    space: $space,
-    manifest: "static-app/manifest.yml",
-    current_app_name: $app_name,
-    environment_variables: {
-      key: "value",
-      key2: "value2"
-    }
-  }')
-
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
-
-  assert::success cf_is_app_started "$app_name"
-}
-
 it_can_scale_an_app_instances() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
@@ -351,7 +320,6 @@ run it_can_push_an_app_no_start \"$org\" \"$space\" \"$original_app_name\"
 run it_can_rename_an_app \"$org\" \"$space\" \"$original_app_name\" \"$app_name\"
 run it_can_start_an_app \"$org\" \"$space\" \"$app_name\"
 run it_can_stop_an_app \"$org\" \"$space\" \"$app_name\"
-run it_can_zero_downtime_push \"$org\" \"$space\" \"$app_name\"
 
 run it_can_scale_an_app_instances \"$org\" \"$space\" \"$app_name\"
 run it_can_scale_an_app_disk_quota \"$org\" \"$space\" \"$app_name\"

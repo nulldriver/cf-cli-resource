@@ -345,23 +345,12 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
       exit 1
     fi
 
-    instructions="$(dirname $manifest)/.cf-cli-resource-manifest-update-instructions.yml"
-
-    # add pipeline defined environment variables to the manifest
-    for key in $(echo $environment_variables | jq -r 'keys[]');
-    do
-      value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-      # valid inline yaml (flow style) so quote the value if it starts with a sequence or map
-      if [[ "$value" == [* || "$value" == {* ]]; then
-        echo "env.$key: '$value'" >>"$instructions"
-      else
-        echo "env.$key: $value" >>"$instructions"
-      fi
-    done
-
-    if [ -f "$instructions" ]; then
-      mv "$manifest" "$manifest.original"
-      yq w -s "$instructions" "$manifest.original" > "$manifest"
+    if [ -n "$environment_variables" ]; then
+      cp "$manifest" "$manifest.original"
+      for key in $(echo $environment_variables | jq -r 'keys[]'); do
+        value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
+        yq w -i "$manifest" "env.$key" "$value"
+      done
     fi
 
     args="-f $manifest"

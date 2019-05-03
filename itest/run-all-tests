@@ -9,6 +9,7 @@ $test_dir/cleanup-failed-tests
 
 $test_dir/run-app-push-tests
 $test_dir/run-app-tests
+$test_dir/run-app-zero-downtime-push-tests
 $test_dir/run-asynchronous-service-tests
 $test_dir/run-auth-client-credentials-tests
 $test_dir/run-auth-origin-tests

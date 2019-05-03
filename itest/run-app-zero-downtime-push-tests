@@ -1,0 +1,93 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname $0)
+
+source $test_dir/assert.sh
+source $test_dir/helpers.sh
+source $test_dir/config.sh
+
+it_can_zero_downtime_push_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  create_static_app "$app_name" "$working_dir"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  '{
+    command: "zero-downtime-push",
+    org: $org,
+    space: $space,
+    manifest: "static-app/manifest.yml",
+    current_app_name: $app_name
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_is_app_started "$app_name"
+}
+
+it_can_zero_downtime_push_an_app_with_env_vars() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+
+  create_static_app "$app_name" "$working_dir"
+
+  # test that these yaml structures are being treated as strings when added to the manifest.yml and not being processed as yaml by yq
+  local yaml_scalar="some string with spaces"
+  local yaml_map="{ jre: { version: 11.+ }, memory_calculator: { stack_threads: 25 } }"
+  local yaml_sequence="[ some, list, of, things ]"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg yaml_scalar "$yaml_scalar" \
+  --arg yaml_map "$yaml_map" \
+  --arg yaml_sequence "$yaml_sequence" \
+  '{
+    command: "zero-downtime-push",
+    org: $org,
+    space: $space,
+    manifest: "static-app/manifest.yml",
+    current_app_name: $app_name,
+    environment_variables: {
+      yaml_scalar: $yaml_scalar,
+      yaml_map: $yaml_map,
+      yaml_sequence: $yaml_sequence
+    }
+  }')
+
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_is_app_started "$app_name"
+  assert::success cf_has_env "$app_name" "yaml_scalar" "$yaml_scalar"
+  assert::success cf_has_env "$app_name" "yaml_map" "$yaml_map"
+  assert::success cf_has_env "$app_name" "yaml_sequence" "$yaml_sequence"
+}
+
+org=$(generate_test_name_with_spaces "Org")
+space=$(generate_test_name_with_spaces "Space")
+app_name=$(generate_test_name_with_spaces "App")
+
+setup_integration_tests "$org" "$space"
+
+run it_can_zero_downtime_push_an_app \"$org\" \"$space\" \"$app_name\"
+run it_can_zero_downtime_push_an_app_with_env_vars \"$org\" \"$space\" \"$app_name\"
+
+run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+
+teardown_integration_tests "$org" "$space"
