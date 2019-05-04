@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2.14.0 - Unreleased
 
 ### Changed
-- Cleaned up the code for adding environment variables to `zero-downtime-push` and included better tests
 - `zero-downtime-push` command now supports the `stack` option
+
+### Fixed
+- Fixed `zero-downtime-push` where it had some problems with environment variables that were multi-line or started with a hyphen.
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |

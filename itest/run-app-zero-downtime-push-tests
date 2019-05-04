@@ -46,7 +46,10 @@ it_can_zero_downtime_push_an_app_with_env_vars() {
   create_static_app "$app_name" "$working_dir"
 
   # test that these yaml structures are being treated as strings when added to the manifest.yml and not being processed as yaml by yq
-  local yaml_scalar="some string with spaces"
+  local yaml_scalar="- some string that starts with a hyphen which could potentially break yq"
+  local yaml_multiline_scalar="some
+multi line
+string"
   local yaml_map="{ jre: { version: 11.+ }, memory_calculator: { stack_threads: 25 } }"
   local yaml_sequence="[ some, list, of, things ]"
 
@@ -55,6 +58,7 @@ it_can_zero_downtime_push_an_app_with_env_vars() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   --arg yaml_scalar "$yaml_scalar" \
+  --arg yaml_multiline_scalar "$yaml_multiline_scalar" \
   --arg yaml_map "$yaml_map" \
   --arg yaml_sequence "$yaml_sequence" \
   '{
@@ -65,6 +69,7 @@ it_can_zero_downtime_push_an_app_with_env_vars() {
     current_app_name: $app_name,
     environment_variables: {
       yaml_scalar: $yaml_scalar,
+      yaml_multiline_scalar: $yaml_multiline_scalar,
       yaml_map: $yaml_map,
       yaml_sequence: $yaml_sequence
     }
@@ -75,6 +80,7 @@ it_can_zero_downtime_push_an_app_with_env_vars() {
 
   assert::success cf_is_app_started "$app_name"
   assert::success cf_has_env "$app_name" "yaml_scalar" "$yaml_scalar"
+  assert::success cf_has_env "$app_name" "yaml_multiline_scalar" "$yaml_multiline_scalar"
   assert::success cf_has_env "$app_name" "yaml_map" "$yaml_map"
   assert::success cf_has_env "$app_name" "yaml_sequence" "$yaml_sequence"
 }
