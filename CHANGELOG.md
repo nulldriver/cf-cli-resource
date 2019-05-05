@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `zero-downtime-push` command now supports the `stack` option
 
 ### Fixed
-- Fixed `zero-downtime-push` where it had some problems with environment variables that were multi-line or started with a hyphen.
+- Fixed `zero-downtime-push` where it had some problems with environment variables that were multi-line or started with a hyphen
+- The optional `port` and `protocol` options for `add-network-policiy` are now really optional, thanks to a PR by [@rs017991](https://github.com/rs017991)
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
