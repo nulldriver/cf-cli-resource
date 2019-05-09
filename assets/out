@@ -16,6 +16,8 @@ if [ -z "$working_dir" ]; then
   exit 1
 fi
 
+cd "$working_dir"
+
 # for jq
 PATH=/usr/local/bin:$PATH:.
 
@@ -40,21 +42,32 @@ source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
 params=$(jq -r '.params //empty' < $payload)
 
-cf_config_path=$(jq -r '.params.cf_config_path //empty' < $payload)
-
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
 cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
 command_file=$(echo "$params" | jq -r '.command_file //empty')
 
+cf_home=$(jq -r '.params.cf_home // .source.cf_home // empty' < $payload)
 
-if [ -n "$cf_config_path" ]; then
-    cp "$cf_config_path" ~/.cf/config.json
+if [ -n "$cf_home" ]; then
+    export CF_HOME=$cf_home
+    export CF_PLUGIN_HOME=$HOME
 
-    source_org=$(cat ~/.cf/config.json | jq -r .OrganizationFields.Name)
-    source_space=$(cat ~/.cf/config.json | jq -r .SpaceFields.Name)
+    if ! cf_is_logged_in; then
+      printf '\e[91m[ERROR]\e[0m not logged in to cf (check %s/config.json)\n' $CF_HOME
+      exit 1
+    fi
 
-    cf_logged_in=true
+    api=$(cat $CF_HOME/.cf/config.json | jq -r .Target)
+
+    if [ -z "$source_org" ]; then
+        source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
+    fi
+
+    if [ -z "$source_space" ]; then
+        source_space=$(cat $CF_HOME/.cf/config.json | jq -r .SpaceFields.Name)
+    fi
+
 else
     if [ -z "$api" ]; then
       printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
@@ -76,19 +89,28 @@ else
       exit 1
     fi
 
-    cd "$working_dir"
-
-    if [ -n "$command_file" ]; then
-      if [ -r "$command_file" ]; then
-        printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
-        params=$(yq r --tojson "$command_file")
-      else
-        printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
-        exit 1
-      fi
+    # Login with credentials
+    cf_api "$api" "$skip_cert_check"
+    if [ -n "$client_id" ]; then
+      cf_auth_client "$client_id" "$client_secret"
+    else
+      cf_auth_user "$username" "$password" "$origin"
     fi
 
-    cf_logged_in=false
+    if ! cf_is_logged_in; then
+      printf '\e[91m[ERROR]\e[0m not logged in to cf (check your credentials)\n'
+      exit 1
+    fi
+fi
+
+if [ -n "$command_file" ]; then
+  if [ -r "$command_file" ]; then
+    printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
+    params=$(yq r --tojson "$command_file")
+  else
+    printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
+    exit 1
+  fi
 fi
 
 printf '\e[92m[INFO]\e[0m %s\n' "$(cf version)"
@@ -114,15 +136,6 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   org=$(echo $options | jq -r '.org //empty') && [ -z "$org" ] && org=$source_org
   space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
 
-  if ! $cf_logged_in; then
-    cf_api "$api" "$skip_cert_check"
-    if [ -n "$client_id" ]; then
-      cf_auth_client "$client_id" "$client_secret"
-    else
-      cf_auth_user "$username" "$password" "$origin"
-    fi
-    cf_logged_in=true
-  fi
 
   if [ "create-org" = "$command" ]; then
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$org"

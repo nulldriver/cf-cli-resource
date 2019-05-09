@@ -2,6 +2,14 @@
 set -eu
 set -o pipefail
 
+function cf_is_logged_in() {
+    if ! $(cf target &> /dev/null); then
+      return 1
+    fi
+    return  0
+}
+
+
 function cf_api() {
   local url=${1:?url null or not set}
   local skip_ssl_validation=${2:-false}
