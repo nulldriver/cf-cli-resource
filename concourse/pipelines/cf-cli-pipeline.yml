@@ -4,7 +4,8 @@ resources:
     source:
       branch: master
       uri: git@github.com:cah-leo-guinan/cf-cli-resource
-      private_key:  ((cf-cli-resource-deploy-key))
+      private_key: |
+        ((cf-cli-resource-deploy-key))
   - name: cf-cli-docker-image
     type: docker-image
     source:
