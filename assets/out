@@ -39,6 +39,7 @@ client_secret=$(jq -r '.source.client_secret //empty' < $payload)
 source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
 params=$(jq -r '.params //empty' < $payload)
+docker_password=$(jq -r '.source.docker_password //empty' < $payload)
 
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
@@ -340,6 +341,10 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     current_app_name=$(echo $options | jq -r '.current_app_name //empty')
     environment_variables=$(echo $options | jq -r '.environment_variables //empty')
     stack=$(echo $options | jq -r '.stack //empty')
+
+    if [ "$docker_password" ]; then
+        export CF_DOCKER_PASSWORD=$docker_password
+    fi
 
     if [ ! -f "$manifest" ]; then
       printf '\e[91m[ERROR]\e[0m invalid payload (manifest is not a file: %s)\n' "$manifest"
