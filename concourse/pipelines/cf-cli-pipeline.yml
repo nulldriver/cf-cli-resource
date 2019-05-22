@@ -1,0 +1,45 @@
+resources:
+  - name: cf-cli-docker
+    type: git
+    source:
+      branch: master
+      uri: https://github.com/cah-leo-guinan/cf-cli-resource
+      private_key:  ((cf-cli-resource-deploy-key))
+  - name: cf-cli-docker-image
+    type: docker-image
+    source:
+      username: ((artifacts.username))
+      password: ((artifacts.password))
+      repository: artifacts.cahcommtech.com/cf-cli-docker
+      tag: latest
+
+
+jobs:
+  - name: build
+    plan:
+      - get: cf-cli-docker
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: concourse/builder-task}
+          params:
+            REPOSITORY: artifacts.cahcommtech.com/cf-cli-docker
+            TAG: latest
+            CONTEXT: cf-cli-docker
+          inputs:
+            - name: cf-cli-docker
+          outputs:
+            - name: image
+          caches:
+            - path: cache
+          run: {path: build}
+
+  - name: publish
+    plan:
+      - get: cf-cli-docker
+      - put: cf-cli-docker-image
+        params:
+          build: cf-cli-docker
