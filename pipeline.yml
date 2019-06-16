@@ -51,7 +51,7 @@ jobs:
   public: true
   serial_groups: [version]
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-cli-resource
       trigger: true
     - get: version
@@ -67,7 +67,7 @@ jobs:
 - name: run-app-push-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -86,7 +86,7 @@ jobs:
 - name: run-app-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -105,7 +105,7 @@ jobs:
 - name: run-app-zero-downtime-push-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -124,7 +124,7 @@ jobs:
 - name: run-asynchronous-service-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -143,7 +143,7 @@ jobs:
 - name: run-auth-client-credentials-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -162,7 +162,7 @@ jobs:
 - name: run-auth-origin-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -181,7 +181,7 @@ jobs:
 - name: run-docker-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -200,7 +200,7 @@ jobs:
 - name: run-file-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -219,7 +219,7 @@ jobs:
 - name: run-network-policy-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -238,7 +238,7 @@ jobs:
 - name: run-route-service-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -258,7 +258,7 @@ jobs:
 - name: run-route-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -277,7 +277,7 @@ jobs:
 - name: run-service-broker-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -297,7 +297,7 @@ jobs:
 - name: run-share-service-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -316,7 +316,7 @@ jobs:
 - name: run-service-key-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -335,7 +335,7 @@ jobs:
 - name: run-synchronous-service-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -354,7 +354,7 @@ jobs:
 - name: run-task-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -373,7 +373,7 @@ jobs:
 - name: run-user-provided-service-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -392,7 +392,7 @@ jobs:
 - name: run-user-tests
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: [build]
@@ -412,7 +412,7 @@ jobs:
   public: true
   serial_groups: [version]
   plan:
-  - aggregate:
+  - in_parallel:
     - get: project
       resource: cf-cli-resource
       passed: *test-jobs
