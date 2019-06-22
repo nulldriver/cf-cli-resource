@@ -993,6 +993,61 @@ Remove network traffic policy of an app
       port: 8080
 ```
 
+#### create-buildpack
+
+Create a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `path`: *Required.* Path to buildpack zip file, url to a zip file, or a local directory
+* `position`: *Required.* The order in which the buildpacks are checked during buildpack auto-detection
+* `enabled`: *Optional.* Set to `false` to disable the buildpack from being used for staging
+
+```yml
+  - put: cf-create-buildpack
+    resource: cf-env
+    params:
+      command: create-buildpack
+      buildpack: java_buildpack_offline
+      path: https://github.com/cloudfoundry/java-buildpack/releases/download/v4.19.1/java-buildpack-v4.19.1.zip
+      position: 99
+```
+
+#### update-buildpack
+
+Update a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `path`: *Optional.* Path to buildpack zip file, url to a zip file, or a local directory
+* `assign_stack`: *Optional.* Assign a stack to a buildpack that does not have a stack association
+* `position`: *Optional.* The order in which the buildpacks are checked during buildpack auto-detection
+* `enabled`: *Optional.* Set to `false` to disable the buildpack from being used for staging
+* `locked`: *Optional.* Set to `true` to lock the buildpack to prevent updates
+
+```yml
+  - put: cf-update-buildpack
+    resource: cf-env
+    params:
+      command: update-buildpack
+      buildpack: java_buildpack_offline
+      assign_stack: cflinuxfs3
+```
+
+#### delete-buildpack
+
+Delete a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `stack`: *Optional.* Specify stack to disambiguate buildpacks with the same name. Required when buildpack name is ambiguous
+
+```yml
+  - put: cf-delete-buildpack
+    resource: cf-env
+    params:
+      command: delete-buildpack
+      buildpack: java_buildpack_offline
+      stack: cflinuxfs3
+```
+
 #### run-task
 
 Run a one-off task on an app

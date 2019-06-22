@@ -13,6 +13,7 @@ $test_dir/run-app-zero-downtime-push-tests
 $test_dir/run-asynchronous-service-tests
 $test_dir/run-auth-client-credentials-tests
 $test_dir/run-auth-origin-tests
+$test_dir/run-buildpack-tests
 $test_dir/run-docker-tests
 $test_dir/run-file-tests
 $test_dir/run-network-policy-tests

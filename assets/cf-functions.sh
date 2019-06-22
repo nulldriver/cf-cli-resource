@@ -922,3 +922,37 @@ function cf_is_feature_flag_disabled() {
   local feature_flag=${1:?feature_flag null or not set}
   CF_TRACE=false cf feature-flags | grep "$feature_flag" | grep -q disabled
 }
+
+function cf_has_buildpack() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1'
+}
+
+function cf_is_buildpack_enabled() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true'
+}
+
+function cf_is_buildpack_locked() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true'
+}
+
+function cf_get_buildpack_stack() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.stack'
+}
+
+function cf_get_buildpack_filename() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.filename'
+}
+
+function cf_get_buildpack_position() {
+  local buildpack=${1:?buildpack null or not set}
+  CF_TRACE=false cf curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.position'
+}
+
+function cf_get_buildpack_max_position() {
+  CF_TRACE=false cf curl "/v2/buildpacks" | jq -r '[.resources[].entity.position] | max'
+}

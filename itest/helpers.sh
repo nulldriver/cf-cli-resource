@@ -31,6 +31,10 @@ fi
 source $resource_dir/cf-functions.sh
 source $(dirname $0)/assert.sh
 
+describe() {
+  printf '\e[33m%s\e[0m...\n' "$@"
+}
+
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
   cf logout
@@ -453,6 +457,16 @@ cleanup_service_brokers() {
   while read -r broker; do
     cf_delete_service_broker "$broker"
   done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
+}
+
+cleanup_buildpacks() {
+  cf_api "$cf_api" "$cf_skip_cert_check"
+  cf_auth_user "$cf_username" "$cf_password"
+
+  while read -r buildpack; do
+    cf delete-buildpack -f "$buildpack"
+  done < <(cf curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')
+
 }
 
 setup_integration_tests() {

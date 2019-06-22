@@ -501,6 +501,47 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     feature_name=$(echo $options | jq -r '.feature_name //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
     cf_disable_feature_flag "$feature_name"
+  elif [ "create-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    position=$(echo $options | jq -r '.position //empty')
+    enabled=$(echo $options | jq -r '.enabled //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack" "$path" "$position")
+    [ "$enabled" == "true" ]  && args+=(--enable)
+    [ "$enabled" == "false" ] && args+=(--disable)
+
+    cf create-buildpack "${args[@]}"
+  elif [ "update-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    enabled=$(echo $options | jq -r '.enabled //empty')
+    locked=$(echo $options | jq -r '.locked //empty')
+    assign_stack=$(echo $options | jq -r '.assign_stack //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    position=$(echo $options | jq -r '.position //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack")
+    [ "$enabled" == "true"  ] && args+=(--enable)
+    [ "$enabled" == "false" ] && args+=(--disable)
+    [ "$locked"  == "true"  ] && args+=(--lock)
+    [ "$locked"  == "false" ] && args+=(--unlock)
+
+    [ -n "$assign_stack" ] && args+=(--assign-stack "$assign_stack")
+    [ -n "$path" ] && args+=(-p "$path")
+    [ -n "$position" ] && args+=(-i "$position")
+
+    cf update-buildpack "${args[@]}"
+  elif [ "delete-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    stack=$(echo $options | jq -r '.stack //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack")
+    [ -n "$stack" ] && args+=(-s "$stack")
+
+    cf delete-buildpack -f "${args[@]}"
   else
     printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
     exit 1

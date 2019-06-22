@@ -11,3 +11,4 @@ source $test_dir/helpers.sh
 run cleanup_test_orgs
 run cleanup_test_users
 run cleanup_service_brokers
+run cleanup_buildpacks
