@@ -42,8 +42,6 @@ it_can_create_a_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   local url=${2:?url null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
     --arg service_broker "$service_broker" \
     --arg username admin \
@@ -58,7 +56,7 @@ it_can_create_a_service_broker() {
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_broker_exists "$service_broker"
 }
@@ -68,8 +66,6 @@ it_can_enable_service_access() {
   local space=${2:?space null or not set}
   local service_broker=${3:?service_broker null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
     --arg service_broker "$service_broker" \
     '{
@@ -78,7 +74,7 @@ it_can_enable_service_access() {
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
   assert::success cf_is_marketplace_service_available "$service_broker"

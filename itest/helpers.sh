@@ -78,36 +78,34 @@ EOF
 
 put_with_params() {
   local config=${1:?config null or not set}
-  local working_dir=${2:?working_dir null or not set}
+  local working_dir=${2:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
 
   echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
 }
 
 it_can_create_an_org() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
+  --arg org "$org" \
   '{
     command: "create-org",
     org: $org
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_org_exists "$1"
+  assert::success cf_org_exists "$org"
 }
 
 it_can_create_a_space() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
+  --arg org "$org" \
+  --arg space "$space" \
   '{
     command: "create-space",
     org: $org,
@@ -115,21 +113,19 @@ it_can_create_a_space() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_space_exists "$1" "$2"
+  assert::success cf_space_exists "$org" "$space"
 }
 
 # This test showcases the multi-command syntax
 it_can_delete_a_space_and_org() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
+  --arg org "$org" \
+  --arg space "$space" \
   '{
     commands: [
       {
@@ -145,24 +141,25 @@ it_can_delete_a_space_and_org() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_space_exists "$1" "$2"
-  assert::failure cf_org_exists "$1"
+  assert::failure cf_space_exists "$org" "$space"
+  assert::failure cf_org_exists "$org"
 }
 
 it_can_push_an_app() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$3" "$working_dir"
+  create_static_app "$app_name" "$working_dir"
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "push",
     org: $org,
@@ -174,21 +171,20 @@ it_can_push_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_started "$3"
+  assert::success cf_is_app_started "$app_name"
 }
 
 it_can_delete_an_app() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   '{
     command: "delete",
     org: $org,
@@ -198,12 +194,9 @@ it_can_delete_an_app() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_app_exists "$3"
+  assert::failure cf_app_exists "$app_name"
 }
 
 it_can_create_a_service() {
@@ -215,8 +208,6 @@ it_can_create_a_service() {
   local configuration=${6:-}
   local wait_for_service=${7:-}
   local update_service=${8:-}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -238,7 +229,7 @@ it_can_create_a_service() {
   [ -n "$update_service" ]   && params=$(echo $params | jq --arg value "$update_service"   '.update_service   = $value')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -249,8 +240,6 @@ it_can_create_a_user_provided_service_with_route() {
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}
   local route_service_url=${4:?route_service_url null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -266,7 +255,7 @@ it_can_create_a_user_provided_service_with_route() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -279,8 +268,6 @@ it_can_update_a_service() {
   local configuration=${5:-}
   local tags=${6:-}
   local wait_for_service=${7:-false}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -302,8 +289,7 @@ it_can_update_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "${service_instance}"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -312,13 +298,16 @@ it_can_update_a_service() {
 }
 
 it_can_bind_a_service() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+  local service_instance=${4:?service_instance null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg service_instance "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
   '{
     command: "bind-service",
     org: $org,
@@ -328,22 +317,22 @@ it_can_bind_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_app_bound_to_service "$3" "$4"
+  assert::success cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
 it_can_unbind_a_service() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+  local service_instance=${4:?service_instance null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg app_name "$3" \
-  --arg service_instance "$4" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg service_instance "$service_instance" \
   '{
     command: "unbind-service",
     org: $org,
@@ -353,21 +342,20 @@ it_can_unbind_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_is_app_bound_to_service "$3" "$4"
+  assert::failure cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
 
 it_can_delete_a_service() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_instance=${3:?service_instance null or not set}
 
   local params=$(jq -n \
-  --arg org "$1" \
-  --arg space "$2" \
-  --arg service_instance "$3" \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg service_instance "$service_instance" \
   '{
     command: "delete-service",
     org: $org,
@@ -377,50 +365,41 @@ it_can_delete_a_service() {
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::failure cf_service_exists "$3"
+  assert::failure cf_service_exists "$service_instance"
 }
 
 it_can_enable_feature_flag() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local feature_flag=${1:?feature_flag null or not set}
 
   local params=$(jq -n \
-  --arg feature_flag "$1" \
+  --arg feature_flag "$feature_flag" \
   '{
     command: "enable-feature-flag",
     feature_name: $feature_flag
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_feature_flag_enabled "$1"
+  assert::success cf_is_feature_flag_enabled "$feature_flag"
 }
 
 it_can_disable_feature_flag() {
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local feature_flag=${1:?feature_flag null or not set}
 
   local params=$(jq -n \
-  --arg feature_flag "$1" \
+  --arg feature_flag "$feature_flag" \
   '{
     command: "disable-feature-flag",
     feature_name: $feature_flag
   }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
-  put_with_params "$config" "$working_dir" | jq -e '
-    .version | keys == ["timestamp"]
-  '
-
-  assert::success cf_is_feature_flag_disabled "$1"
+  assert::success cf_is_feature_flag_disabled "$feature_flag"
 }
 
 cleanup_test_orgs() {
@@ -483,4 +462,3 @@ teardown_integration_tests() {
 
   run it_can_delete_a_space_and_org \"$org\" \"$space\"
 }
-

@@ -123,8 +123,6 @@ it_can_enable_service_access() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
     --arg service_broker "$app_name" \
     --arg plan "${4:-}" \
@@ -137,7 +135,7 @@ it_can_enable_service_access() {
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
   assert::success cf_is_marketplace_service_available "$app_name" "${4:-}"
@@ -147,8 +145,6 @@ it_can_disable_service_access() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local plan="simple"
   local params=$(jq -n \
@@ -163,7 +159,7 @@ it_can_disable_service_access() {
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
   assert::failure cf_is_marketplace_service_available "$app_name" "${4:-}"
@@ -173,8 +169,6 @@ it_can_delete_a_service_broker() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
     --arg org "$org" \
@@ -188,7 +182,7 @@ it_can_delete_a_service_broker() {
     }')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_service_broker_exists "$app_name"
 }

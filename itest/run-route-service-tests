@@ -74,8 +74,6 @@ it_can_bind_logger_route_service_to_logged_app() {
   local app_name=${5:?app_name null or not set}
   local path=${6:-}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -94,7 +92,7 @@ it_can_bind_logger_route_service_to_logged_app() {
   [ -n "$path" ] && params=$(echo $params | jq --arg value "$path" '.path = $value')
 
   local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
 }
