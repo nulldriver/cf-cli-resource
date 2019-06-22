@@ -33,6 +33,7 @@ test-jobs: &test-jobs
 - run-asynchronous-service-tests
 - run-auth-client-credentials-tests
 - run-auth-origin-tests
+- run-buildpack-tests
 - run-docker-tests
 - run-file-tests
 - run-network-policy-tests
