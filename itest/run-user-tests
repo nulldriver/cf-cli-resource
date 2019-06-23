@@ -28,8 +28,7 @@ it_can_create_a_user_with_password() {
     password: $password
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username"
 }
@@ -53,8 +52,7 @@ it_can_create_a_user_with_origin() {
     origin: $origin
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username" "$origin"
 }
@@ -84,8 +82,7 @@ EOF
     file: "input/users.csv"
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$test_prefix-bulkload-user1"
   assert::success cf_user_exists "$test_prefix-bulkload-user2"
@@ -108,8 +105,7 @@ it_can_delete_a_user_with_origin() {
     username: $username
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }
@@ -130,8 +126,7 @@ it_can_delete_a_user_with_password() {
     username: $username
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }

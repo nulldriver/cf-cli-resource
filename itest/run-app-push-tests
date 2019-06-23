@@ -33,27 +33,28 @@ it_can_push_an_app_with_startup_command() {
     startup_timeout: 5
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  echo "push with default default command"; {
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push with default default command"
+  {
+    put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
     assert::success cf_is_app_started "$app_name"
   }
 
   local default_startup_command=$(cf_get_app_startup_command "$app_name")
   local custom_startup_command='$HOME/boot.sh --dummy-flag'
 
-  echo "push with custom startup command"; {
-    config=$(echo $config | jq --arg startup_command "$custom_startup_command" '.params.startup_command = $startup_command')
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push with custom startup command"
+  {
+    params=$(echo $params | jq --arg startup_command "$custom_startup_command" '.startup_command = $startup_command')
+    put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$app_name")"
   }
 
-  echo "push and reset to default startup command"; {
-    config=$(echo $config | jq --arg startup_command "null" '.params.startup_command = $startup_command')
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push and reset to default startup command"
+  {
+    params=$(echo $params | jq --arg startup_command "null" '.startup_command = $startup_command')
+    put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$app_name")"
@@ -95,8 +96,7 @@ EOF
     vars: { instances: 2, memory: "96M" }
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 2 "$(cf_get_app_instances "$app_name")"
@@ -148,8 +148,7 @@ EOF
     vars_files: [ "static-app/vars-file1.yml", "static-app/vars-file2.yml" ]
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 1 "$(cf_get_app_instances "$app_name")"
@@ -181,8 +180,7 @@ it_can_push_an_app_with_stack() {
     stack: $stack
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals "$stack" "$(cf_get_app_stack "$app_name")"

@@ -32,8 +32,7 @@ it_can_push_an_app() {
     manifest: $manifest
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -55,8 +54,7 @@ it_can_create_a_service_broker() {
       url: $url
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_broker_exists "$service_broker"
 }
@@ -73,8 +71,7 @@ it_can_enable_service_access() {
       service_broker: $service_broker
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
   assert::success cf_is_marketplace_service_available "$service_broker"

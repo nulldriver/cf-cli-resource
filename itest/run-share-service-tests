@@ -31,8 +31,7 @@ it_can_share_a_service() {
     other_org: $other_org
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$other_org" "$other_space"
   assert::success cf_service_exists "$service_instance"
@@ -60,8 +59,7 @@ it_can_unshare_a_service() {
     other_org: $other_org
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$other_org" "$other_space"
   assert::failure cf_service_exists "$service_instance"

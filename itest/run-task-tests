@@ -29,8 +29,7 @@ it_can_run_a_task_with_disk_quota() {
     disk_quota: $disk_quota
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
 }
@@ -55,8 +54,7 @@ it_can_run_a_task_with_memory() {
     memory: $memory
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-memory-test"
 }
@@ -81,8 +79,7 @@ it_can_run_a_task_with_name() {
     task_name: $task_name
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-name-test"
 }
@@ -111,8 +108,7 @@ it_can_run_a_task() {
     disk_quota: $disk_quota
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-test-all"
 }

@@ -22,8 +22,7 @@ it_can_create_a_domain() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_has_private_domain "$org" "$domain"
 }
@@ -41,8 +40,7 @@ it_can_delete_a_domain() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_has_private_domain "$org" "$domain"
 }
@@ -66,8 +64,7 @@ it_can_create_a_route() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain"
 }
@@ -94,8 +91,7 @@ it_can_create_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain" "$hostname"
 }
@@ -125,8 +121,7 @@ it_can_create_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain" "$hostname" "$path"
 }
@@ -150,8 +145,7 @@ it_can_map_a_route() {
     app_name: $app_name
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$domain"
 }
@@ -178,8 +172,7 @@ it_can_map_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
@@ -209,8 +202,7 @@ it_can_map_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
@@ -234,8 +226,7 @@ it_can_unmap_a_route() {
     app_name: $app_name
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$domain"
 }
@@ -262,8 +253,7 @@ it_can_unmap_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
@@ -293,8 +283,7 @@ it_can_unmap_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
@@ -315,8 +304,7 @@ it_can_delete_a_route() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain"
 }
@@ -340,8 +328,7 @@ it_can_delete_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain" "$hostname"
 }
@@ -368,8 +355,7 @@ it_can_delete_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain" "$hostname" "$path"
 }

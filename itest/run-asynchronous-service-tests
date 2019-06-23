@@ -14,8 +14,6 @@ it_can_wait_for_service() {
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -27,8 +25,7 @@ it_can_wait_for_service() {
     service_instance: $service_instance
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
