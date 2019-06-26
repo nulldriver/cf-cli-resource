@@ -101,7 +101,7 @@ it_can_zero_downtime_push_an_app_with_stack() {
     command: "zero-downtime-push",
     org: $org,
     space: $space,
-#    manifest: $manifest,
+    manifest: $manifest,
     current_app_name: $app_name,
     stack: $stack
   }')
