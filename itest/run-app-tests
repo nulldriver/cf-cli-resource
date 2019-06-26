@@ -14,25 +14,25 @@ it_can_push_an_app_no_start() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-*/content",
-    manifest: "static-app/manifest.yml",
+    path: $path,
+    manifest: $manifest,
     no_start: "true"
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_stopped "$app_name"
 }

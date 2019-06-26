@@ -61,28 +61,20 @@ it_can_create_users_from_file() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  mkdir -p $working_dir/input
-
-  cat << EOF > $working_dir/input/users.csv
-Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-$test_prefix-bulkload-user1,wasabi,$org,$space,x,x,x,x,x,x
-$test_prefix-bulkload-user2,wasabi,$org,$space,,x,x,,x,x
-$test_prefix-bulkload-user3,ldap,$org,$space,,,x,,x,
-EOF
+  local project=$(create_users_file "$org" "$space")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
+  --arg file "$project/users.csv" \
   '{
     command: "create-users-from-file",
     org: $org,
     space: $space,
-    file: "input/users.csv"
+    file: $file
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$test_prefix-bulkload-user1"
   assert::success cf_user_exists "$test_prefix-bulkload-user2"

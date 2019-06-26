@@ -16,21 +16,22 @@ it_can_zero_downtime_push_an_app() {
 
   local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "zero-downtime-push",
     org: $org,
     space: $space,
-    manifest: "static-app/manifest.yml",
+    manifest: $manifest,
     current_app_name: $app_name
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -40,9 +41,7 @@ it_can_zero_downtime_push_an_app_with_env_vars() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   # test that these yaml structures are being treated as strings when added to the manifest.yml and not being processed as yaml by yq
   local yaml_scalar="- some string that starts with a hyphen which could potentially break yq"
@@ -56,6 +55,7 @@ string"
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg manifest "$project/manifest.yml" \
   --arg yaml_scalar "$yaml_scalar" \
   --arg yaml_multiline_scalar "$yaml_multiline_scalar" \
   --arg yaml_map "$yaml_map" \
@@ -64,7 +64,7 @@ string"
     command: "zero-downtime-push",
     org: $org,
     space: $space,
-    manifest: "static-app/manifest.yml",
+    manifest: $manifest,
     current_app_name: $app_name,
     environment_variables: {
       yaml_scalar: $yaml_scalar,
@@ -74,7 +74,7 @@ string"
     }
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::success cf_has_env "$app_name" "yaml_scalar" "$yaml_scalar"
@@ -89,25 +89,24 @@ it_can_zero_downtime_push_an_app_with_stack() {
   local app_name=${3:?app_name null or not set}
   local stack=${4:?stack null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg manifest "$project/manifest.yml" \
   --arg stack "$stack" \
   '{
     command: "zero-downtime-push",
     org: $org,
     space: $space,
-    manifest: "static-app/manifest.yml",
+#    manifest: $manifest,
     current_app_name: $app_name,
     stack: $stack
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals "$stack" "$(cf_get_app_stack "$app_name")"

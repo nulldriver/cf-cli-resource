@@ -58,13 +58,13 @@ app_to_hostname() {
 
 create_static_app() {
   local app_name=${1:?app_name null or not set}
-  local working_dir=${2:?working_dir null or not set}
 
-  mkdir -p "$working_dir/static-app/content"
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  echo "Hello" > "$working_dir/static-app/content/index.html"
+  mkdir -p "content"
+  echo "Hello" > "content/index.html"
 
-  cat <<EOF >"$working_dir/static-app/manifest.yml"
+  cat <<EOF >"manifest.yml"
 ---
 applications:
 - name: $app_name
@@ -74,6 +74,161 @@ applications:
   path: content
   buildpack: staticfile_buildpack
 EOF
+
+  pwd
+}
+
+create_static_app_with_vars() {
+  local app_name=${1:?app_name null or not set}
+
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
+
+  mkdir -p "content"
+  echo "Hello" > "content/index.html"
+
+  cat <<EOF >"manifest.yml"
+---
+applications:
+- name: $app_name
+  memory: ((memory))
+  disk_quota: 64M
+  instances: ((instances))
+  path: content
+  buildpack: staticfile_buildpack
+EOF
+
+  cat <<EOF >"vars-file1.yml"
+---
+memory: 64M
+EOF
+
+  cat <<EOF >"vars-file2.yml"
+---
+instances: 1
+EOF
+
+  pwd
+}
+
+create_logging_route_service_app() {
+  # if tests are running in concourse, the logging-route-service.zip is provided
+  # by the pipeline.  Otherwise, if we are running locally, we'll need to
+  # download it.
+  if [ -d "/opt/logging-route-service" ]; then
+    cd /opt/logging-route-service
+  else
+    cd $(mktemp -d $TMPDIR/app.XXXXXX)
+  fi
+
+  local commit=master
+
+  if [ ! -f "logging-route-service-$commit.zip" ]; then
+    wget -q https://github.com/nulldriver/logging-route-service/archive/$commit.zip -O logging-route-service-$commit.zip
+  fi
+
+  unzip -q logging-route-service-$commit.zip
+  mv logging-route-service-$commit/* .
+  rm -rf logging-route-service-$commit
+  rm logging-route-service-$commit.zip
+
+  pwd
+}
+
+create_service_broker_app() {
+
+  if [ -d "/opt/service-broker" ]; then
+    cd /opt/service-broker
+  else
+    cd $(mktemp -d $TMPDIR/app.XXXXXX)
+  fi
+
+  local commit=master
+
+  if [ ! -f "overview-broker.zip" ]; then
+    wget -q https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O overview-broker-$commit.zip
+  fi
+
+  unzip -q overview-broker-$commit.zip
+  mv overview-broker-$commit/* .
+  rm -rf overview-broker-$commit
+  rm overview-broker-$commit.zip
+
+  pwd
+}
+
+create_org_commands_file() {
+  local org=${1:?org null or not set}
+
+  cd $(mktemp -d $TMPDIR/org_commands.XXXXXX)
+
+  cat > "commands.yml" <<-EOF
+command: create-org
+org: $org
+EOF
+
+  pwd
+}
+
+create_space_commands_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
+  cd $(mktemp -d $TMPDIR/space_commands.XXXXXX)
+
+  cat > "commands.yml" <<-EOF
+command: create-space
+org: $org
+space: $space
+EOF
+
+  pwd
+}
+
+create_delete_commands_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
+  cd $(mktemp -d $TMPDIR/delete_commands.XXXXXX)
+
+  cat > "commands.yml" <<-EOF
+commands:
+- command: delete-space
+  org: $org
+  space: $space
+- command: delete-org
+  org: $org
+EOF
+
+  pwd
+}
+
+create_credentials_file() {
+
+  cd $(mktemp -d $TMPDIR/commands_file.XXXXXX)
+
+  echo \
+  '{
+    "username": "admin",
+    "password": "pa55woRD"
+  }' > credentials.json
+
+  pwd
+}
+
+create_users_file() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+
+  cd $(mktemp -d $TMPDIR/users_file.XXXXXX)
+
+  cat << EOF > users.csv
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+$test_prefix-bulkload-user1,wasabi,$org,$space,x,x,x,x,x,x
+$test_prefix-bulkload-user2,wasabi,$org,$space,,x,x,,x,x
+$test_prefix-bulkload-user3,ldap,$org,$space,,,x,,x,
+EOF
+
+  pwd
 }
 
 put_with_params() {
@@ -150,25 +305,25 @@ it_can_push_an_app() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
     hostname: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml"
+    path: $path,
+    manifest: $manifest
   }')
 
-  put_with_params "$source" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
