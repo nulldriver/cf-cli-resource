@@ -893,14 +893,11 @@ function cf_service_broker_exists() {
 
 function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
-  local plan=${2:-}
-  if [ -n "$plan" ]; then
-    CF_TRACE=false cf marketplace -s "$service_name" | grep -q "$plan"
-    return $?
-  else
-    CF_TRACE=false cf marketplace -s "$service_name" >/dev/null
-    return $?
-  fi
+  local plan=${2:-'.*'}
+  local orgs=${3:-'.*'}
+
+  # use subshell as alternative to pipe to get around SIGPIPE signal when piping to grep -q
+  grep -qE "($service_name)\s+($plan)\s+(all|limited)\s+($orgs)" <(CF_TRACE=false cf service-access -e "$service_name")
 }
 
 function cf_enable_feature_flag() {
