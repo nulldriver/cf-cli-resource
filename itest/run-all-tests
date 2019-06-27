@@ -7,45 +7,22 @@ test_dir=$(dirname $0)
 
 $test_dir/cleanup-failed-tests
 
-#$test_dir/run-app-push-tests
-#$test_dir/run-app-tests
-#$test_dir/run-app-zero-downtime-push-tests
-#$test_dir/run-asynchronous-service-tests
-#$test_dir/run-auth-client-credentials-tests
-#$test_dir/run-auth-origin-tests
-#$test_dir/run-buildpack-tests
-#$test_dir/run-docker-tests
+$test_dir/run-app-push-tests
+$test_dir/run-app-tests
+$test_dir/run-app-zero-downtime-push-tests
+$test_dir/run-asynchronous-service-tests
+$test_dir/run-auth-client-credentials-tests
+$test_dir/run-auth-origin-tests
+$test_dir/run-buildpack-tests
+$test_dir/run-docker-tests
 $test_dir/run-file-tests
-#$test_dir/run-network-policy-tests
-#$test_dir/run-route-service-tests
-#$test_dir/run-route-tests
-#$test_dir/run-service-broker-tests
-#$test_dir/run-service-key-tests
-#$test_dir/run-share-service-tests
-#$test_dir/run-synchronous-service-tests
-#$test_dir/run-task-tests
-#$test_dir/run-user-provided-service-tests
-#$test_dir/run-user-tests
-
-#dostuff() {
-#  rm -rf mytemp
-#  mkdir mytemp
-#  cd mytemp
-#
-#  wget https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service-master.zip
-#
-#  unzip -q logging-route-service-master.zip
-#  mv logging-route-service-master/* .
-#  rm -rf logging-route-service-master
-#  rm logging-route-service-master.zip
-#
-#  rm -rf mytemp
-#
-#  pwd
-#}
-#
-#stuff=$(dostuff)
-#
-#sleep 1
-#echo "---"
-#echo "$stuff"
+$test_dir/run-network-policy-tests
+$test_dir/run-route-service-tests
+$test_dir/run-route-tests
+$test_dir/run-service-broker-tests
+$test_dir/run-service-key-tests
+$test_dir/run-share-service-tests
+$test_dir/run-synchronous-service-tests
+$test_dir/run-task-tests
+$test_dir/run-user-provided-service-tests
+$test_dir/run-user-tests

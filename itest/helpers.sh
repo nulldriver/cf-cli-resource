@@ -142,16 +142,14 @@ create_service_broker_app() {
     cd $(mktemp -d $TMPDIR/app.XXXXXX)
   fi
 
-  local commit=master
-
   if [ ! -f "overview-broker.zip" ]; then
-    wget -q https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O overview-broker-$commit.zip
+    wget -q https://github.com/mattmcneeney/overview-broker/archive/master.zip -O overview-broker.zip
   fi
 
-  unzip -q overview-broker-$commit.zip
-  mv overview-broker-$commit/* .
-  rm -rf overview-broker-$commit
-  rm overview-broker-$commit.zip
+  unzip -q overview-broker.zip
+  mv overview-broker-*/* .
+  rm -rf overview-broker-*
+  rm overview-broker.zip
 
   pwd
 }
