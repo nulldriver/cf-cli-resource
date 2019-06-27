@@ -556,7 +556,7 @@ resources:
   type: file-url
   icon: file
   source:
-    url: https://github.com/mattmcneeney/overview-broker/archive/dddec578676b8dcbe06158e3ac0b34edc6f5de6e.zip
+    url: https://github.com/mattmcneeney/overview-broker/archive/master.zip
     filename: overview-broker.zip
 
 - name: logging-route-service
