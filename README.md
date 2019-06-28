@@ -631,7 +631,7 @@ Wait for a service instance to start
 
 Enable access to a service or service plan for one or all orgs
 
-* `service_broker`: *Required.* The marketplace service name to enable
+* `service`: *Required.* The marketplace service name to enable
 * `access_org`: *Optional.* Enable access for a specified organization
 * `plan`: *Optional.* Enable access to a specified service plan
 
@@ -640,7 +640,7 @@ Enable access to a service or service plan for one or all orgs
     resource: cf-env
     params:
       command: enable-service-access
-      service_broker: some-service
+      service: some-service
       access_org: myorg
       plan: simple
 ```
@@ -649,7 +649,7 @@ Enable access to a service or service plan for one or all orgs
 
 Disable access to a service or service plan for one or all orgs
 
-* `service_broker`: *Required.* The marketplace service name to disable
+* `service`: *Required.* The marketplace service name to disable
 * `access_org`: *Optional.* Disable access for a specified organization
 * `plan`: *Optional.* Disable access to a specified service plan
 
@@ -658,7 +658,7 @@ Disable access to a service or service plan for one or all orgs
     resource: cf-env
     params:
       command: disable-service-access
-      service_broker: some-service
+      service: some-service
       access_org: myorg
       plan: simple
 ```
@@ -800,6 +800,7 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `manifest`: *Required.* Path to a application manifest file.
 * `path`: *Optional.* Path to the application to push. If this isn't set then it will be read from the manifest instead.
+* `stack`: *Optional.* Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
 * `environment_variables`: *Optional.*  Environment variable key/value pairs to add to the manifest.
 
@@ -990,6 +991,61 @@ Remove network traffic policy of an app
       destination_app: backend
       protocol: tcp
       port: 8080
+```
+
+#### create-buildpack
+
+Create a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `path`: *Required.* Path to buildpack zip file, url to a zip file, or a local directory
+* `position`: *Required.* The order in which the buildpacks are checked during buildpack auto-detection
+* `enabled`: *Optional.* Set to `false` to disable the buildpack from being used for staging
+
+```yml
+  - put: cf-create-buildpack
+    resource: cf-env
+    params:
+      command: create-buildpack
+      buildpack: java_buildpack_offline
+      path: https://github.com/cloudfoundry/java-buildpack/releases/download/v4.19.1/java-buildpack-v4.19.1.zip
+      position: 99
+```
+
+#### update-buildpack
+
+Update a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `path`: *Optional.* Path to buildpack zip file, url to a zip file, or a local directory
+* `assign_stack`: *Optional.* Assign a stack to a buildpack that does not have a stack association
+* `position`: *Optional.* The order in which the buildpacks are checked during buildpack auto-detection
+* `enabled`: *Optional.* Set to `false` to disable the buildpack from being used for staging
+* `locked`: *Optional.* Set to `true` to lock the buildpack to prevent updates
+
+```yml
+  - put: cf-update-buildpack
+    resource: cf-env
+    params:
+      command: update-buildpack
+      buildpack: java_buildpack_offline
+      assign_stack: cflinuxfs3
+```
+
+#### delete-buildpack
+
+Delete a buildpack
+
+* `buildpack`: *Required.* The name of the buildpack
+* `stack`: *Optional.* Specify stack to disambiguate buildpacks with the same name. Required when buildpack name is ambiguous
+
+```yml
+  - put: cf-delete-buildpack
+    resource: cf-env
+    params:
+      command: delete-buildpack
+      buildpack: java_buildpack_offline
+      stack: cflinuxfs3
 ```
 
 #### run-task

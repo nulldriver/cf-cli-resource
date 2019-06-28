@@ -14,8 +14,6 @@ it_can_create_a_user_provided_service_with_credentials_string() {
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -29,8 +27,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
     credentials: $credentials
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -40,21 +37,13 @@ it_can_create_a_user_provided_service_with_credentials_file() {
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  mkdir -p $working_dir/input
-
-  echo \
-  '{
-    "username": "admin",
-    "password": "pa55woRD"
-  }' > $working_dir/input/credentials.json
+  local project=$(create_credentials_file)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg service_instance "$service_instance" \
-  --arg credentials 'input/credentials.json' \
+  --arg credentials "$project/credentials.json" \
   '{
     command: "create-user-provided-service",
     org: $org,
@@ -63,8 +52,7 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     credentials: $credentials
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -73,8 +61,6 @@ it_can_create_a_user_provided_service_with_syslog() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service_instance=${3:?service_instance null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -89,8 +75,7 @@ it_can_create_a_user_provided_service_with_syslog() {
     syslog_drain_url: $syslog_drain_url
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }

@@ -14,46 +14,47 @@ it_can_push_an_app_with_startup_command() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml",
+    path: $path,
+    manifest: $manifest,
     staging_timeout: 15,
     startup_timeout: 5
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-
-  echo "push with default default command"; {
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push with default default command"
+  {
+    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
     assert::success cf_is_app_started "$app_name"
   }
 
   local default_startup_command=$(cf_get_app_startup_command "$app_name")
   local custom_startup_command='$HOME/boot.sh --dummy-flag'
 
-  echo "push with custom startup command"; {
-    config=$(echo $config | jq --arg startup_command "$custom_startup_command" '.params.startup_command = $startup_command')
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push with custom startup command"
+  {
+    params=$(echo $params | jq --arg startup_command "$custom_startup_command" '.startup_command = $startup_command')
+    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$app_name")"
   }
 
-  echo "push and reset to default startup command"; {
-    config=$(echo $config | jq --arg startup_command "null" '.params.startup_command = $startup_command')
-    put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  describe "push and reset to default startup command"
+  {
+    params=$(echo $params | jq --arg startup_command "null" '.startup_command = $startup_command')
+    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$app_name")"
@@ -65,38 +66,25 @@ it_can_push_an_app_with_vars() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  mkdir -p "$working_dir/static-app/content"
-
-  echo "Hello" > "$working_dir/static-app/content/index.html"
-  cat <<EOF >"$working_dir/static-app/manifest.yml"
----
-applications:
-- name: $app_name
-  memory: ((memory))
-  disk_quota: 64M
-  instances: ((instances))
-  path: content
-  buildpack: staticfile_buildpack
-EOF
+  local project=$(create_static_app_with_vars "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml",
+    path: $path,
+    manifest: $manifest,
     vars: { instances: 2, memory: "96M" }
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 2 "$(cf_get_app_instances "$app_name")"
@@ -108,48 +96,27 @@ it_can_push_an_app_with_vars_files() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  mkdir -p "$working_dir/static-app/content"
-
-  echo "Hello" > "$working_dir/static-app/content/index.html"
-  cat <<EOF >"$working_dir/static-app/manifest.yml"
----
-applications:
-- name: $app_name
-  memory: ((memory))
-  disk_quota: 64M
-  instances: ((instances))
-  path: content
-  buildpack: staticfile_buildpack
-EOF
-
-  cat <<EOF >"$working_dir/static-app/vars-file1.yml"
----
-memory: 64M
-EOF
-
-  cat <<EOF >"$working_dir/static-app/vars-file2.yml"
----
-instances: 1
-EOF
+  local project=$(create_static_app_with_vars "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
+  --arg vars_file1 "$project/vars-file1.yml" \
+  --arg vars_file2 "$project/vars-file2.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml",
-    vars_files: [ "static-app/vars-file1.yml", "static-app/vars-file2.yml" ]
+    path: $path,
+    manifest: $manifest,
+    vars_files: [ $vars_file1, $vars_file2 ]
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 1 "$(cf_get_app_instances "$app_name")"
@@ -162,27 +129,26 @@ it_can_push_an_app_with_stack() {
   local app_name=${3:?app_name null or not set}
   local stack=${4:?stack null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  create_static_app "$app_name" "$working_dir"
+  local project=$(create_static_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
   --arg stack "$stack" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
     space: $space,
     app_name: $app_name,
-    path: "static-app/content",
-    manifest: "static-app/manifest.yml",
+    path: $path,
+    manifest: $manifest,
     stack: $stack
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals "$stack" "$(cf_get_app_stack "$app_name")"
@@ -191,7 +157,7 @@ it_can_push_an_app_with_stack() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
-stack=cflinuxfs2
+stack=cflinuxfs3
 
 setup_integration_tests "$org" "$space"
 

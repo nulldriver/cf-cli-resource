@@ -9,6 +9,9 @@ function cf_is_logged_in() {
     return  0
 }
 
+function cf_curl() {
+  CF_TRACE=false cf curl --fail "$@"
+}
 
 function cf_api() {
   local url=${1:?url null or not set}
@@ -77,7 +80,7 @@ function cf_get_space_guid() {
 
   local org_guid="$(cf_get_org_guid "$org")"
   if [ -n "$org_guid" ]; then
-    CF_TRACE=false cf curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
+    cf_curl "/v2/spaces" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$space;organization_guid:$org_guid" | jq -r '.resources[].metadata.guid'
   fi
 }
 
@@ -171,7 +174,7 @@ function cf_get_private_domain_guid() {
   local domain=${2:?domain null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/organizations/$(cf_get_org_guid "$org")/private_domains?inline-relations-depth=1&q=name:$domain") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/organizations/$(cf_get_org_guid "$org")/private_domains?inline-relations-depth=1&q=name:$domain"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -185,7 +188,7 @@ function cf_get_shared_domain_guid() {
   local domain=${1:?domain null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/shared_domains?inline-relations-depth=1&q=name:$domain")  || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/shared_domains?inline-relations-depth=1&q=name:$domain") ; then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -221,12 +224,7 @@ function cf_check_route() {
   [ -n "$host" ] && url+="/host/$host"
   [ -n "$path" ] && url+="?path=%2F$path"
 
-  local output
-  if ! output=$(CF_TRACE=false cf curl "$url" -i); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
-  fi
-
-  echo "$output" | grep -q '204 No Content'
+  grep -q '204 No Content' <(cf_curl "$url" -i)
 }
 
 cf_is_app_mapped_to_route() {
@@ -236,7 +234,7 @@ cf_is_app_mapped_to_route() {
   local app_guid=$(cf_get_app_guid "$app_name")
 
   local output
-  if ! output=$(CF_TRACE=false cf curl "/v2/apps/$app_guid/stats"); then
+  if ! output=$(cf_curl "/v2/apps/$app_guid/stats"); then
     echo "$output" && exit 1
   fi
 
@@ -247,7 +245,7 @@ cf_has_private_domain() {
   local org=${1:?org null or not set}
   local domain=${2:?domain null or not set}
   local org_guid=$(cf_get_org_guid "$org")
-  CF_TRACE=false cf curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
+  cf_curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf_create_domain() {
@@ -383,7 +381,7 @@ function cf_get_service_instance_tags() {
   local service_instance=${1:?service_instance null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -394,12 +392,12 @@ function cf_get_service_instance_plan() {
   local service_instance=${1:?service_instance null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
   local service_plan_url=$(echo $output | jq -r '.entity.service_plan_url')
-  if ! output=$(cf_curl "$service_plan_url") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "$service_plan_url"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -490,7 +488,7 @@ function cf_wait_for_service_instance() {
   printf '\e[92m[INFO]\e[0m Waiting for service: %s\n' "$service_instance"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
-    local state=$(CF_TRACE=false cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
+    local state=$(cf_curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
       printf '\e[92m[INFO]\e[0m Service is ready: %s\n' "$service_instance"
@@ -498,7 +496,7 @@ function cf_wait_for_service_instance() {
     elif [ "$state" = "failed" ]; then
       printf '\e[91m[ERROR]\e[0m Failed to provision service: %s, error: %s\n' \
         "$service_instance" \
-        $(CF_TRACE=false cf curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
+        $(cf_curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
       exit 1
     fi
 
@@ -593,11 +591,11 @@ function cf_create_service_broker() {
 }
 
 function cf_enable_service_access() {
-  local service_broker=${1:?service_broker null or not set}
+  local service=${1:?service null or not set}
   local plan=${2:-}
   local access_org=${3:-}
 
-  local args=("$service_broker")
+  local args=("$service")
   [ -n "$plan" ] && args+=(-p "$plan")
   [ -n "$access_org" ] && args+=(-o "$access_org")
 
@@ -605,11 +603,11 @@ function cf_enable_service_access() {
 }
 
 function cf_disable_service_access() {
-  local service_broker=${1:?service_broker null or not set}
+  local service=${1:?service null or not set}
   local plan=${2:-}
   local access_org=${3:-}
 
-  local args=("$service_broker")
+  local args=("$service")
   [ -n "$plan" ] && args+=(-p "$plan")
   [ -n "$access_org" ] && args+=(-o "$access_org")
 
@@ -654,7 +652,7 @@ function cf_is_app_bound_to_service() {
   local service_instance=${2:?service_instance null or not set}
   local app_guid=$(cf_get_app_guid "$app_name")
   local si_guid=$(CF_TRACE=false cf service "$service_instance" --guid)
-  CF_TRACE=false cf curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
+  cf_curl "/v2/apps/$app_guid/service_bindings" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=service_instance_guid:$si_guid" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf_is_app_bound_to_route_service() {
@@ -667,17 +665,6 @@ function cf_is_app_bound_to_route_service() {
     cf curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | \
     jq -e --arg app_name "$app_name" 'select (.resources[].entity.apps[].entity.name == $app_name)' | \
     jq -e --arg service_instance "$service_instance" 'select (.resources[].entity.service_instance.entity.name == $service_instance) | true' >/dev/null
-}
-
-function cf_zero_downtime_push() {
-  local args=${1:?args null or not set}
-  local current_app_name=${2:-}
-  if [ -n "$current_app_name" ]; then
-    # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
-    CF_TRACE=false cf zero-downtime-push "$current_app_name" $args
-  else
-    cf push $args
-  fi
 }
 
 function cf_set_env() {
@@ -694,7 +681,7 @@ function cf_has_env() {
   local env_var_value=${3:?env_var_value null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/env") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/env"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -770,8 +757,8 @@ function cf_rename() {
 function cf_add_network_policy() {
   local source_app=${1:?source_app null or not set}
   local destination_app=${2:?destination_app null or not set}
-  local protocol=${3:?protocol null or not set}
-  local port=${4:?port null or not set}
+  local protocol=$3
+  local port=$4
 
   local args=("$source_app" --destination-app "$destination_app")
   [ -n "$protocol" ] && args+=(--protocol "$protocol")
@@ -823,13 +810,13 @@ function cf_was_task_run() {
 function cf_is_app_started() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  CF_TRACE=false cf curl "/v2/apps/$guid" | jq -e '.entity.state == "STARTED"' >/dev/null
+  cf_curl "/v2/apps/$guid" | jq -e '.entity.state == "STARTED"' >/dev/null
 }
 
 function cf_is_app_stopped() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf_get_app_guid "$app_name")
-  CF_TRACE=false cf curl "/v2/apps/$guid" | jq -e '.entity.state == "STOPPED"' >/dev/null
+  cf_curl "/v2/apps/$guid" | jq -e '.entity.state == "STOPPED"' >/dev/null
 }
 
 function cf_app_exists() {
@@ -859,11 +846,11 @@ function cf_get_app_stack() {
   local app_name=${1:?app_name null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
-  if ! output=$(cf_curl "$(echo $output | jq -r '.entity.stack_url')") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "$(echo $output | jq -r '.entity.stack_url')"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -884,21 +871,11 @@ function cf_scale() {
   cf scale "${args[@]}"
 }
 
-function cf_curl() {
-  local path=${1:?path null or not set}
-  CF_TRACE=false cf curl "$path"
-}
-
-function cf_has_error_code() {
-  local output=${1:?output null or not set}
-  echo $output | jq -e 'has("error_code")' >/dev/null
-}
-
 function cf_get_app_startup_command() {
   local app_name=${1:?app_name null or not set}
 
   local output
-  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/summary") || cf_has_error_code "$output"; then
+  if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/summary"); then
     printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
   fi
 
@@ -907,19 +884,16 @@ function cf_get_app_startup_command() {
 
 function cf_service_broker_exists() {
   local service_broker=${1:?service_broker null or not set}
-  CF_TRACE=false cf curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
+  cf_curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
 }
 
 function cf_is_marketplace_service_available() {
   local service_name=${1:?service_name null or not set}
-  local plan=${2:-}
-  if [ -n "$plan" ]; then
-    CF_TRACE=false cf marketplace -s "$service_name" | grep -q "$plan"
-    return $?
-  else
-    CF_TRACE=false cf marketplace -s "$service_name" >/dev/null
-    return $?
-  fi
+  local plan=${2:-'.*'}
+  local orgs=${3:-'.*'}
+
+  # use subshell as alternative to pipe to get around SIGPIPE signal when piping to grep -q
+  grep -qE "($service_name)\s+($plan)\s+(all|limited)\s+($orgs)" <(CF_TRACE=false cf service-access -e "$service_name")
 }
 
 function cf_enable_feature_flag() {
@@ -940,4 +914,38 @@ function cf_is_feature_flag_enabled() {
 function cf_is_feature_flag_disabled() {
   local feature_flag=${1:?feature_flag null or not set}
   CF_TRACE=false cf feature-flags | grep "$feature_flag" | grep -q disabled
+}
+
+function cf_has_buildpack() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1'
+}
+
+function cf_is_buildpack_enabled() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true'
+}
+
+function cf_is_buildpack_locked() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true'
+}
+
+function cf_get_buildpack_stack() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.stack'
+}
+
+function cf_get_buildpack_filename() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.filename'
+}
+
+function cf_get_buildpack_position() {
+  local buildpack=${1:?buildpack null or not set}
+  cf_curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -r '.resources[].entity.position'
+}
+
+function cf_get_buildpack_max_position() {
+  cf_curl "/v2/buildpacks" | jq -r '[.resources[].entity.position] | max'
 }

@@ -364,37 +364,34 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     path=$(echo $options | jq -r '.path //empty')
     current_app_name=$(echo $options | jq -r '.current_app_name //empty')
     environment_variables=$(echo $options | jq -r '.environment_variables //empty')
+    stack=$(echo $options | jq -r '.stack //empty')
 
     if [ ! -f "$manifest" ]; then
       printf '\e[91m[ERROR]\e[0m invalid payload (manifest is not a file: %s)\n' "$manifest"
       exit 1
     fi
 
-    instructions="$(dirname $manifest)/.cf-cli-resource-manifest-update-instructions.yml"
-
-    # add pipeline defined environment variables to the manifest
-    for key in $(echo $environment_variables | jq -r 'keys[]');
-    do
-      value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-      # valid inline yaml (flow style) so quote the value if it starts with a sequence or map
-      if [[ "$value" == [* || "$value" == {* ]]; then
-        echo "env.$key: '$value'" >>"$instructions"
-      else
-        echo "env.$key: $value" >>"$instructions"
-      fi
-    done
-
-    if [ -f "$instructions" ]; then
-      mv "$manifest" "$manifest.original"
-      yq w -s "$instructions" "$manifest.original" > "$manifest"
+    if [ -n "$environment_variables" ]; then
+      cp "$manifest" "$manifest.original"
+      for key in $(echo $environment_variables | jq -r 'keys[]'); do
+        value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
+        yq w -i "$manifest" -- "env.$key" "$value"
+      done
     fi
 
-    args="-f $manifest"
-    [ -n "$path" ] && args="$args -p $path"
+    args=(-f "$manifest")
+    [ -n "$path" ]  && args+=(-p $path) # don't quote so we can support globbing
+    [ -n "$stack" ] && args+=(-s "$stack")
 
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$current_app_name"
     cf_target "$org" "$space"
-    cf_zero_downtime_push "$args" "$current_app_name"
+
+    if [ -n "$current_app_name" ]; then
+      # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
+      CF_TRACE=false cf zero-downtime-push "$current_app_name" "${args[@]}"
+    else
+      cf push "${args[@]}"
+    fi
   elif [ "set-env" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     env_var_name=$(echo $options | jq -r '.env_var_name //empty')
@@ -506,16 +503,26 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     cf_create_service_broker "$service_broker" "$username" "$password" "$url" "$is_space_scoped"
   elif [ "enable-service-access" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
+    service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
     access_org=$(echo $options | jq -r '.access_org //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
-    cf_enable_service_access "$service_broker" "$plan" "$access_org"
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service"
+
+    # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
+    service=${service:-$service_broker}
+
+    cf_enable_service_access "$service" "$plan" "$access_org"
   elif [ "disable-service-access" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
+    service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
     access_org=$(echo $options | jq -r '.access_org //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
-    cf_disable_service_access "$service_broker" "$plan" "$access_org"
+
+    # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
+    service=${service:-$service_broker}
+
+    cf_disable_service_access "$service" "$plan" "$access_org"
   elif [ "delete-service-broker" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
@@ -529,6 +536,47 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     feature_name=$(echo $options | jq -r '.feature_name //empty')
     printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
     cf_disable_feature_flag "$feature_name"
+  elif [ "create-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    position=$(echo $options | jq -r '.position //empty')
+    enabled=$(echo $options | jq -r '.enabled //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack" "$path" "$position")
+    [ "$enabled" == "true" ]  && args+=(--enable)
+    [ "$enabled" == "false" ] && args+=(--disable)
+
+    cf create-buildpack "${args[@]}"
+  elif [ "update-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    enabled=$(echo $options | jq -r '.enabled //empty')
+    locked=$(echo $options | jq -r '.locked //empty')
+    assign_stack=$(echo $options | jq -r '.assign_stack //empty')
+    path=$(echo $options | jq -r '.path //empty')
+    position=$(echo $options | jq -r '.position //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack")
+    [ "$enabled" == "true"  ] && args+=(--enable)
+    [ "$enabled" == "false" ] && args+=(--disable)
+    [ "$locked"  == "true"  ] && args+=(--lock)
+    [ "$locked"  == "false" ] && args+=(--unlock)
+
+    [ -n "$assign_stack" ] && args+=(--assign-stack "$assign_stack")
+    [ -n "$path" ] && args+=(-p "$path")
+    [ -n "$position" ] && args+=(-i "$position")
+
+    cf update-buildpack "${args[@]}"
+  elif [ "delete-buildpack" = "$command" ]; then
+    buildpack=$(echo $options | jq -r '.buildpack //empty')
+    stack=$(echo $options | jq -r '.stack //empty')
+    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+
+    args=("$buildpack")
+    [ -n "$stack" ] && args+=(-s "$stack")
+
+    cf delete-buildpack -f "${args[@]}"
   else
     printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
     exit 1

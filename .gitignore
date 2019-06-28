@@ -21,3 +21,6 @@
 /nbbuild/
 /dist/
 /nbdist/
+
+# Concourse Secrets
+pipeline-secrets.yml

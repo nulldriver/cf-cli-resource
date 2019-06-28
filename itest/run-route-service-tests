@@ -14,34 +14,14 @@ it_can_push_the_logger_app() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local commit=e6c61e141bc0fc0b0a482d207a2f53dfbe5b4aa1
-
-  # if tests are running in concourse, the logging-route-service.zip is provided
-  # by the pipeline.  Otherwise, if we are running locally, we'll need to
-  # download it.
-  local app_dir=$working_dir/logging-route-service
-  if [ -d "/opt/logging-route-service" ]; then
-    app_dir=/opt/logging-route-service
-  else
-    mkdir -p $app_dir
-  fi
-
-  if [ ! -f "$app_dir/logging-route-service.zip" ]; then
-    wget https://github.com/nulldriver/logging-route-service/archive/$commit.zip -O $app_dir/logging-route-service.zip
-  fi
-
-  if [ ! -d "$app_dir/logging-route-service-$commit" ]; then
-    unzip $app_dir/logging-route-service.zip -d $app_dir
-  fi
+  local project=$(create_logging_route_service_app)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg path "$app_dir/logging-route-service-$commit" \
-  --arg manifest "$app_dir/logging-route-service-$commit/manifest.yml" \
+  --arg path "$project" \
+  --arg manifest "$project/manifest.yml" \
   '{
     command: "push",
     org: $org,
@@ -52,8 +32,7 @@ it_can_push_the_logger_app() {
     manifest: $manifest
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -74,8 +53,6 @@ it_can_bind_logger_route_service_to_logged_app() {
   local app_name=${5:?app_name null or not set}
   local path=${6:-}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -93,8 +70,7 @@ it_can_bind_logger_route_service_to_logged_app() {
 
   [ -n "$path" ] && params=$(echo $params | jq --arg value "$path" '.path = $value')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
 }

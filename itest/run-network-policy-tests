@@ -9,13 +9,35 @@ source $test_dir/config.sh
 source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
-it_can_add_network_policy() {
+it_can_add_network_policy_with_defaults() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local source_app_name=${3:?source_app_name null or not set}
   local destination_app_name=${4:?destination_app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg source_app "$source_app_name" \
+  --arg destination_app "$destination_app_name" \
+  '{
+    command: "add-network-policy",
+    org: $org,
+    space: $space,
+    source_app: $source_app,
+    destination_app: $destination_app,
+  }')
+
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_network_policy_exists "$source_app_name" "$destination_app_name" "tcp" "8080"
+}
+
+it_can_add_network_policy_with_protocol_and_port() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local source_app_name=${3:?source_app_name null or not set}
+  local destination_app_name=${4:?destination_app_name null or not set}
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -32,8 +54,7 @@ it_can_add_network_policy() {
     port: "9999"
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
@@ -43,8 +64,6 @@ it_can_remove_network_policy() {
   local space=${2:?space null or not set}
   local source_app_name=${3:?source_app_name null or not set}
   local destination_app_name=${4:?destination_app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -61,8 +80,7 @@ it_can_remove_network_policy() {
     port: "9999"
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
@@ -77,7 +95,8 @@ setup_integration_tests "$org" "$space"
 run it_can_push_an_app \"$org\" \"$space\" \"$source_app_name\"
 run it_can_push_an_app \"$org\" \"$space\" \"$destination_app_name\"
 
-run it_can_add_network_policy \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
+run it_can_add_network_policy_with_defaults \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
+run it_can_add_network_policy_with_protocol_and_port \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
 run it_can_remove_network_policy \"$org\" \"$space\" \"$source_app_name\" \"$destination_app_name\"
 
 run it_can_delete_an_app \"$org\" \"$space\" \"$destination_app_name\"

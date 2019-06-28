@@ -15,8 +15,6 @@ it_can_create_a_user_with_password() {
   local username=${3:?username null or not set}
   local password=${4:?password null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -30,8 +28,7 @@ it_can_create_a_user_with_password() {
     password: $password
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username"
 }
@@ -41,8 +38,6 @@ it_can_create_a_user_with_origin() {
   local space=${2:?space null or not set}
   local username=${3:?username null or not set}
   local origin=${4:?origin null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -57,8 +52,7 @@ it_can_create_a_user_with_origin() {
     origin: $origin
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username" "$origin"
 }
@@ -67,29 +61,20 @@ it_can_create_users_from_file() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  mkdir -p $working_dir/input
-
-  cat << EOF > $working_dir/input/users.csv
-Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
-$test_prefix-bulkload-user1,wasabi,$org,$space,x,x,x,x,x,x
-$test_prefix-bulkload-user2,wasabi,$org,$space,,x,x,,x,x
-$test_prefix-bulkload-user3,ldap,$org,$space,,,x,,x,
-EOF
+  local project=$(create_users_file "$org" "$space")
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
+  --arg file "$project/users.csv" \
   '{
     command: "create-users-from-file",
     org: $org,
     space: $space,
-    file: "input/users.csv"
+    file: $file
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$test_prefix-bulkload-user1"
   assert::success cf_user_exists "$test_prefix-bulkload-user2"
@@ -101,8 +86,6 @@ it_can_delete_a_user_with_origin() {
   local space=${2:?space null or not set}
   local username=${3:?username null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -114,8 +97,7 @@ it_can_delete_a_user_with_origin() {
     username: $username
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }
@@ -125,8 +107,6 @@ it_can_delete_a_user_with_password() {
   local space=${2:?space null or not set}
   local username=${3:?username null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -138,8 +118,7 @@ it_can_delete_a_user_with_password() {
     username: $username
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }

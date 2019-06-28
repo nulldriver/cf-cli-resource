@@ -7,7 +7,7 @@ ADD itest/ /opt/itest/
 RUN apk add --no-cache ca-certificates curl bash jq util-linux
 
 # Install Cloud Foundry cli
-ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.42.0 /tmp/cf-cli.tgz
+ADD https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.45.0 /tmp/cf-cli.tgz
 RUN mkdir -p /usr/local/bin && \
   tar -xzf /tmp/cf-cli.tgz -C /usr/local/bin && \
   cf --version && \
@@ -20,7 +20,7 @@ RUN chmod +x /tmp/autopilot-linux && \
   rm -f /tmp/autopilot-linux
 
 # Install yaml cli
-ADD https://github.com/mikefarah/yq/releases/download/2.1.0/yq_linux_amd64 /tmp/yq_linux_amd64
+ADD https://github.com/mikefarah/yq/releases/download/2.3.0/yq_linux_amd64 /tmp/yq_linux_amd64
 RUN install /tmp/yq_linux_amd64 /usr/local/bin/yq && \
   yq --version && \
   rm -f /tmp/yq_linux_amd64

@@ -13,8 +13,6 @@ it_can_create_a_domain() {
   local org=${1:?org null or not set}
   local domain=${2:?domain null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg domain "$domain" \
@@ -24,8 +22,7 @@ it_can_create_a_domain() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_has_private_domain "$org" "$domain"
 }
@@ -33,8 +30,6 @@ it_can_create_a_domain() {
 it_can_delete_a_domain() {
   local org=${1:?org null or not set}
   local domain=${2:?domain null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -45,8 +40,7 @@ it_can_delete_a_domain() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_has_private_domain "$org" "$domain"
 }
@@ -56,8 +50,6 @@ it_can_create_a_route() {
   local space=${2:?space null or not set}
   local domain=${3:?domain null or not set}
   local other_space=${4:-}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -72,8 +64,7 @@ it_can_create_a_route() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain"
 }
@@ -84,8 +75,6 @@ it_can_create_a_route_with_hostname() {
   local domain=${3:?domain null or not set}
   local hostname=${4:?hostname null or not set}
   local other_space=${5:-}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -102,8 +91,7 @@ it_can_create_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain" "$hostname"
 }
@@ -116,8 +104,6 @@ it_can_create_a_route_with_hostname_and_path() {
   local path=${5:?path null or not set}
   local other_space=${6:-}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -135,8 +121,7 @@ it_can_create_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_check_route "$org" "$domain" "$hostname" "$path"
 }
@@ -146,8 +131,6 @@ it_can_map_a_route() {
   local space=${2:?space null or not set}
   local domain=${3:?domain null or not set}
   local app_name=${4:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -162,8 +145,7 @@ it_can_map_a_route() {
     app_name: $app_name
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$domain"
 }
@@ -174,8 +156,6 @@ it_can_map_a_route_with_hostname() {
   local domain=${3:?domain null or not set}
   local app_name=${4:?app_name null or not set}
   local hostname=${5:?hostname null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -192,8 +172,7 @@ it_can_map_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
@@ -206,8 +185,6 @@ it_can_map_a_route_with_hostname_and_path() {
   local hostname=${5:?hostname null or not set}
   local path=${6:?path null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -225,8 +202,7 @@ it_can_map_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
@@ -236,8 +212,6 @@ it_can_unmap_a_route() {
   local space=${2:?space null or not set}
   local domain=${3:?domain null or not set}
   local app_name=${4:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -252,8 +226,7 @@ it_can_unmap_a_route() {
     app_name: $app_name
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$domain"
 }
@@ -264,8 +237,6 @@ it_can_unmap_a_route_with_hostname() {
   local domain=${3:?domain null or not set}
   local app_name=${4:?app_name null or not set}
   local hostname=${5:?hostname null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -282,8 +253,7 @@ it_can_unmap_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
@@ -296,8 +266,6 @@ it_can_unmap_a_route_with_hostname_and_path() {
   local hostname=${5:?hostname null or not set}
   local path=${6:?path null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -315,8 +283,7 @@ it_can_unmap_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
@@ -325,8 +292,6 @@ it_can_delete_a_route() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local domain=${3:?domain null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -339,8 +304,7 @@ it_can_delete_a_route() {
     domain: $domain
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain"
 }
@@ -350,8 +314,6 @@ it_can_delete_a_route_with_hostname() {
   local space=${2:?space null or not set}
   local domain=${3:?domain null or not set}
   local hostname=${4:?hostname null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -366,8 +328,7 @@ it_can_delete_a_route_with_hostname() {
     hostname: $hostname
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain" "$hostname"
 }
@@ -378,8 +339,6 @@ it_can_delete_a_route_with_hostname_and_path() {
   local domain=${3:?domain null or not set}
   local hostname=${4:?hostname null or not set}
   local path=${5:?path null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -396,8 +355,7 @@ it_can_delete_a_route_with_hostname_and_path() {
     path: $path
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_check_route "$org" "$domain" "$hostname" "$path"
 }

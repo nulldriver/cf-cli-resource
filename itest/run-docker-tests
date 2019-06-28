@@ -14,8 +14,6 @@ it_can_push_a_docker_image_from_a_private_registry() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
@@ -34,8 +32,7 @@ it_can_push_a_docker_image_from_a_private_registry() {
     docker_password: $docker_password
   }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }

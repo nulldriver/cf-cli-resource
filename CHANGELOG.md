@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.15.0 - 2019-06-27
+
+### Fixed
+- `enable-service-access` and `disable-service-access` used a very mis-leading `service_broker` param to represent the name of the marketplace service to enable/disable.  So, the `service_broker` param is now deprecated and is superseded by the new properly named `service` param.
+
+### Added
+- `create-buildpack` - Create a buildpack
+- `update-buildpack` - Update a buildpack
+- `delete-buildpack` - Delete a buildpack
+
+### Changed
+- Updated to [cf cli v6.45.0](https://github.com/cloudfoundry/cli/releases/tag/v6.45.0)
+- Refactored `cf_functions.sh` to utilize the new `cf curl --fail` option for better error api error handling
+- Quite a bit of test code cleanup
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.45.0](https://github.com/cloudfoundry/cli/releases/tag/v6.45.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.3.0](https://github.com/mikefarah/yq/releases/tag/2.3.0)         |
+
+## 2.14.0 - 2019-06-02
+
+### Changed
+- `zero-downtime-push` command now supports the `stack` option
+
+### Fixed
+- Fixed `zero-downtime-push` where it had some problems with environment variables that were multi-line or started with a hyphen
+- The optional `port` and `protocol` options for `add-network-policiy` are now really optional, thanks to a PR by [@rs017991](https://github.com/rs017991)
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.42.0](https://github.com/cloudfoundry/cli/releases/tag/v6.42.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.3.0](https://github.com/mikefarah/yq/releases/tag/2.3.0)         |
+
 ## 2.13.0 - 2019-03-25
 
 ### Changed

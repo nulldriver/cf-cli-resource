@@ -9,46 +9,44 @@ source $test_dir/config.sh
 source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
-it_can_create_a_service_broker_space_scoped() {
+it_can_push_the_service_broker_app() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local project=$(create_service_broker_app)
 
-  local commit=dddec578676b8dcbe06158e3ac0b34edc6f5de6e
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg path "$project" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: $path
+  }')
 
-  # if tests are running in concourse, the overview-broker.zip is provided
-  # by the pipeline.  Otherwise, if we are running locally, we'll need to
-  # download it.
-  local broker_dir=$working_dir/broker
-  if [ -d "/opt/service-broker" ]; then
-    broker_dir=/opt/service-broker
-  else
-    mkdir -p $broker_dir
-  fi
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  if [ ! -f "$broker_dir/overview-broker.zip" ]; then
-    wget https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O $broker_dir/overview-broker.zip
-  fi
+  assert::success cf_is_app_started "$app_name"
+}
 
-  if [ ! -d "$broker_dir/overview-broker-$commit" ]; then
-    unzip $broker_dir/overview-broker.zip -d $broker_dir
-  fi
-
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
-  cf_target "$org" "$space"
-  cf push "$app_name" -p "$broker_dir/overview-broker-$commit" #-b "https://github.com/cloudfoundry/nodejs-buildpack#v1.6.11"
-  cf logout
+it_can_create_a_service_broker_space_scoped() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service_broker=${3:?service_broker null or not set}
+  local service_broker_url=${4:?service_broker_url null or not set}
 
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg service_broker "$app_name" \
+    --arg service_broker "$service_broker" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$(app_to_hostname "$app_name").$cf_apps_domain" \
+    --arg url "$service_broker_url" \
     '{
       command: "create-service-broker",
       org: $org,
@@ -60,50 +58,22 @@ it_can_create_a_service_broker_space_scoped() {
       space_scoped: true
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_broker_exists "$app_name"
+  assert::success cf_service_broker_exists "$service_broker"
 }
 
 it_can_create_a_service_broker() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
-  local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local commit=dddec578676b8dcbe06158e3ac0b34edc6f5de6e
-
-  # if tests are running in concourse, the overview-broker.zip is provided
-  # by the pipeline.  Otherwise, if we are running locally, we'll need to
-  # download it.
-  local broker_dir=$working_dir/broker
-  if [ -d "/opt/service-broker" ]; then
-    broker_dir=/opt/service-broker
-  else
-    mkdir -p $broker_dir
-  fi
-
-  if [ ! -f "$broker_dir/overview-broker.zip" ]; then
-    wget https://github.com/mattmcneeney/overview-broker/archive/$commit.zip -O $broker_dir/overview-broker.zip
-  fi
-
-  if [ ! -d "$broker_dir/overview-broker-$commit" ]; then
-    unzip $broker_dir/overview-broker.zip -d $broker_dir
-  fi
-
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
-  cf_target "$org" "$space"
-  cf push "$broker_name" -p "$broker_dir/overview-broker-$commit"
-  cf logout
+  local service_broker=${3:?service_broker null or not set}
+  local service_broker_url=${4:?service_broker_url null or not set}
 
   local params=$(jq -n \
-    --arg service_broker "$app_name" \
+    --arg service_broker "$service_broker" \
     --arg username admin \
     --arg password password \
-    --arg url "https://$(app_to_hostname "$app_name").$cf_apps_domain" \
+    --arg url "$service_broker_url" \
     '{
       command: "create-service-broker",
       service_broker: $service_broker,
@@ -112,74 +82,116 @@ it_can_create_a_service_broker() {
       url: $url
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_broker_exists "$app_name"
+  assert::success cf_service_broker_exists "$service_broker"
 }
 
 it_can_enable_service_access() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
-  local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local service=${3:?service null or not set}
+  local plan=${4:-}
+  local access_org=${5:-}
 
   local params=$(jq -n \
-    --arg service_broker "$app_name" \
-    --arg plan "${4:-}" \
-    --arg access_org "${5:-}" \
+    --arg service "$service" \
+    --arg plan "$plan" \
+    --arg access_org "$access_org" \
     '{
       command: "enable-service-access",
-      service_broker: $service_broker,
+      service: $service,
       plan: $plan,
       access_org: $access_org
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
-  assert::success cf_is_marketplace_service_available "$app_name" "${4:-}"
+  assert::success cf_is_marketplace_service_available "$service" "$plan" "$access_org"
+}
+
+it_can_enable_service_access_using_deprecated_param() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service=${3:?service null or not set}
+  local plan=${4:-}
+  local access_org=${5:-}
+
+  local params=$(jq -n \
+    --arg service "$service" \
+    --arg plan "$plan" \
+    --arg access_org "$access_org" \
+    '{
+      command: "enable-service-access",
+      service_broker: $service,
+      plan: $plan,
+      access_org: $access_org
+    }')
+
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  cf_target "$org" "$space"
+  assert::success cf_is_marketplace_service_available "$service" "$plan" "$access_org"
 }
 
 it_can_disable_service_access() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
-  local app_name=${3:?app_name null or not set}
+  local service=${3:?service null or not set}
+  local plan=${4:-}
+  local access_org=${5:-}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  local plan="simple"
   local params=$(jq -n \
-    --arg service_broker "$app_name" \
-    --arg plan "${4:-}" \
-    --arg access_org "${5:-}" \
+    --arg service "$service" \
+    --arg plan "$plan" \
+    --arg access_org "$access_org" \
     '{
       command: "disable-service-access",
-      service_broker: $service_broker,
+      service: $service,
       plan: $plan,
       access_org: $access_org
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$org" "$space"
-  assert::failure cf_is_marketplace_service_available "$app_name" "${4:-}"
+  assert::failure cf_is_marketplace_service_available "$service" "$plan"  "$access_org"
+}
+
+it_can_disable_service_access_using_deprecated_param() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local service=${3:?service null or not set}
+  local plan=${4:-}
+  local access_org=${5:-}
+
+  local params=$(jq -n \
+    --arg service "$service" \
+    --arg plan "$plan" \
+    --arg access_org "$access_org" \
+    '{
+      command: "disable-service-access",
+      service_broker: $service,
+      plan: $plan,
+      access_org: $access_org
+    }')
+
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  cf_target "$org" "$space"
+  assert::failure cf_is_marketplace_service_available "$service" "$plan"  "$access_org"
 }
 
 it_can_delete_a_service_broker() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
-  local app_name=${3:?app_name null or not set}
-
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
+  local service_broker=${3:?service_broker null or not set}
 
   local params=$(jq -n \
     --arg org "$org" \
     --arg space "$space" \
-    --arg service_broker "$app_name" \
+    --arg service_broker "$service_broker" \
     '{
       command: "delete-service-broker",
       org: $org,
@@ -187,36 +199,49 @@ it_can_delete_a_service_broker() {
       service_broker: $service_broker
     }')
 
-  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
-  put_with_params "$config" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_service_broker_exists "$app_name"
+  assert::failure cf_service_broker_exists "$service_broker"
 }
 
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
-broker_space_scoped_name=$(generate_test_name_with_spaces "Space Scoped Broker")
-broker_name=$(generate_test_name_with_spaces "Broker")
-
 setup_integration_tests "$org" "$space"
 
-run it_can_create_a_service_broker \"$org\" \"$space\" \"$broker_name\"
+describe "it_can_push_and_create_a_service_broker_that_is_space_scoped"
+{
+  service_broker=$(generate_test_name_with_spaces "Space Scoped Broker")
+  service_broker_url="https://$(app_to_hostname "$service_broker").$cf_apps_domain"
 
-run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\"
+  run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
 
-run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\" \"\" \"$org\"
-run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\" \"\" \"$org\"
+  run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$service_broker\" \"$service_broker_url\"
 
-run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\" \"complex\" \"$org\"
-run it_can_disable_service_access \"$org\" \"$space\" \"$broker_name\" \"complex\" \"$org\"
+  run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker\"
+}
 
-run it_can_enable_service_access \"$org\" \"$space\" \"$broker_name\"
+describe "it_can_push_and_create_and_enable_and_disable_a_service_broker"
+{
+  service_broker=$(generate_test_name_with_spaces "Broker")
+  service_broker_url="https://$(app_to_hostname "$service_broker").$cf_apps_domain"
+  service=overview-service
 
-run it_can_delete_a_service_broker \"$org\" \"$space\" \"$broker_name\"
+  run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
+  run it_can_create_a_service_broker \"$org\" \"$space\" \"$service_broker\" \"$service_broker_url\"
 
-# space scoped services aren't affected by enable/disable-service-access so we just test create and delete
-run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$broker_space_scoped_name\"
-run it_can_delete_a_service_broker \"$org\" \"$space\" \"$broker_space_scoped_name\"
+  run it_can_enable_service_access_using_deprecated_param \"$org\" \"$space\" \"$service\"
+  run it_can_disable_service_access_using_deprecated_param \"$org\" \"$space\" \"$service\"
+
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"
+
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"small\" \"$org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"small\" \"$org\"
+
+  run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker\"
+}
 
 teardown_integration_tests "$org" "$space"
