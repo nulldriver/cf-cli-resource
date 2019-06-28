@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.15.0 - Unreleased
 
+### Fixed
+- `enable-service-access` and `disable-service-access` used a very mis-leading `service_broker` param to represent the name of the marketplace service to enable/disable.  So, the `service_broker` param is now deprecated and is superseded by the new properly named `service` param.
+
 ### Added
 - `create-buildpack` - Create a buildpack
 - `update-buildpack` - Update a buildpack

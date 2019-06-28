@@ -584,11 +584,11 @@ function cf_create_service_broker() {
 }
 
 function cf_enable_service_access() {
-  local service_broker=${1:?service_broker null or not set}
+  local service=${1:?service null or not set}
   local plan=${2:-}
   local access_org=${3:-}
 
-  local args=("$service_broker")
+  local args=("$service")
   [ -n "$plan" ] && args+=(-p "$plan")
   [ -n "$access_org" ] && args+=(-o "$access_org")
 
@@ -596,11 +596,11 @@ function cf_enable_service_access() {
 }
 
 function cf_disable_service_access() {
-  local service_broker=${1:?service_broker null or not set}
+  local service=${1:?service null or not set}
   local plan=${2:-}
   local access_org=${3:-}
 
-  local args=("$service_broker")
+  local args=("$service")
   [ -n "$plan" ] && args+=(-p "$plan")
   [ -n "$access_org" ] && args+=(-o "$access_org")
 

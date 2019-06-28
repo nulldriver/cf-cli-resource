@@ -631,7 +631,7 @@ Wait for a service instance to start
 
 Enable access to a service or service plan for one or all orgs
 
-* `service_broker`: *Required.* The marketplace service name to enable
+* `service`: *Required.* The marketplace service name to enable
 * `access_org`: *Optional.* Enable access for a specified organization
 * `plan`: *Optional.* Enable access to a specified service plan
 
@@ -640,7 +640,7 @@ Enable access to a service or service plan for one or all orgs
     resource: cf-env
     params:
       command: enable-service-access
-      service_broker: some-service
+      service: some-service
       access_org: myorg
       plan: simple
 ```
@@ -649,7 +649,7 @@ Enable access to a service or service plan for one or all orgs
 
 Disable access to a service or service plan for one or all orgs
 
-* `service_broker`: *Required.* The marketplace service name to disable
+* `service`: *Required.* The marketplace service name to disable
 * `access_org`: *Optional.* Disable access for a specified organization
 * `plan`: *Optional.* Disable access to a specified service plan
 
@@ -658,7 +658,7 @@ Disable access to a service or service plan for one or all orgs
     resource: cf-env
     params:
       command: disable-service-access
-      service_broker: some-service
+      service: some-service
       access_org: myorg
       plan: simple
 ```
