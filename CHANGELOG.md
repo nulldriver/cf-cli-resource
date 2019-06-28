@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Updated to [cf cli v6.45.0](https://github.com/cloudfoundry/cli/releases/tag/v6.45.0)
+- Refactored `cf_functions.sh` to utilize the new `cf curl --fail` option for better error api error handling
+- Quite a bit of test code cleanup
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
