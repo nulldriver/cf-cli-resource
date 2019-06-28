@@ -217,12 +217,7 @@ function cf_check_route() {
   [ -n "$host" ] && url+="/host/$host"
   [ -n "$path" ] && url+="?path=%2F$path"
 
-  local output
-  if ! output=$(cf_curl "$url" -i); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
-  fi
-
-  echo "$output" | grep -q '204 No Content'
+  cf_curl "$url" -i | grep -q '204 No Content'
 }
 
 cf_is_app_mapped_to_route() {
