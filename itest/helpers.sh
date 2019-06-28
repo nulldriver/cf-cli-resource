@@ -120,16 +120,14 @@ create_logging_route_service_app() {
     cd $(mktemp -d $TMPDIR/app.XXXXXX)
   fi
 
-  local commit=master
-
-  if [ ! -f "logging-route-service-$commit.zip" ]; then
-    wget -q https://github.com/nulldriver/logging-route-service/archive/$commit.zip -O logging-route-service-$commit.zip
+  if [ ! -f "logging-route-service.zip" ]; then
+    wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
   fi
 
-  unzip -q logging-route-service-$commit.zip
-  mv logging-route-service-$commit/* .
-  rm -rf logging-route-service-$commit
-  rm logging-route-service-$commit.zip
+  unzip -q logging-route-service.zip
+  mv logging-route-service-*/* .
+  rm -rf logging-route-service-*
+  rm logging-route-service.zip
 
   pwd
 }

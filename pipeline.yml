@@ -563,7 +563,7 @@ resources:
   type: file-url
   icon: file
   source:
-    url: https://github.com/nulldriver/logging-route-service/archive/e6c61e141bc0fc0b0a482d207a2f53dfbe5b4aa1.zip
+    url: https://github.com/nulldriver/logging-route-service/archive/master.zip
     filename: logging-route-service.zip
 
 resource_types:
