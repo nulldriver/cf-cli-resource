@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.15.0 - Unreleased
+## 2.15.0 - 2019-06-27
 
 ### Fixed
 - `enable-service-access` and `disable-service-access` used a very mis-leading `service_broker` param to represent the name of the marketplace service to enable/disable.  So, the `service_broker` param is now deprecated and is superseded by the new properly named `service` param.
