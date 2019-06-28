@@ -217,7 +217,7 @@ function cf_check_route() {
   [ -n "$host" ] && url+="/host/$host"
   [ -n "$path" ] && url+="?path=%2F$path"
 
-  cf_curl "$url" -i | grep -q '204 No Content'
+  grep -q '204 No Content' <(cf_curl "$url" -i)
 }
 
 cf_is_app_mapped_to_route() {
