@@ -539,7 +539,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ "$locked"  == "false" ] && args+=(--unlock)
 
     [ -n "$assign_stack" ] && args+=(--assign-stack "$assign_stack")
-    [ -n "$path" ] && args+=(-p "$path")
+    [ -n "$path" ] && args+=(-p $path) # don't quote so we can support globbing
     [ -n "$position" ] && args+=(-i "$position")
 
     cf update-buildpack "${args[@]}"
