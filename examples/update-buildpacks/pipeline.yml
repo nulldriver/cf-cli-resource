@@ -1,0 +1,41 @@
+---
+jobs:
+- name: java-buildpack
+  plan:
+  - get: java-buildpack
+    trigger: true
+    params:
+      globs:
+      - "java-buildpack-offline*"
+  - put: cloud-foundry
+    params:
+      command: update-buildpack
+      buildpack: java_buildpack_offline
+      path: java-buildpack/java-buildpack-offline-v*.zip
+
+resources:
+- name: cloud-foundry
+  type: cf-cli-resource
+  source:
+    api: ((cf-api))
+    username: ((cf-username))
+    password: ((cf-password))
+
+- name: java-buildpack
+  type: pivnet
+  source:
+    api_token: ((pivnet-api-token))
+    product_slug: java-buildpack
+
+resource_types:
+- name: cf-cli-resource
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest
+
+- name: pivnet
+  type: registry-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final

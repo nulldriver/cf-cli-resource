@@ -1,0 +1,6 @@
+#!/bin/bash
+
+fly -t ci set-pipeline --check-creds \
+    -p update-buildpacks \
+    -c pipeline.yml \
+    -l pipeline-secrets.yml
