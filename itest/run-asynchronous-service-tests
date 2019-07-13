@@ -50,12 +50,12 @@ org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
 
-service=$ASYNC_SERVICE
-plan_1=$ASYNC_PLAN_1
-plan_2=$ASYNC_PLAN_2
+service=$CCR_ASYNC_SERVICE
+plan_1=$CCR_ASYNC_PLAN_1
+plan_2=$CCR_ASYNC_PLAN_2
 service_instance=$(generate_test_name_with_spaces "Async Service")
-configuration_1=$ASYNC_CONFIGURATION_1
-configuration_2=$ASYNC_CONFIGURATION_2
+configuration_1=$CCR_ASYNC_CONFIGURATION_1
+configuration_2=$CCR_ASYNC_CONFIGURATION_2
 tags="list, of, tags"
 wait_for_service="true"
 update_service="true"

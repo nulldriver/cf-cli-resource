@@ -60,8 +60,8 @@ it_can_delete_a_service_key() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
-service=$SERVICE_KEY_SERVICE
-plan=$SERVICE_KEY_PLAN
+service=$CCR_SERVICE_KEY_SERVICE
+plan=$CCR_SERVICE_KEY_PLAN
 service_instance=$(generate_test_name_with_spaces "Service For Service Key")
 service_key=$(generate_test_name_with_spaces "Service Key")
 

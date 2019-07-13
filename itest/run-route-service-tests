@@ -78,7 +78,7 @@ it_can_bind_logger_route_service_to_logged_app() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 logger_app_name=$(generate_test_name_with_spaces "Logger")
-domain=$CF_APPS_DOMAIN
+domain=$CCR_CF_APPS_DOMAIN
 logger_route_service_url="https://$(app_to_hostname "$logger_app_name").$domain"
 logged_app_name=$(generate_test_name_with_spaces "Logged")
 service_instance=mylogger

@@ -41,9 +41,9 @@ org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
 
-docker_private_image=$DOCKER_PRIVATE_IMAGE
-docker_private_username=$DOCKER_PRIVATE_USERNAME
-docker_private_password=$DOCKER_PRIVATE_PASSWORD
+docker_private_image=$CCR_DOCKER_PRIVATE_IMAGE
+docker_private_username=$CCR_DOCKER_PRIVATE_USERNAME
+docker_private_password=$CCR_DOCKER_PRIVATE_PASSWORD
 
 setup_integration_tests "$org" "$space"
 

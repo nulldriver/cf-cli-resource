@@ -212,7 +212,7 @@ setup_integration_tests "$org" "$space"
 describe "it_can_push_and_create_a_service_broker_that_is_space_scoped"
 {
   service_broker=$(generate_test_name_with_spaces "Space Scoped Broker")
-  service_broker_url="https://$(app_to_hostname "$service_broker").$cf_apps_domain"
+  service_broker_url="https://$(app_to_hostname "$service_broker").$CCR_CF_APPS_DOMAIN"
 
   run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
 
@@ -225,7 +225,7 @@ describe "it_can_push_and_create_a_service_broker_that_is_space_scoped"
 describe "it_can_push_and_create_and_enable_and_disable_a_service_broker"
 {
   service_broker=$(generate_test_name_with_spaces "Broker")
-  service_broker_url="https://$(app_to_hostname "$service_broker").$cf_apps_domain"
+  service_broker_url="https://$(app_to_hostname "$service_broker").$CCR_CF_APPS_DOMAIN"
   service=overview-service
 
   run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"

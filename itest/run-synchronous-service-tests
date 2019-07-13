@@ -28,12 +28,12 @@ org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
 
-service=$SYNC_SERVICE
-plan_1=$SYNC_PLAN_1
-plan_2=$SYNC_PLAN_2
+service=$CCR_SYNC_SERVICE
+plan_1=$CCR_SYNC_PLAN_1
+plan_2=$CCR_SYNC_PLAN_2
 service_instance=$(generate_test_name_with_spaces "Sync Service")
-configuration_1=$SYNC_CONFIGURATION_1
-configuration_2=$SYNC_CONFIGURATION_2
+configuration_1=$CCR_SYNC_CONFIGURATION_1
+configuration_2=$CCR_SYNC_CONFIGURATION_2
 tags="list, of, tags"
 wait_for_service="false"
 update_service="true"

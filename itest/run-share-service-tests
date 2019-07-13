@@ -71,9 +71,9 @@ source_space=$(generate_test_name_with_spaces "Source Space")
 other_space=$(generate_test_name_with_spaces "Other Space")
 other_org=$(generate_test_name_with_spaces "Other Org")
 
-service=$SHARE_SERVICE
-plan=$SHARE_PLAN
-configuration=$SHARE_CONFIGURATION
+service=$CCR_SHARE_SERVICE
+plan=$CCR_SHARE_PLAN
+configuration=$CCR_SHARE_CONFIGURATION
 service_instance=$(generate_test_name_with_spaces "Shared Service")
 
 setup_integration_tests "$source_org" "$source_space"
