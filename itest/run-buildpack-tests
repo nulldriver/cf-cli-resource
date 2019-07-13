@@ -201,7 +201,7 @@ it_can_update_a_buildpack_path() {
 
   put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::equals "$(basename "$updated_path")" "$(cf_get_buildpack_filename "$buildpack")"
+  assert::equals "$(basename "$(ls $path)")" "$(cf_get_buildpack_filename "$buildpack")"
 }
 
 it_can_update_a_buildpack_position() {
@@ -222,12 +222,13 @@ it_can_update_a_buildpack_position() {
   assert::equals "$position" "$(cf_get_buildpack_position "$buildpack")"
 }
 
-path="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.18/java-buildpack-v4.18.zip"
-updated_path="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.19.1/java-buildpack-v4.19.1.zip"
+buildpack_url="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.18/java-buildpack-v4.18.zip"
+updated_buildpack_url="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.19.1/java-buildpack-v4.19.1.zip"
 
 describe "it_can_create_and_disable_a_buildpack"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
 
   run it_can_create_a_buildpack_that_is_enabled \"$buildpack\" \"$path\"
   run it_can_disable_a_buildpack \"$buildpack\"
@@ -237,6 +238,7 @@ describe "it_can_create_and_disable_a_buildpack"
 describe "it_can_create_and_enable_a_buildpack"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
 
   run it_can_create_a_buildpack_that_is_disabled \"$buildpack\" \"$path\"
   run it_can_enable_a_buildpack \"$buildpack\"
@@ -246,6 +248,7 @@ describe "it_can_create_and_enable_a_buildpack"
 describe "it_can_create_and_lock_and_unlock_a_buildpack"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
 
   run it_can_create_a_buildpack \"$buildpack\" \"$path\"
   run it_can_lock_a_buildpack \"$buildpack\"
@@ -256,6 +259,7 @@ describe "it_can_create_and_lock_and_unlock_a_buildpack"
 describe "it_can_create_and_assign_a_stack_to_a_buildpack"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
 
   run it_can_create_a_buildpack \"$buildpack\" \"$path\"
   run it_can_assign_a_stack_to_a_buildpack \"$buildpack\" \"cflinuxfs3\"
@@ -265,6 +269,8 @@ describe "it_can_create_and_assign_a_stack_to_a_buildpack"
 describe "it_can_create_and_update_a_buildpack_path"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
+  updated_path="$(download_file "$updated_buildpack_url")/java-buildpack-v*.zip"
 
   run it_can_create_a_buildpack \"$buildpack\" \"$path\"
   run it_can_update_a_buildpack_path \"$buildpack\" \"$updated_path\"
@@ -273,6 +279,8 @@ describe "it_can_create_and_update_a_buildpack_path"
 
 describe "it_can_create_two_buildpacks_and_swap_their_positions"
 {
+  path="$(download_file "$buildpack_url")/java-buildpack-v*.zip"
+
   buildpack_1=$(generate_test_name_with_hyphens "buildpack_1")
   run it_can_create_a_buildpack \"$buildpack_1\" \"$path\"
 

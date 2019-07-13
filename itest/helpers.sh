@@ -227,6 +227,16 @@ EOF
   pwd
 }
 
+download_file() {
+  local url=${1:?url null or not set}
+
+  cd $(mktemp -d $TMPDIR/download.XXXXXX)
+
+  wget -q "$url"
+
+  pwd
+}
+
 put_with_params() {
   local source=${1:?source null or not set}
   local params=${2:?params null or not set}

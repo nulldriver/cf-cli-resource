@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.15.2 - Unreleased
+
+### Fixed
+- `create-buildpack` now supports globbing for `path` param.
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.45.0](https://github.com/cloudfoundry/cli/releases/tag/v6.45.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [2.3.0](https://github.com/mikefarah/yq/releases/tag/2.3.0)         |
+
 ## 2.15.1 - 2019-07-06
 
 ### Fixed
