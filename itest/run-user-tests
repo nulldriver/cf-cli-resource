@@ -28,7 +28,7 @@ it_can_create_a_user_with_password() {
     password: $password
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username"
 }
@@ -52,7 +52,7 @@ it_can_create_a_user_with_origin() {
     origin: $origin
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$username" "$origin"
 }
@@ -74,7 +74,7 @@ it_can_create_users_from_file() {
     file: $file
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_user_exists "$test_prefix-bulkload-user1"
   assert::success cf_user_exists "$test_prefix-bulkload-user2"
@@ -97,7 +97,7 @@ it_can_delete_a_user_with_origin() {
     username: $username
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }
@@ -118,7 +118,7 @@ it_can_delete_a_user_with_password() {
     username: $username
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_user_exists "$username"
 }

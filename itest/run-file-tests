@@ -21,7 +21,7 @@ it_can_create_an_org_with_file() {
     command_file: $command_file
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_org_exists "$org"
 }
@@ -39,7 +39,7 @@ it_can_create_a_space_with_file() {
     command_file: $command_file
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_space_exists "$org" "$space"
 }
@@ -57,7 +57,7 @@ it_can_delete_a_space_and_org_with_file() {
     command_file: $command_file
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_space_exists "$org" "$space"
   assert::failure cf_org_exists "$org"

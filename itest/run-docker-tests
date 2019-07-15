@@ -32,7 +32,7 @@ it_can_push_a_docker_image_from_a_private_registry() {
     docker_password: $docker_password
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }

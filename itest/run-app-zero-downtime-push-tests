@@ -31,7 +31,7 @@ it_can_zero_downtime_push_an_app() {
     current_app_name: $app_name
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -74,7 +74,7 @@ string"
     }
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::success cf_has_env "$app_name" "yaml_scalar" "$yaml_scalar"
@@ -106,7 +106,7 @@ it_can_zero_downtime_push_an_app_with_stack() {
     stack: $stack
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals "$stack" "$(cf_get_app_stack "$app_name")"

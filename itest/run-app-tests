@@ -32,7 +32,7 @@ it_can_push_an_app_no_start() {
     no_start: "true"
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_stopped "$app_name"
 }
@@ -56,7 +56,7 @@ it_can_rename_an_app() {
     new_app_name: $new_app_name
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_app_exists "$app_name"
   assert::success cf_app_exists "$new_app_name"
@@ -80,7 +80,7 @@ it_can_start_an_app() {
     startup_timeout: 5
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -101,7 +101,7 @@ it_can_stop_an_app() {
     app_name: $app_name
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_stopped "$app_name"
 }
@@ -124,7 +124,7 @@ it_can_scale_an_app_instances() {
     instances: $instances
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::equals 2 "$(cf_get_app_instances "$app_name")"
 }
@@ -147,7 +147,7 @@ it_can_scale_an_app_disk_quota() {
     disk_quota: $disk_quota
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::equals 512 "$(cf_get_app_disk_quota "$app_name")"
 }
@@ -170,7 +170,7 @@ it_can_scale_an_app_memory() {
     memory: $memory
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::equals 512 "$(cf_get_app_memory "$app_name")"
 }
@@ -197,7 +197,7 @@ it_can_scale_an_app() {
     memory: $memory
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::equals 1 "$(cf_get_app_instances "$app_name")"
   assert::equals 1024 "$(cf_get_app_disk_quota "$app_name")"
@@ -227,7 +227,7 @@ it_can_set_env() {
     env_var_value: $env_var_value
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_has_env "$app_name" "$env_var_name" "$env_var_value"
 }
@@ -250,7 +250,7 @@ it_can_restart_an_app() {
     startup_timeout: 5
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -273,7 +273,7 @@ it_can_restage_an_app() {
     startup_timeout: 5
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }

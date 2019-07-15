@@ -255,7 +255,7 @@ it_can_create_an_org() {
     org: $org
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_org_exists "$org"
 }
@@ -273,7 +273,7 @@ it_can_create_a_space() {
     space: $space
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_space_exists "$org" "$space"
 }
@@ -300,7 +300,7 @@ it_can_delete_a_space_and_org() {
     ]
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_space_exists "$org" "$space"
   assert::failure cf_org_exists "$org"
@@ -329,7 +329,7 @@ it_can_push_an_app() {
     manifest: $manifest
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -351,7 +351,7 @@ it_can_delete_an_app() {
     delete_mapped_routes: "true"
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_app_exists "$app_name"
 }
@@ -385,7 +385,7 @@ it_can_create_a_service() {
   [ -n "$wait_for_service" ] && params=$(echo $params | jq --arg value "$wait_for_service" '.wait_for_service = $value')
   [ -n "$update_service" ]   && params=$(echo $params | jq --arg value "$update_service"   '.update_service   = $value')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -410,7 +410,7 @@ it_can_create_a_user_provided_service_with_route() {
     route_service_url: $route_service_url
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -443,7 +443,7 @@ it_can_update_a_service() {
     wait_for_service: $wait_for_service
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "${service_instance}"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -470,7 +470,7 @@ it_can_bind_a_service() {
     service_instance: $service_instance
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
@@ -494,7 +494,7 @@ it_can_unbind_a_service() {
     service_instance: $service_instance
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
@@ -516,7 +516,7 @@ it_can_delete_a_service() {
     wait_for_service: true
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_service_exists "$service_instance"
 }
@@ -531,7 +531,7 @@ it_can_enable_feature_flag() {
     feature_name: $feature_flag
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_feature_flag_enabled "$feature_flag"
 }
@@ -546,7 +546,7 @@ it_can_disable_feature_flag() {
     feature_name: $feature_flag
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_feature_flag_disabled "$feature_flag"
 }

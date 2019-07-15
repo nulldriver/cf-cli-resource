@@ -35,7 +35,7 @@ fi
 
 CCR_CF_API="https://api.$CCR_CF_SYSTEM_DOMAIN"
 
-source=$(jq -n \
+CCR_SOURCE=$(jq -n \
 --arg api "$CCR_CF_API" \
 --arg skip_cert_check "$CCR_CF_SKIP_CERT_CHECK" \
 --arg username "$CCR_CF_USERNAME" \
