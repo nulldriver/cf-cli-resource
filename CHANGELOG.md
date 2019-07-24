@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - `create-buildpack` now supports globbing for `path` param.
 
+### Added
+- Validation tests for validating error exit codes
+- logging library
+
 ### Changed
 - Started [Operation Global Cleanup](https://github.com/nulldriver/cf-cli-resource/projects/1#card-23927144) to cleanup how global vars are used in the test scripts.
 

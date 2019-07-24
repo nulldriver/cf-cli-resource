@@ -237,12 +237,20 @@ download_file() {
   pwd
 }
 
+put_with_config() {
+  local config=${1:?config null or not set}
+  local working_dir=${2:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
+
+  echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
+}
+
 put_with_params() {
   local source=${1:?source null or not set}
   local params=${2:?params null or not set}
   local working_dir=${3:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
 
-  echo $source | jq --argjson params "$params" '.params = $params' | $resource_dir/out "$working_dir" | tee /dev/stderr
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_config "$config" "$working_dir"
 }
 
 it_can_create_an_org() {

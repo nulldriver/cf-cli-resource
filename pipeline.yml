@@ -46,6 +46,7 @@ test-jobs: &test-jobs
 - run-task-tests
 - run-user-provided-service-tests
 - run-user-tests
+- run-validation-tests
 
 jobs:
 - name: build
@@ -427,6 +428,25 @@ jobs:
     params:
       <<: *test-params
       TEST_SCRIPT: run-user-tests
+
+- name: run-validation-tests
+  public: true
+  plan:
+  - in_parallel:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
+    - get: cf-cli-resource-image-rc
+      trigger: true
+      passed: [build]
+    - get: version
+      passed: [build]
+  - task: test
+    file: project/ci/task.yml
+    image: cf-cli-resource-image-rc
+    params:
+      <<: *test-params
+      TEST_SCRIPT: run-validation-tests
 
 - name: shipit
   public: true
