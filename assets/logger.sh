@@ -1,5 +1,6 @@
 
 set -eu
+set -o pipefail
 
 logger::export_colors() {
   C_NORMAL='\e[0m'
@@ -10,15 +11,15 @@ logger::export_colors() {
 
 logger::highlight() {
   logger::export_colors
-  printf "${C_FG_YELLOW}${*}${C_NORMAL}"
+  printf '%b%s%b' "$C_FG_YELLOW" "$*" "$C_NORMAL"
 }
 
 logger::error() {
   logger::export_colors
-  printf "${C_FG_RED}[ERROR]${C_NORMAL} %s\n" "$*"
+  printf '%b[ERROR]%b %s\n' "$C_FG_RED" "$C_NORMAL" "$*"
 }
 
 logger::info() {
   logger::export_colors
-  printf "${C_FG_GREEN}[INFO]${C_NORMAL} %s\n" "$*"
+  printf '%b[INFO]%b %s\n' "$C_FG_GREEN" "$C_NORMAL" "$*"
 }
