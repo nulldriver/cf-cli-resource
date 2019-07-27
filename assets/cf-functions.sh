@@ -3,7 +3,7 @@ set -eu
 set -o pipefail
 
 # shellcheck source=assets/logger.sh
-source "$(dirname "$0")/logger.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/logger.sh"
 
 function cf_curl() {
   CF_TRACE=false cf curl --fail "$@"
