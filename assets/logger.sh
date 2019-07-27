@@ -2,6 +2,9 @@
 set -eu
 set -o pipefail
 
+# Return if logger already loaded.
+declare -f 'logger::export_colors' >/dev/null && return 0
+
 logger::export_colors() {
   C_NORMAL='\e[0m'
   C_FG_YELLOW='\e[33m'
