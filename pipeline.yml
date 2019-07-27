@@ -27,26 +27,16 @@ test-params: &test-params
   CCR_SERVICE_KEY_PLAN: {{service-key-plan}}
 
 test-jobs: &test-jobs
-- run-app-push-tests
-- run-app-tests
-- run-app-zero-downtime-push-tests
-- run-asynchronous-service-tests
-- run-auth-client-credentials-tests
-- run-auth-origin-tests
-- run-buildpack-tests
-- run-docker-tests
-- run-file-tests
-- run-network-policy-tests
-- run-route-service-tests
-- run-route-tests
-- run-service-broker-tests
-- run-share-service-tests
-- run-service-key-tests
-- run-synchronous-service-tests
-- run-task-tests
-- run-user-provided-service-tests
-- run-user-tests
-- run-validation-tests
+- app-tests
+- auth-tests
+- buildpack-tests
+- command-file-tests
+- network-policy-tests
+- route-tests
+- service-broker-tests
+- service-tests
+- user-tests
+- validation-tests
 
 jobs:
 - name: build
@@ -66,7 +56,7 @@ jobs:
       tag: version/version
       tag_as_latest: false
 
-- name: run-app-push-tests
+- name: app-tests
   public: true
   plan:
   - in_parallel:
@@ -78,128 +68,39 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-app-push-tests
-
-- name: run-app-tests
-  public: true
-  plan:
   - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-app-tests
-
-- name: run-app-zero-downtime-push-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-app-zero-downtime-push-tests
-
-- name: run-asynchronous-service-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-asynchronous-service-tests
-
-- name: run-auth-client-credentials-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-auth-client-credentials-tests
-
-- name: run-auth-origin-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-auth-origin-tests
-
-- name: run-buildpack-tests
-  public: true
-  plan:
-    - in_parallel:
-        - get: project
-          resource: cf-cli-resource
-          passed: [build]
-        - get: cf-cli-resource-image-rc
-          trigger: true
-          passed: [build]
-        - get: version
-          passed: [build]
-    - task: test
+    - task: run-app-push-tests
       file: project/ci/task.yml
       image: cf-cli-resource-image-rc
       params:
         <<: *test-params
-        TEST_SCRIPT: run-buildpack-tests
+        TEST_SCRIPT: run-app-push-tests
+    - task: run-app-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-app-tests
+    - task: run-app-zero-downtime-push-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-app-zero-downtime-push-tests
+    - task: run-docker-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-docker-tests
+    - task: run-task-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-task-tests
 
-- name: run-docker-tests
+- name: auth-tests
   public: true
   plan:
   - in_parallel:
@@ -211,14 +112,40 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
+  - in_parallel:
+    - task: run-auth-client-credentials-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-auth-client-credentials-tests
+    - task: run-auth-origin-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-auth-origin-tests
+
+- name: buildpack-tests
+  public: true
+  plan:
+  - in_parallel:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
+    - get: cf-cli-resource-image-rc
+      trigger: true
+      passed: [build]
+    - get: version
+      passed: [build]
+  - task: run-buildpack-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
       <<: *test-params
-      TEST_SCRIPT: run-docker-tests
+      TEST_SCRIPT: run-buildpack-tests
 
-- name: run-file-tests
+- name: command-file-tests
   public: true
   plan:
   - in_parallel:
@@ -230,14 +157,14 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
+  - task: run-file-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
       <<: *test-params
       TEST_SCRIPT: run-file-tests
 
-- name: run-network-policy-tests
+- name: network-policy-tests
   public: true
   plan:
   - in_parallel:
@@ -249,14 +176,14 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
+  - task: run-network-policy-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
       <<: *test-params
       TEST_SCRIPT: run-network-policy-tests
 
-- name: run-route-service-tests
+- name: route-tests
   public: true
   plan:
   - in_parallel:
@@ -269,33 +196,21 @@ jobs:
     - get: version
       passed: [build]
     - get: logging-route-service
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-route-service-tests
-
-- name: run-route-tests
-  public: true
-  plan:
   - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-route-tests
+    - task: run-route-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-route-service-tests
+    - task: run-route-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-route-tests
 
-- name: run-service-broker-tests
+- name: service-broker-tests
   public: true
   plan:
   - in_parallel:
@@ -308,14 +223,14 @@ jobs:
     - get: version
       passed: [build]
     - get: service-broker
-  - task: test
+  - task: run-service-broker-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
       <<: *test-params
       TEST_SCRIPT: run-service-broker-tests
 
-- name: run-share-service-tests
+- name: service-tests
   public: true
   plan:
   - in_parallel:
@@ -327,14 +242,39 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-share-service-tests
+  - in_parallel:
+    - task: run-asynchronous-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-asynchronous-service-tests
+    - task: run-share-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-share-service-tests
+    - task: run-service-key-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-service-key-tests
+    - task: run-synchronous-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-synchronous-service-tests
+    - task: run-user-provided-service-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-user-provided-service-tests
 
-- name: run-service-key-tests
+- name: user-tests
   public: true
   plan:
   - in_parallel:
@@ -346,90 +286,14 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-service-key-tests
-
-- name: run-synchronous-service-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-synchronous-service-tests
-
-- name: run-task-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-task-tests
-
-- name: run-user-provided-service-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-user-provided-service-tests
-
-- name: run-user-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: test
+  - task: run-user-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
       <<: *test-params
       TEST_SCRIPT: run-user-tests
 
-- name: run-validation-tests
+- name: validation-tests
   public: true
   plan:
   - in_parallel:
@@ -441,7 +305,7 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-  - task: test
+  - task: run-validation-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
     params:
