@@ -16,6 +16,7 @@ jobs:
       command: push
       app_name: cf-demo-temp
       hostname: cf-demo
+      path: cf-demo/examples/zero-downtime-history/app
       manifest: cf-demo/examples/zero-downtime-history/app/manifest.yml
   - put: push-main-app
     resource: cloud-foundry
@@ -23,6 +24,7 @@ jobs:
       command: push
       app_name: cf-demo
       hostname: cf-demo
+      path: cf-demo/examples/zero-downtime-history/app
       manifest: cf-demo/examples/zero-downtime-history/app/manifest.yml
   - put: stop-temp-app
     resource: cloud-foundry
