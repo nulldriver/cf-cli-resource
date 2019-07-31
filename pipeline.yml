@@ -393,6 +393,7 @@ resources:
     - NOTICE.md
     - pipeline.yml
     - README.md
+    - examples
 
 - name: version
   type: semver
