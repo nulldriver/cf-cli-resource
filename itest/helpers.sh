@@ -132,6 +132,25 @@ create_logging_route_service_app() {
   pwd
 }
 
+create_bookstore_service_broker_app() {
+  if [ -d "/opt/service-broker" ]; then
+    cd /opt/service-broker
+  else
+    cd $(mktemp -d $TMPDIR/app.XXXXXX)
+  fi
+
+  if [ ! -f "bookstore-service-broker.zip" ]; then
+    wget -q https://github.com/nulldriver/bookstore-service-broker/archive/master.zip -O bookstore-service-broker.zip
+  fi
+
+  unzip -q bookstore-service-broker.zip
+  mv bookstore-service-broker-*/* .
+  rm -rf bookstore-service-broker-*
+  rm bookstore-service-broker.zip
+
+  pwd
+}
+
 create_service_broker_app() {
 
   if [ -d "/opt/service-broker" ]; then

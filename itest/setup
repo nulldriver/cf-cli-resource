@@ -13,16 +13,14 @@ it_can_push_an_app() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local working_dir=$(mktemp -d $TMPDIR/put-src.XXXXXX)
-
-  git clone https://github.com/nulldriver/bookstore-service-broker.git $working_dir/bookstore-service-broker
+  local project=$(create_bookstore_service_broker_app)
 
   local params=$(jq -n \
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg path "$working_dir/bookstore-service-broker/build/libs/bookstore-service-broker-*.jar" \
-  --arg manifest "$working_dir/bookstore-service-broker/deploy/cloudfoundry/manifest.yml" \
+  --arg path "$project/build/libs/bookstore-service-broker-*.jar" \
+  --arg manifest "$project/deploy/cloudfoundry/manifest.yml" \
   '{
     command: "push",
     org: $org,
@@ -32,7 +30,7 @@ it_can_push_an_app() {
     manifest: $manifest
   }')
 
-  put_with_params "$CCR_SOURCE" "$params" "$working_dir" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
