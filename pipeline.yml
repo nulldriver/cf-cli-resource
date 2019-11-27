@@ -39,6 +39,28 @@ test-jobs: &test-jobs
 - validation-tests
 
 jobs:
+- name: setup
+  public: true
+  serial: true
+  plan:
+  - in_parallel:
+    - get: project
+      resource: cf-cli-resource
+      passed: [build]
+    - get: cf-cli-resource-image-rc
+      passed: [build]
+    - get: test-app-docker-public
+      params: {format: oci}
+  - in_parallel:
+    - task: setup
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: setup
+    - put: test-app-docker-private
+      params: {image: test-app-docker-public/image.tar}
+
 - name: cleanup-failed-tests
   public: true
   serial: true
@@ -466,6 +488,20 @@ resources:
   source:
     url: https://github.com/nulldriver/logging-route-service/archive/master.zip
     filename: logging-route-service.zip
+
+- name: test-app-docker-public
+  type: registry-image
+  icon: docker
+  source:
+    repository: nulldriver/test-app
+
+- name: test-app-docker-private
+  type: registry-image
+  icon: docker
+  source:
+    repository: docker.nulldriver.com/test-app
+    username: ((docker-private.username))
+    password: ((docker-private.password))
 
 resource_types:
 - name: file-url
