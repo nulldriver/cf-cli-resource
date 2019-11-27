@@ -13,6 +13,9 @@ it_can_push_a_docker_image_from_a_private_registry() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
+  local docker_private_image=${4:?docker_private_image null or not set}
+  local docker_private_username=${5:?docker_private_username null or not set}
+  local docker_private_password=${6:?docker_private_password null or not set}
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -50,7 +53,7 @@ setup_integration_tests "$org" "$space"
 run it_can_disable_feature_flag \"diego_docker\"
 run it_can_enable_feature_flag \"diego_docker\"
 
-run it_can_push_a_docker_image_from_a_private_registry \"$org\" \"$space\" \"$app_name\"
+run it_can_push_a_docker_image_from_a_private_registry \"$org\" \"$space\" \"$app_name\" \"$docker_private_image\" \"$docker_private_username\" \"$docker_private_password\"
 
 run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 
