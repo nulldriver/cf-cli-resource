@@ -111,18 +111,9 @@ EOF
 }
 
 create_logging_route_service_app() {
-  # if tests are running in concourse, the logging-route-service.zip is provided
-  # by the pipeline.  Otherwise, if we are running locally, we'll need to
-  # download it.
-  if [ -d "/opt/logging-route-service" ]; then
-    cd /opt/logging-route-service
-  else
-    cd $(mktemp -d $TMPDIR/app.XXXXXX)
-  fi
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  if [ ! -f "logging-route-service.zip" ]; then
-    wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
-  fi
+  wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
 
   unzip -q logging-route-service.zip
   mv logging-route-service-*/* .
@@ -133,15 +124,9 @@ create_logging_route_service_app() {
 }
 
 create_bookstore_service_broker_app() {
-  if [ -d "/opt/service-broker" ]; then
-    cd /opt/service-broker
-  else
-    cd $(mktemp -d $TMPDIR/app.XXXXXX)
-  fi
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  if [ ! -f "bookstore-service-broker.zip" ]; then
-    wget -q https://github.com/nulldriver/bookstore-service-broker/archive/master.zip -O bookstore-service-broker.zip
-  fi
+  wget -q https://github.com/nulldriver/bookstore-service-broker/archive/master.zip -O bookstore-service-broker.zip
 
   unzip -q bookstore-service-broker.zip
   mv bookstore-service-broker-*/* .
@@ -152,16 +137,9 @@ create_bookstore_service_broker_app() {
 }
 
 create_service_broker_app() {
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  if [ -d "/opt/service-broker" ]; then
-    cd /opt/service-broker
-  else
-    cd $(mktemp -d $TMPDIR/app.XXXXXX)
-  fi
-
-  if [ ! -f "overview-broker.zip" ]; then
-    wget -q https://github.com/mattmcneeney/overview-broker/archive/master.zip -O overview-broker.zip
-  fi
+  wget -q https://github.com/mattmcneeney/overview-broker/archive/master.zip -O overview-broker.zip
 
   unzip -q overview-broker.zip
   mv overview-broker-*/* .

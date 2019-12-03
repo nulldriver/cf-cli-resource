@@ -40,6 +40,4 @@ run:
   args:
   - -exc
   - |
-    test -d $PWD/service-broker && ln -s $PWD/service-broker /opt/service-broker
-    test -d $PWD/logging-route-service && ln -s $PWD/logging-route-service /opt/logging-route-service
     /opt/itest/$TEST_SCRIPT

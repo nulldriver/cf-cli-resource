@@ -233,7 +233,6 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-    - get: logging-route-service
   - in_parallel:
     - task: run-route-service-tests
       file: project/ci/task.yml
@@ -260,7 +259,6 @@ jobs:
       passed: [build]
     - get: version
       passed: [build]
-    - get: service-broker
   - task: run-service-broker-tests
     file: project/ci/task.yml
     image: cf-cli-resource-image-rc
@@ -388,7 +386,6 @@ jobs:
       load: cf-cli-resource-image-rc
       tag: version/version
       tag_as_latest: true
-
 - name: major
   public: true
   serial_groups: [version]
@@ -474,20 +471,6 @@ resources:
     owner: {{github-release-user}}
     repository: cf-cli-resource
     access_token: ((github_access_token))
-
-- name: service-broker
-  type: file-url
-  icon: file
-  source:
-    url: https://github.com/mattmcneeney/overview-broker/archive/master.zip
-    filename: overview-broker.zip
-
-- name: logging-route-service
-  type: file-url
-  icon: file
-  source:
-    url: https://github.com/nulldriver/logging-route-service/archive/master.zip
-    filename: logging-route-service.zip
 
 - name: test-app-docker-public
   type: registry-image
