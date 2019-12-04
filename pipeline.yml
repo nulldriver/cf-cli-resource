@@ -59,7 +59,8 @@ jobs:
         <<: *test-params
         TEST_SCRIPT: setup
     - put: test-app-docker-private
-      params: {image: test-app-docker-public/image.tar}
+      params:
+        image: test-app-docker-public/image.tar
 
 - name: cleanup-failed-tests
   public: true
@@ -86,13 +87,26 @@ jobs:
       trigger: true
     - get: version
       params: {pre: rc}
+  - task: build-oci-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: vito/oci-build-task}
+      inputs:
+      - name: cf-cli-resource
+        path: .
+      outputs:
+      - name: image
+      run:
+        path: build
   - put: version
     params: {file: version/version}
   - put: cf-cli-resource-image-rc
     params:
-      build: cf-cli-resource
-      tag: version/version
-      tag_as_latest: false
+      image: image/image.tar
+      additional_tags: version/version
 
 - name: app-tests
   public: true
@@ -358,7 +372,7 @@ jobs:
       passed: *test-jobs
     - get: cf-cli-resource-image-rc
       passed: *test-jobs
-      params: {save: true}
+      params: {format: oci}
     - get: version
       passed: *test-jobs
       params: {bump: final}
@@ -382,10 +396,11 @@ jobs:
   - put: version
     params: {file: version/version}
   - put: cf-cli-resource-image-final
+    inputs: [cf-cli-resource-image-rc, version]
     params:
-      load: cf-cli-resource-image-rc
-      tag: version/version
-      tag_as_latest: true
+      image: cf-cli-resource-image-rc/image.tar
+      additional_tags: version/version
+
 - name: major
   public: true
   serial_groups: [version]
@@ -442,7 +457,7 @@ resources:
     private_key: ((git_key.private_key))
 
 - name: cf-cli-resource-image-rc
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: {{docker-repository-rc}}
@@ -450,7 +465,7 @@ resources:
     password: ((docker.password))
 
 - name: cf-cli-resource-image-final
-  type: docker-image
+  type: registry-image
   icon: docker
   source:
     repository: {{docker-repository-final}}
