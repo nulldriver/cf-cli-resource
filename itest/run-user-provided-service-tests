@@ -27,7 +27,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
     credentials: $credentials
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -52,7 +52,7 @@ it_can_create_a_user_provided_service_with_credentials_file() {
     credentials: $credentials
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -75,7 +75,7 @@ it_can_create_a_user_provided_service_with_syslog() {
     syslog_drain_url: $syslog_drain_url
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }

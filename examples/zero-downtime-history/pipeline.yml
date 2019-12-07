@@ -1,0 +1,55 @@
+---
+jobs:
+- name: deploy
+  plan:
+  - get: cf-demo
+    trigger: true
+  - put: prepare-env
+    resource: cloud-foundry
+    params:
+      commands:
+      - command: create-org
+      - command: create-space
+  - put: push-temp-app
+    resource: cloud-foundry
+    params:
+      command: push
+      app_name: cf-demo-temp
+      hostname: cf-demo
+      path: cf-demo/examples/zero-downtime-history/app
+      manifest: cf-demo/examples/zero-downtime-history/app/manifest.yml
+  - put: push-main-app
+    resource: cloud-foundry
+    params:
+      command: push
+      app_name: cf-demo
+      hostname: cf-demo
+      path: cf-demo/examples/zero-downtime-history/app
+      manifest: cf-demo/examples/zero-downtime-history/app/manifest.yml
+  - put: stop-temp-app
+    resource: cloud-foundry
+    params:
+      command: stop
+      app_name: cf-demo-temp
+
+resources:
+- name: cf-demo
+  type: git
+  source:
+    uri: https://github.com/nulldriver/cf-cli-resource.git
+
+- name: cloud-foundry
+  type: cf-cli-resource
+  source:
+    api: ((cf-api))
+    username: ((cf-username))
+    password: ((cf-password))
+    org: examples
+    space: zero-downtime-history
+
+resource_types:
+- name: cf-cli-resource
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest

@@ -111,18 +111,9 @@ EOF
 }
 
 create_logging_route_service_app() {
-  # if tests are running in concourse, the logging-route-service.zip is provided
-  # by the pipeline.  Otherwise, if we are running locally, we'll need to
-  # download it.
-  if [ -d "/opt/logging-route-service" ]; then
-    cd /opt/logging-route-service
-  else
-    cd $(mktemp -d $TMPDIR/app.XXXXXX)
-  fi
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  if [ ! -f "logging-route-service.zip" ]; then
-    wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
-  fi
+  wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
 
   unzip -q logging-route-service.zip
   mv logging-route-service-*/* .
@@ -132,17 +123,23 @@ create_logging_route_service_app() {
   pwd
 }
 
+create_bookstore_service_broker_app() {
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
+
+  wget -q https://github.com/nulldriver/bookstore-service-broker/archive/master.zip -O bookstore-service-broker.zip
+
+  unzip -q bookstore-service-broker.zip
+  mv bookstore-service-broker-*/* .
+  rm -rf bookstore-service-broker-*
+  rm bookstore-service-broker.zip
+
+  pwd
+}
+
 create_service_broker_app() {
+  cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
-  if [ -d "/opt/service-broker" ]; then
-    cd /opt/service-broker
-  else
-    cd $(mktemp -d $TMPDIR/app.XXXXXX)
-  fi
-
-  if [ ! -f "overview-broker.zip" ]; then
-    wget -q https://github.com/mattmcneeney/overview-broker/archive/master.zip -O overview-broker.zip
-  fi
+  wget -q https://github.com/mattmcneeney/overview-broker/archive/master.zip -O overview-broker.zip
 
   unzip -q overview-broker.zip
   mv overview-broker-*/* .
@@ -227,12 +224,30 @@ EOF
   pwd
 }
 
+download_file() {
+  local url=${1:?url null or not set}
+
+  cd $(mktemp -d $TMPDIR/download.XXXXXX)
+
+  wget -q "$url"
+
+  pwd
+}
+
+put_with_config() {
+  local config=${1:?config null or not set}
+  local working_dir=${2:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
+
+  echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
+}
+
 put_with_params() {
   local source=${1:?source null or not set}
   local params=${2:?params null or not set}
   local working_dir=${3:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
 
-  echo $source | jq --argjson params "$params" '.params = $params' | $resource_dir/out "$working_dir" | tee /dev/stderr
+  local config=$(echo $source | jq --argjson params "$params" '.params = $params')
+  put_with_config "$config" "$working_dir"
 }
 
 it_can_create_an_org() {
@@ -245,7 +260,7 @@ it_can_create_an_org() {
     org: $org
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_org_exists "$org"
 }
@@ -263,7 +278,7 @@ it_can_create_a_space() {
     space: $space
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_space_exists "$org" "$space"
 }
@@ -290,7 +305,7 @@ it_can_delete_a_space_and_org() {
     ]
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_space_exists "$org" "$space"
   assert::failure cf_org_exists "$org"
@@ -319,7 +334,7 @@ it_can_push_an_app() {
     manifest: $manifest
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -341,7 +356,7 @@ it_can_delete_an_app() {
     delete_mapped_routes: "true"
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_app_exists "$app_name"
 }
@@ -375,7 +390,7 @@ it_can_create_a_service() {
   [ -n "$wait_for_service" ] && params=$(echo $params | jq --arg value "$wait_for_service" '.wait_for_service = $value')
   [ -n "$update_service" ]   && params=$(echo $params | jq --arg value "$update_service"   '.update_service   = $value')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -400,7 +415,7 @@ it_can_create_a_user_provided_service_with_route() {
     route_service_url: $route_service_url
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "$service_instance"
 }
@@ -433,7 +448,7 @@ it_can_update_a_service() {
     wait_for_service: $wait_for_service
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_service_exists "${service_instance}"
   assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
@@ -460,7 +475,7 @@ it_can_bind_a_service() {
     service_instance: $service_instance
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
@@ -484,7 +499,7 @@ it_can_unbind_a_service() {
     service_instance: $service_instance
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_is_app_bound_to_service "$app_name" "$service_instance"
 }
@@ -506,7 +521,7 @@ it_can_delete_a_service() {
     wait_for_service: true
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::failure cf_service_exists "$service_instance"
 }
@@ -521,7 +536,7 @@ it_can_enable_feature_flag() {
     feature_name: $feature_flag
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_feature_flag_enabled "$feature_flag"
 }
@@ -536,14 +551,14 @@ it_can_disable_feature_flag() {
     feature_name: $feature_flag
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_feature_flag_disabled "$feature_flag"
 }
 
 cleanup_test_orgs() {
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
+  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r org; do
     cf_delete_org "$org"
@@ -551,8 +566,8 @@ cleanup_test_orgs() {
 }
 
 cleanup_test_users() {
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
+  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
@@ -569,8 +584,8 @@ cleanup_test_users() {
 }
 
 cleanup_service_brokers() {
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
+  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r broker; do
     cf_delete_service_broker "$broker"
@@ -578,8 +593,8 @@ cleanup_service_brokers() {
 }
 
 cleanup_buildpacks() {
-  cf_api "$cf_api" "$cf_skip_cert_check"
-  cf_auth_user "$cf_username" "$cf_password"
+  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r buildpack; do
     cf delete-buildpack -f "$buildpack"

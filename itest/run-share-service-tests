@@ -31,7 +31,7 @@ it_can_share_a_service() {
     other_org: $other_org
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$other_org" "$other_space"
   assert::success cf_service_exists "$service_instance"
@@ -59,7 +59,7 @@ it_can_unshare_a_service() {
     other_org: $other_org
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   cf_target "$other_org" "$other_space"
   assert::failure cf_service_exists "$service_instance"
@@ -71,9 +71,9 @@ source_space=$(generate_test_name_with_spaces "Source Space")
 other_space=$(generate_test_name_with_spaces "Other Space")
 other_org=$(generate_test_name_with_spaces "Other Org")
 
-service=$SHARE_SERVICE
-plan=$SHARE_PLAN
-configuration=$SHARE_CONFIGURATION
+service=$CCR_SHARE_SERVICE
+plan=$CCR_SHARE_PLAN
+configuration=$CCR_SHARE_CONFIGURATION
 service_instance=$(generate_test_name_with_spaces "Shared Service")
 
 setup_integration_tests "$source_org" "$source_space"

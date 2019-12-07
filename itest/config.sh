@@ -7,56 +7,47 @@ if [ -f "${CF_CLI_RESOURCE_PROFILE:-}" ]; then
   source "$CF_CLI_RESOURCE_PROFILE"
 fi
 
-: "${CF_SYSTEM_DOMAIN:?}"
-: "${CF_APPS_DOMAIN:?}"
-: "${CF_SKIP_CERT_CHECK:?}"
-: "${CF_USERNAME:?}"
-: "${CF_PASSWORD:?}"
-: "${CF_CLIENT_ID:?}"
-: "${CF_CLIENT_SECRET:?}"
-: "${SYNC_SERVICE:?}"
-: "${SYNC_PLAN_1:?}"
-: "${SYNC_PLAN_2:?}"
-: "${SYNC_CONFIGURATION_1:=}"
-: "${SYNC_CONFIGURATION_2:=}"
-: "${ASYNC_SERVICE:?}"
-: "${ASYNC_PLAN_1:?}"
-: "${ASYNC_PLAN_2:?}"
-: "${ASYNC_CONFIGURATION_1:=}"
-: "${ASYNC_CONFIGURATION_2:=}"
-: "${DOCKER_PRIVATE_IMAGE:?}"
-: "${DOCKER_PRIVATE_USERNAME:?}"
-: "${DOCKER_PRIVATE_PASSWORD:?}"
-: "${SERVICE_KEY_SERVICE:?}"
-: "${SERVICE_KEY_PLAN:?}"
+: "${CCR_CF_SYSTEM_DOMAIN:?}"
+: "${CCR_CF_APPS_DOMAIN:?}"
+: "${CCR_CF_SKIP_CERT_CHECK:?}"
+: "${CCR_CF_USERNAME:?}"
+: "${CCR_CF_PASSWORD:?}"
+: "${CCR_CF_CLIENT_ID:?}"
+: "${CCR_CF_CLIENT_SECRET:?}"
+: "${CCR_SYNC_SERVICE:?}"
+: "${CCR_SYNC_PLAN_1:?}"
+: "${CCR_SYNC_PLAN_2:?}"
+: "${CCR_SYNC_CONFIGURATION_1:=}"
+: "${CCR_SYNC_CONFIGURATION_2:=}"
+: "${CCR_ASYNC_SERVICE:?}"
+: "${CCR_ASYNC_PLAN_1:?}"
+: "${CCR_ASYNC_PLAN_2:?}"
+: "${CCR_ASYNC_CONFIGURATION_1:=}"
+: "${CCR_ASYNC_CONFIGURATION_2:=}"
+: "${CCR_SHARE_SERVICE:?}"
+: "${CCR_SHARE_PLAN:?}"
+: "${CCR_SHARE_CONFIGURATION:=}"
+: "${CCR_DOCKER_PRIVATE_IMAGE:?}"
+: "${CCR_DOCKER_PRIVATE_USERNAME:?}"
+: "${CCR_DOCKER_PRIVATE_PASSWORD:?}"
+: "${CCR_SERVICE_KEY_SERVICE:?}"
+: "${CCR_SERVICE_KEY_PLAN:?}"
 
-cf_api="https://api.$CF_SYSTEM_DOMAIN"
-cf_apps_domain=$CF_APPS_DOMAIN
-cf_skip_cert_check=$CF_SKIP_CERT_CHECK
-cf_username=$CF_USERNAME
-cf_password=$CF_PASSWORD
-cf_client_id=$CF_CLIENT_ID
-cf_client_secret=$CF_CLIENT_SECRET
-cf_color=true
-cf_dial_timeout=5
-cf_trace=false
+CCR_CF_API="https://api.$CCR_CF_SYSTEM_DOMAIN"
 
-source=$(jq -n \
---arg api "$cf_api" \
---arg skip_cert_check "$cf_skip_cert_check" \
---arg username "$cf_username" \
---arg password "$cf_password" \
---arg cf_color "$cf_color" \
---arg cf_dial_timeout "$cf_dial_timeout" \
---arg cf_trace "$cf_trace" \
+CCR_SOURCE=$(jq -n \
+--arg api "$CCR_CF_API" \
+--arg skip_cert_check "$CCR_CF_SKIP_CERT_CHECK" \
+--arg username "$CCR_CF_USERNAME" \
+--arg password "$CCR_CF_PASSWORD" \
 '{
   source: {
     api: $api,
     skip_cert_check: $skip_cert_check,
     username: $username,
     password: $password,
-    cf_color: $cf_color,
-    cf_dial_timeout: $cf_dial_timeout,
-    cf_trace: $cf_trace
+    cf_color: true,
+    cf_dial_timeout: 5,
+    cf_trace: false
   }
 }')

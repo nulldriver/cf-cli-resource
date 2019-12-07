@@ -29,7 +29,7 @@ it_can_run_a_task_with_disk_quota() {
     disk_quota: $disk_quota
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
 }
@@ -54,7 +54,7 @@ it_can_run_a_task_with_memory() {
     memory: $memory
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-memory-test"
 }
@@ -79,7 +79,7 @@ it_can_run_a_task_with_name() {
     task_name: $task_name
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-with-name-test"
 }
@@ -108,7 +108,7 @@ it_can_run_a_task() {
     disk_quota: $disk_quota
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_was_task_run "$app_name" "run-task-test-all"
 }

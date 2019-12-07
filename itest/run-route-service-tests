@@ -32,7 +32,7 @@ it_can_push_the_logger_app() {
     manifest: $manifest
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
 }
@@ -70,7 +70,7 @@ it_can_bind_logger_route_service_to_logged_app() {
 
   [ -n "$path" ] && params=$(echo $params | jq --arg value "$path" '.path = $value')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
 }
@@ -78,7 +78,7 @@ it_can_bind_logger_route_service_to_logged_app() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 logger_app_name=$(generate_test_name_with_spaces "Logger")
-domain=$CF_APPS_DOMAIN
+domain=$CCR_CF_APPS_DOMAIN
 logger_route_service_url="https://$(app_to_hostname "$logger_app_name").$domain"
 logged_app_name=$(generate_test_name_with_spaces "Logged")
 service_instance=mylogger

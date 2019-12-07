@@ -7,6 +7,8 @@ test_dir=$(dirname $0)
 
 $test_dir/cleanup-failed-tests
 
+$test_dir/run-validation-tests
+
 $test_dir/run-app-push-tests
 $test_dir/run-app-tests
 $test_dir/run-app-zero-downtime-push-tests

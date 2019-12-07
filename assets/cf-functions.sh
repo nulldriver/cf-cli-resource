@@ -2,15 +2,15 @@
 set -eu
 set -o pipefail
 
-function cf_is_logged_in() {
-    if ! $(cf target &> /dev/null); then
-      return 1
-    fi
-    return  0
-}
+# shellcheck source=assets/logger.sh
+source "$(dirname "${BASH_SOURCE[0]}")/logger.sh"
 
 function cf_curl() {
   CF_TRACE=false cf curl --fail "$@"
+}
+
+function cf_is_logged_in() {
+  cf oauth-token >/dev/null 2>&1
 }
 
 function cf_api() {
@@ -131,7 +131,7 @@ function cf_create_users_from_file() {
   local file=${1:?file null or not set}
 
   if [ ! -f "$file" ]; then
-    printf '\e[91m[ERROR]\e[0m file not found: %s\n' "$file"
+    logger::error "file not found: $(logger::highlight "$file")"
     exit 1
   fi
 
@@ -142,7 +142,7 @@ function cf_create_users_from_file() {
     (( linenum++ ))
 
     if [ -z "$Username" ]; then
-      printf '\e[91m[ERROR]\e[0m no Username specified, unable to process line number: %s\n' "$linenum"
+      logger::error "no Username specified, unable to process line number: $(logger::highlight "$linenum")"
       continue
     fi
 
@@ -175,7 +175,8 @@ function cf_get_private_domain_guid() {
 
   local output
   if ! output=$(cf_curl "/v2/organizations/$(cf_get_org_guid "$org")/private_domains?inline-relations-depth=1&q=name:$domain"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   if echo $output | jq -e '.total_results == 0' >/dev/null; then
@@ -189,7 +190,8 @@ function cf_get_shared_domain_guid() {
 
   local output
   if ! output=$(cf_curl "/v2/shared_domains?inline-relations-depth=1&q=name:$domain") ; then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   if echo $output | jq -e '.total_results == 0' >/dev/null; then
@@ -350,7 +352,7 @@ function cf_create_or_update_user_provided_service_credentials() {
       cf create-user-provided-service "$service_instance" -p "$json"
     fi
   else
-    printf '\e[91m[ERROR]\e[0m invalid credentials payload (must be valid json string or json file)\n'
+    logger::error 'invalid credentials payload (must be valid json string or json file)'
     exit 1
   fi
 }
@@ -382,7 +384,8 @@ function cf_get_service_instance_tags() {
 
   local output
   if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   echo $output | jq -r '.entity.tags | join(", ")'
@@ -393,12 +396,14 @@ function cf_get_service_instance_plan() {
 
   local output
   if ! output=$(cf_curl "/v2/service_instances/$(cf_get_service_instance_guid "$service_instance")"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   local service_plan_url=$(echo $output | jq -r '.entity.service_plan_url')
   if ! output=$(cf_curl "$service_plan_url"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   echo $output | jq -r '.entity.name'
@@ -479,31 +484,30 @@ function cf_wait_for_service_instance() {
 
   local guid=$(cf_get_service_instance_guid "$service_instance")
   if [ -z "$guid" ]; then
-    printf '\e[91m[ERROR]\e[0m Service instance does not exist: %s\n' "$service_instance"
+    logger::error "Service instance does not exist: $(logger::highlight "$service_instance")"
     exit 1
   fi
 
   local start=$(date +%s)
 
-  printf '\e[92m[INFO]\e[0m Waiting for service: %s\n' "$service_instance"
+  logger::info "Waiting for service: $(logger::highlight "$service_instance")"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
     local state=$(cf_curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
-      printf '\e[92m[INFO]\e[0m Service is ready: %s\n' "$service_instance"
+      logger::info "Service is ready: $(logger::highlight "$service_instance")"
       return
     elif [ "$state" = "failed" ]; then
-      printf '\e[91m[ERROR]\e[0m Failed to provision service: %s, error: %s\n' \
-        "$service_instance" \
-        $(cf_curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
+      local description=$(logger::highlight "$(cf_curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)")
+      logger::error "Failed to provision service: $(logger::highlight "$service_instance"), error: $(logger::highlight "$description")"
       exit 1
     fi
 
     local now=$(date +%s)
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
-      printf '\e[91m[ERROR]\e[0m Timed out waiting for service instance to provision: %s\n' "$service_instance"
+      logger::error "Timed out waiting for service instance to provision: $(logger::highlight "$service_instance")"
       exit 1
     fi
     sleep 5
@@ -516,17 +520,17 @@ function cf_wait_for_delete_service_instance() {
 
   local start=$(date +%s)
 
-  printf '\e[92m[INFO]\e[0m Waiting for service deletion: %s\n' "$service_instance"
+  logger::info "Waiting for service deletion: $(logger::highlight "$service_instance")"
   while true; do
     if ! (cf_service_exists "$service_instance"); then
-      printf '\e[92m[INFO]\e[0m Service deleted: %s\n' "$service_instance"
+      logger::info "Service deleted: $(logger::highlight "$service_instance")"
       return
     fi
 
     local now=$(date +%s)
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
-      printf '\e[91m[ERROR]\e[0m Timed out waiting for service instance to delete: %s\n' "$service_instance"
+      logger::error "Timed out waiting for service instance to delete: $(logger::highlight "$service_instance")"
       exit 1
     fi
     sleep 5
@@ -682,7 +686,8 @@ function cf_has_env() {
 
   local output
   if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/env"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   echo $output | jq -e --arg key "$env_var_name" --arg value "$env_var_value" '.environment_json[$key] == $value'
@@ -847,11 +852,13 @@ function cf_get_app_stack() {
 
   local output
   if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   if ! output=$(cf_curl "$(echo $output | jq -r '.entity.stack_url')"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   echo $output | jq -r '.entity.name'
@@ -876,7 +883,8 @@ function cf_get_app_startup_command() {
 
   local output
   if ! output=$(cf_curl "/v2/apps/$(cf_get_app_guid "$app_name")/summary"); then
-    printf '\e[91m[ERROR]\e[0m %s' "$output" && exit 1
+    logger::error "$output"
+    exit 1
   fi
 
   echo $output | jq -r '.command // empty'

@@ -8,11 +8,13 @@ exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 
 source $(dirname $0)/cf-functions.sh
+source $(dirname $0)/logger.sh
+source $(dirname $0)/error-codes.sh
 
 working_dir=${1:-}
 
 if [ -z "$working_dir" ]; then
-  printf '\e[91m[ERROR]\e[0m usage: %s <path/to/source>\n' "$0"
+  logger::error "usage: $0 <path/to/source>"
   exit 1
 fi
 
@@ -50,70 +52,72 @@ command_file=$(echo "$params" | jq -r '.command_file //empty')
 cf_home=$(jq -r '.params.cf_home // .source.cf_home // empty' < $payload)
 
 if [ -n "$cf_home" ]; then
-    export CF_HOME=$cf_home
-    export CF_PLUGIN_HOME=$HOME
+  export CF_HOME=$cf_home
+  export CF_PLUGIN_HOME=$HOME  # Keep the original plugins folder
 
-    if ! cf_is_logged_in; then
-      printf '\e[91m[ERROR]\e[0m not logged in to cf (check %s/config.json)\n' $CF_HOME
-      exit 1
-    fi
+  if ! cf_is_logged_in; then
+    printf '\e[91m[ERROR]\e[0m not logged in to cf (check %s/config.json)\n' $CF_HOME
+    exit 1
+  fi
 
-    api=$(cat $CF_HOME/.cf/config.json | jq -r .Target)
+  if [ -z "$source_org" ]; then
+      source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
+  fi
 
-    if [ -z "$source_org" ]; then
-        source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
-    fi
-
-    if [ -z "$source_space" ]; then
-        source_space=$(cat $CF_HOME/.cf/config.json | jq -r .SpaceFields.Name)
-    fi
-
+  if [ -z "$source_space" ]; then
+    source_space=$(cat $CF_HOME/.cf/config.json | jq -r .SpaceFields.Name)
+  fi
 else
-    if [ -z "$api" ]; then
-      printf '\e[91m[ERROR]\e[0m invalid payload (missing api)\n'
-      exit 1
-    fi
+  if [ -z "$api" ]; then
+    logger::error 'invalid payload (missing api)'
+    exit $E_MISSING_API
+  fi
 
-    if [ -n "$username" ] && [ -n "$client_id" ]; then
-      printf '\e[91m[ERROR]\e[0m invalid payload (must specify only username or client_id)\n'
-      exit 1
-    fi
+  if [ -z "$username" ] && [ -z "$client_id" ]; then
+    logger::error 'invalid payload (must specify username or client_id)'
+    exit $E_NEITHER_USERNAME_OR_CLIENT_ID_SET
+  fi
 
-    if [ -n "$username" ] && [ -z "$password" ]; then
-      printf '\e[91m[ERROR]\e[0m invalid payload (missing password)\n'
-      exit 1
-    fi
+  if [ -n "$username" ] && [ -n "$client_id" ]; then
+    logger::error 'invalid payload (must specify only username or client_id)'
+    exit $E_BOTH_USERNAME_AND_CLIENT_ID_SET
+  fi
 
-    if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
-      printf '\e[91m[ERROR]\e[0m invalid payload (missing client_secret)\n'
-      exit 1
-    fi
+  if [ -n "$username" ] && [ -z "$password" ]; then
+    logger::error 'invalid payload (missing password)'
+    exit $E_PASSWORD_NOT_SET
+  fi
 
-    # Login with credentials
-    cf_api "$api" "$skip_cert_check"
-    if [ -n "$client_id" ]; then
-      cf_auth_client "$client_id" "$client_secret"
-    else
-      cf_auth_user "$username" "$password" "$origin"
-    fi
+  if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
+    logger::error 'invalid payload (missing client_secret)'
+    exit $E_CLIENT_SECRET_NOT_SET
+  fi
 
-    if ! cf_is_logged_in; then
-      printf '\e[91m[ERROR]\e[0m not logged in to cf (check your credentials)\n'
-      exit 1
-    fi
-fi
-
-if [ -n "$command_file" ]; then
-  if [ -r "$command_file" ]; then
-    printf '\e[92m[INFO]\e[0m Populating params from file (overwriting params in pipeline definition): %s\n' "$command_file"
-    params=$(yq r --tojson "$command_file")
+  # Login with credentials
+  cf_api "$api" "$skip_cert_check"
+  if [ -n "$client_id" ]; then
+    cf_auth_client "$client_id" "$client_secret"
   else
-    printf '\e[91m[ERROR]\e[0m invalid payload (can not find command_file: %s)\n' "$command_file"
+    cf_auth_user "$username" "$password" "$origin"
+  fi
+
+  if ! cf_is_logged_in; then
+    printf '\e[91m[ERROR]\e[0m not logged in to cf (check your credentials)\n'
     exit 1
   fi
 fi
 
-printf '\e[92m[INFO]\e[0m %s\n' "$(cf version)"
+if [ -n "$command_file" ]; then
+  if [ -r "$command_file" ]; then
+    logger::info "Populating params from file (overwriting params in pipeline definition): $command_file"
+    params=$(yq r --tojson "$command_file")
+  else
+    logger::error "invalid payload (can not find command_file: $command_file)"
+    exit $E_COMMAND_FILE_NOT_FOUND
+  fi
+fi
+
+logger::info "$(cf version)"
 
 # convert the single command into a single element array
 if echo $params | jq -e 'has("command")' >/dev/null; then
@@ -138,47 +142,47 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
 
 
   if [ "create-org" = "$command" ]; then
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$org"
+    logger::info "Executing $(logger::highlight "$command"): $org"
     cf_create_org "$org"
   elif [ "delete-org" = "$command" ]; then
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$org"
+    logger::info "Executing $(logger::highlight "$command"): $org"
     cf_delete_org "$org"
   elif [ "create-space" = "$command" ]; then
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$space"
+    logger::info "Executing $(logger::highlight "$command"): $space"
     cf_create_space "$org" "$space"
   elif [ "delete-space" = "$command" ]; then
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$space"
+    logger::info "Executing $(logger::highlight "$command"): $space"
     cf_delete_space "$org" "$space"
   elif [ "create-user" = "$command" ]; then
     new_username=$(echo $options | jq -r '.username //empty')
     new_password=$(echo $options | jq -r '.password //empty')
     new_origin=$(echo $options | jq -r '.origin //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$new_username"
+    logger::info "Executing $(logger::highlight "$command"): $new_username"
     if [ -n "$new_password" ]; then
       cf_create_user_with_password "$new_username" "$new_password"
     elif [ -n "$new_origin" ]; then
       cf_create_user_with_origin "$new_username" "$new_origin"
     else
-      printf '\e[91m[ERROR]\e[0m Invalid config: Must specify password or origin\n'
+      logger::error "Invalid config: Must specify password or origin"
     fi
   elif [ "create-users-from-file" = "$command" ]; then
     file=$(echo $options | jq -r '.file //empty')
     cf_create_users_from_file "$file"
   elif [ "delete-user" = "$command" ]; then
     username=$(echo $options | jq -r '.username //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$username"
+    logger::info "Executing $(logger::highlight "$command"): $username"
     cf_delete_user "$username"
   elif [ "create-domain" = "$command" ]; then
     domain=$(echo $options | jq -r '.domain //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     if cf_has_private_domain "$org" "$domain"; then
-      printf '\e[92m[INFO]\e[0m \e[95mDomain %s already exists\e[0m\n' "$domain"
+      logger::info "$(logger::highlight "Domain $domain already exists")"
     else
       cf_create_domain "$org" "$domain"
     fi
   elif [ "delete-domain" = "$command" ]; then
     domain=$(echo $options | jq -r '.domain //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     cf_target "$org" "$space"
     cf_delete_domain "$domain"
   elif [ "create-route" = "$command" ]; then
@@ -186,14 +190,14 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     domain=$(echo $options | jq -r '.domain //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
     path=$(echo $options | jq -r '.path //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     cf_target "$org" "$space"
     cf_create_route "${other_space:-$space}" "$domain" "$hostname" "$path"
   elif [ "delete-route" = "$command" ]; then
     domain=$(echo $options | jq -r '.domain //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
     path=$(echo $options | jq -r '.path //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     cf_target "$org" "$space"
     cf_delete_route "$domain" "$hostname" "$path"
   elif [ "map-route" = "$command" ]; then
@@ -201,7 +205,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     domain=$(echo $options | jq -r '.domain //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
     path=$(echo $options | jq -r '.path //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     cf_target "$org" "$space"
     cf_map_route "$app_name" "$domain" "$hostname" "$path"
   elif [ "unmap-route" = "$command" ]; then
@@ -209,7 +213,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     domain=$(echo $options | jq -r '.domain //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
     path=$(echo $options | jq -r '.path //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$domain"
+    logger::info "Executing $(logger::highlight "$command"): $domain"
     cf_target "$org" "$space"
     cf_unmap_route "$app_name" "$domain" "$hostname" "$path"
   elif [ "create-user-provided-service" = "$command" ]; then
@@ -217,7 +221,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     credentials=$(echo $options | jq -r '.credentials //empty')
     syslog_drain_url=$(echo $options | jq -r '.syslog_drain_url //empty')
     route_service_url=$(echo $options | jq -r '.route_service_url //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
 
     if [ -n "$credentials" ]; then
@@ -236,7 +240,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
     update_service=$(echo $options | jq -r '.update_service //"false"')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     if [ "true" = "$update_service" ]; then
       cf_create_or_update_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
@@ -253,7 +257,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     tags=$(echo $options | jq -r '.tags //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_update_service "$service_instance" "$plan" "$configuration" "$tags"
     if [ "true" = "$wait" ]; then
@@ -263,27 +267,27 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     other_space=$(echo $options | jq -r '.other_space //empty')
     other_org=$(echo $options | jq -r '.other_org //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_share_service "$service_instance" "$other_space" "$other_org"
   elif [ "unshare-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     other_space=$(echo $options | jq -r '.other_space //empty')
     other_org=$(echo $options | jq -r '.other_org //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_unshare_service "$service_instance" "$other_space" "$other_org"
   elif [ "wait-for-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_wait_for_service_instance "$service_instance" "$timeout"
   elif [ "delete-service" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     timeout=$(echo $options | jq -r '.timeout //empty')
     wait=$(echo $options | jq -r '.wait_for_service //"false"')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_delete_service "$service_instance"
     if [ "true" = "$wait" ]; then
@@ -293,13 +297,13 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     service_key=$(echo $options | jq -r '.service_key //empty')
     configuration=$(echo $options | jq -r '.configuration //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_key"
+    logger::info "Executing $(logger::highlight "$command"): $service_key"
     cf_target "$org" "$space"
     cf_create_service_key "$service_instance" "$service_key" "$configuration"
   elif [ "delete-service-key" = "$command" ]; then
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     service_key=$(echo $options | jq -r '.service_key //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_key"
+    logger::info "Executing $(logger::highlight "$command"): $service_key"
     cf_target "$org" "$space"
     cf_delete_service_key "$service_instance" "$service_key"
   elif [ "push" = "$command" ]; then
@@ -347,7 +351,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
       args+=(--vars-file "$vars_file")
     done
 
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
 
     [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
@@ -367,8 +371,8 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     stack=$(echo $options | jq -r '.stack //empty')
 
     if [ ! -f "$manifest" ]; then
-      printf '\e[91m[ERROR]\e[0m invalid payload (manifest is not a file: %s)\n' "$manifest"
-      exit 1
+      logger::error "invalid payload (manifest is not a file: $manifest)"
+      exit $E_MANIFEST_FILE_NOT_FOUND
     fi
 
     if [ -n "$environment_variables" ]; then
@@ -383,7 +387,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ -n "$path" ]  && args+=(-p $path) # don't quote so we can support globbing
     [ -n "$stack" ] && args+=(-s "$stack")
 
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$current_app_name"
+    logger::info "Executing $(logger::highlight "$command"): $current_app_name"
     cf_target "$org" "$space"
 
     if [ -n "$current_app_name" ]; then
@@ -396,39 +400,39 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     app_name=$(echo $options | jq -r '.app_name //empty')
     env_var_name=$(echo $options | jq -r '.env_var_name //empty')
     env_var_value=$(echo $options | jq -r '.env_var_value //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_set_env "$app_name" "$env_var_name" "$env_var_value"
   elif [ "start" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
     startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_start "$app_name" "$staging_timeout" "$startup_timeout"
   elif [ "stop" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_stop "$app_name"
   elif [ "restart" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
     startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_restart "$app_name" "$staging_timeout" "$startup_timeout"
   elif [ "restage" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
     startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_restage "$app_name" "$staging_timeout" "$startup_timeout"
   elif [ "rename" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     new_app_name=$(echo $options | jq -r '.new_app_name //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_rename "$app_name" "$new_app_name"
   elif [ "add-network-policy" = "$command" ]; then
@@ -436,7 +440,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     destination_app=$(echo $options | jq -r '.destination_app //empty')
     protocol=$(echo $options | jq -r '.protocol //empty')
     port=$(echo $options | jq -r '.port //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$source_app"
+    logger::info "Executing $(logger::highlight "$command"): $source_app"
     cf_target "$org" "$space"
     cf_add_network_policy "$source_app" "$destination_app" "$protocol" "$port"
   elif [ "remove-network-policy" = "$command" ]; then
@@ -444,7 +448,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     destination_app=$(echo $options | jq -r '.destination_app //empty')
     protocol=$(echo $options | jq -r '.protocol //empty')
     port=$(echo $options | jq -r '.port //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$source_app"
+    logger::info "Executing $(logger::highlight "$command"): $source_app"
     cf_target "$org" "$space"
     cf_remove_network_policy "$source_app" "$destination_app" "$protocol" "$port"
   elif [ "run-task" = "$command" ]; then
@@ -453,7 +457,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     task_name=$(echo $options | jq -r '.task_name //empty')
     memory=$(echo $options | jq -r '.memory //empty')
     disk_quota=$(echo $options | jq -r '.disk_quota //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_run_task "$app_name" "$task_command" "$task_name" "$memory" "$disk_quota"
   elif [ "scale" = "$command" ]; then
@@ -461,33 +465,33 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     instances=$(echo $options | jq -r '.instances //empty')
     memory=$(echo $options | jq -r '.memory //empty')
     disk_quota=$(echo $options | jq -r '.disk_quota //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_scale "$app_name" "$instances" "$memory" "$disk_quota"
   elif [ "delete" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     delete_mapped_routes=$(echo $options | jq -r '.delete_mapped_routes //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$app_name"
+    logger::info "Executing $(logger::highlight "$command"): $app_name"
     cf_target "$org" "$space"
     cf_delete "$app_name" "$delete_mapped_routes"
   elif [ "bind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     configuration=$(echo $options | jq -r '.configuration //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_bind_service "$app_name" "$service_instance" "$configuration"
   elif [ "unbind-service" = "$command" ]; then
     app_name=$(echo $options | jq -r '.app_name //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_unbind_service "$app_name" "$service_instance"
   elif [ "bind-route-service" = "$command" ]; then
     domain=$(echo $options | jq -r '.domain //empty')
     service_instance=$(echo $options | jq -r '.service_instance //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_instance"
+    logger::info "Executing $(logger::highlight "$command"): $service_instance"
     cf_target "$org" "$space"
     cf_bind_route_service "$domain" "$service_instance" "$hostname"
   elif [ "create-service-broker" = "$command" ]; then
@@ -496,7 +500,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     password=$(echo $options | jq -r '.password //empty')
     url=$(echo $options | jq -r '.url //empty')
     is_space_scoped=$(echo $options | jq -r '.space_scoped //"false"')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
+    logger::info "Executing $(logger::highlight "$command"): $service_broker"
     if [ "true" = "$is_space_scoped" ]; then
       cf_target "$org" "$space"
     fi
@@ -506,7 +510,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
     access_org=$(echo $options | jq -r '.access_org //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service"
+    logger::info "Executing $(logger::highlight "$command"): $service"
 
     # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
     service=${service:-$service_broker}
@@ -517,7 +521,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     service=$(echo $options | jq -r '.service //empty')
     plan=$(echo $options | jq -r '.plan //empty')
     access_org=$(echo $options | jq -r '.access_org //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
+    logger::info "Executing $(logger::highlight "$command"): $service_broker"
 
     # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
     service=${service:-$service_broker}
@@ -525,25 +529,25 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     cf_disable_service_access "$service" "$plan" "$access_org"
   elif [ "delete-service-broker" = "$command" ]; then
     service_broker=$(echo $options | jq -r '.service_broker //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$service_broker"
+    logger::info "Executing $(logger::highlight "$command"): $service_broker"
     cf_target "$org" "$space"
     cf_delete_service_broker "$service_broker"
   elif [ "enable-feature-flag" = "$command" ]; then
     feature_name=$(echo $options | jq -r '.feature_name //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
+    logger::info "Executing $(logger::highlight "$command"): $feature_name"
     cf_enable_feature_flag "$feature_name"
   elif [ "disable-feature-flag" = "$command" ]; then
     feature_name=$(echo $options | jq -r '.feature_name //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$feature_name"
+    logger::info "Executing $(logger::highlight "$command"): $feature_name"
     cf_disable_feature_flag "$feature_name"
   elif [ "create-buildpack" = "$command" ]; then
     buildpack=$(echo $options | jq -r '.buildpack //empty')
     path=$(echo $options | jq -r '.path //empty')
     position=$(echo $options | jq -r '.position //empty')
     enabled=$(echo $options | jq -r '.enabled //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+    logger::info "Executing $(logger::highlight "$command"): $buildpack"
 
-    args=("$buildpack" "$path" "$position")
+    args=("$buildpack" $path "$position") # don't quote $path so we can support globbing
     [ "$enabled" == "true" ]  && args+=(--enable)
     [ "$enabled" == "false" ] && args+=(--disable)
 
@@ -555,7 +559,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     assign_stack=$(echo $options | jq -r '.assign_stack //empty')
     path=$(echo $options | jq -r '.path //empty')
     position=$(echo $options | jq -r '.position //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+    logger::info "Executing $(logger::highlight "$command"): $buildpack"
 
     args=("$buildpack")
     [ "$enabled" == "true"  ] && args+=(--enable)
@@ -564,22 +568,22 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ "$locked"  == "false" ] && args+=(--unlock)
 
     [ -n "$assign_stack" ] && args+=(--assign-stack "$assign_stack")
-    [ -n "$path" ] && args+=(-p "$path")
+    [ -n "$path" ] && args+=(-p $path) # don't quote so we can support globbing
     [ -n "$position" ] && args+=(-i "$position")
 
     cf update-buildpack "${args[@]}"
   elif [ "delete-buildpack" = "$command" ]; then
     buildpack=$(echo $options | jq -r '.buildpack //empty')
     stack=$(echo $options | jq -r '.stack //empty')
-    printf '\e[92m[INFO]\e[0m Executing \e[33m%s\e[0m: %s\n' "$command" "$buildpack"
+    logger::info "Executing $(logger::highlight "$command"): $buildpack"
 
     args=("$buildpack")
     [ -n "$stack" ] && args+=(-s "$stack")
 
     cf delete-buildpack -f "${args[@]}"
   else
-    printf '\e[91m[ERROR]\e[0m invalid payload (unknown command: %s)\n' "$command"
-    exit 1
+    logger::error "invalid payload (unknown command: $command)"
+    exit $E_UNKNOWN_COMMAND
   fi
 
   # Reset back to the old values for the next iteration
@@ -589,7 +593,6 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
 
 done
 
-# todo: metadata
 jq -n \
 --arg timestamp $(date +%s) \
 '{

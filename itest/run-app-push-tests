@@ -35,7 +35,7 @@ it_can_push_an_app_with_startup_command() {
 
   describe "push with default default command"
   {
-    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+    put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
     assert::success cf_is_app_started "$app_name"
   }
 
@@ -45,7 +45,7 @@ it_can_push_an_app_with_startup_command() {
   describe "push with custom startup command"
   {
     params=$(echo $params | jq --arg startup_command "$custom_startup_command" '.startup_command = $startup_command')
-    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+    put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$custom_startup_command" "$(cf_get_app_startup_command "$app_name")"
@@ -54,7 +54,7 @@ it_can_push_an_app_with_startup_command() {
   describe "push and reset to default startup command"
   {
     params=$(echo $params | jq --arg startup_command "null" '.startup_command = $startup_command')
-    put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+    put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
     assert::success cf_is_app_started "$app_name"
     assert::equals "$default_startup_command" "$(cf_get_app_startup_command "$app_name")"
@@ -84,7 +84,7 @@ it_can_push_an_app_with_vars() {
     vars: { instances: 2, memory: "96M" }
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 2 "$(cf_get_app_instances "$app_name")"
@@ -116,7 +116,7 @@ it_can_push_an_app_with_vars_files() {
     vars_files: [ $vars_file1, $vars_file2 ]
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals 1 "$(cf_get_app_instances "$app_name")"
@@ -148,7 +148,7 @@ it_can_push_an_app_with_stack() {
     stack: $stack
   }')
 
-  put_with_params "$source" "$params" | jq -e '.version | keys == ["timestamp"]'
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf_is_app_started "$app_name"
   assert::equals "$stack" "$(cf_get_app_stack "$app_name")"
