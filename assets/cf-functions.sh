@@ -9,6 +9,10 @@ function cf_curl() {
   CF_TRACE=false cf curl --fail "$@"
 }
 
+function cf_is_logged_in() {
+  cf oauth-token >/dev/null 2>&1
+}
+
 function cf_api() {
   local url=${1:?url null or not set}
   local skip_ssl_validation=${2:-false}

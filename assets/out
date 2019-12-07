@@ -18,6 +18,8 @@ if [ -z "$working_dir" ]; then
   exit 1
 fi
 
+cd "$working_dir"
+
 # for jq
 PATH=/usr/local/bin:$PATH:.
 
@@ -47,32 +49,63 @@ cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$
 cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
 command_file=$(echo "$params" | jq -r '.command_file //empty')
 
-if [ -z "$api" ]; then
-  logger::error 'invalid payload (missing api)'
-  exit $E_MISSING_API
-fi
+cf_home=$(jq -r '.params.cf_home // .source.cf_home // empty' < $payload)
 
-if [ -z "$username" ] && [ -z "$client_id" ]; then
-  logger::error 'invalid payload (must specify username or client_id)'
-  exit $E_NEITHER_USERNAME_OR_CLIENT_ID_SET
-fi
+if [ -n "$cf_home" ]; then
+  export CF_HOME=$cf_home
+  export CF_PLUGIN_HOME=$HOME  # Keep the original plugins folder
 
-if [ -n "$username" ] && [ -n "$client_id" ]; then
-  logger::error 'invalid payload (must specify only username or client_id)'
-  exit $E_BOTH_USERNAME_AND_CLIENT_ID_SET
-fi
+  if ! cf_is_logged_in; then
+    printf '\e[91m[ERROR]\e[0m not logged in to cf (check %s/config.json)\n' $CF_HOME
+    exit 1
+  fi
 
-if [ -n "$username" ] && [ -z "$password" ]; then
-  logger::error 'invalid payload (missing password)'
-  exit $E_PASSWORD_NOT_SET
-fi
+  if [ -z "$source_org" ]; then
+      source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
+  fi
 
-if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
-  logger::error 'invalid payload (missing client_secret)'
-  exit $E_CLIENT_SECRET_NOT_SET
-fi
+  if [ -z "$source_space" ]; then
+    source_space=$(cat $CF_HOME/.cf/config.json | jq -r .SpaceFields.Name)
+  fi
+else
+  if [ -z "$api" ]; then
+    logger::error 'invalid payload (missing api)'
+    exit $E_MISSING_API
+  fi
 
-cd "$working_dir"
+  if [ -z "$username" ] && [ -z "$client_id" ]; then
+    logger::error 'invalid payload (must specify username or client_id)'
+    exit $E_NEITHER_USERNAME_OR_CLIENT_ID_SET
+  fi
+
+  if [ -n "$username" ] && [ -n "$client_id" ]; then
+    logger::error 'invalid payload (must specify only username or client_id)'
+    exit $E_BOTH_USERNAME_AND_CLIENT_ID_SET
+  fi
+
+  if [ -n "$username" ] && [ -z "$password" ]; then
+    logger::error 'invalid payload (missing password)'
+    exit $E_PASSWORD_NOT_SET
+  fi
+
+  if [ -n "$client_id" ] && [ -z "$client_secret" ]; then
+    logger::error 'invalid payload (missing client_secret)'
+    exit $E_CLIENT_SECRET_NOT_SET
+  fi
+
+  # Login with credentials
+  cf_api "$api" "$skip_cert_check"
+  if [ -n "$client_id" ]; then
+    cf_auth_client "$client_id" "$client_secret"
+  else
+    cf_auth_user "$username" "$password" "$origin"
+  fi
+
+  if ! cf_is_logged_in; then
+    printf '\e[91m[ERROR]\e[0m not logged in to cf (check your credentials)\n'
+    exit 1
+  fi
+fi
 
 if [ -n "$command_file" ]; then
   if [ -r "$command_file" ]; then
@@ -85,8 +118,6 @@ if [ -n "$command_file" ]; then
 fi
 
 logger::info "$(cf version)"
-
-cf_logged_in=false
 
 # convert the single command into a single element array
 if echo $params | jq -e 'has("command")' >/dev/null; then
@@ -109,15 +140,6 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   org=$(echo $options | jq -r '.org //empty') && [ -z "$org" ] && org=$source_org
   space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
 
-  if ! $cf_logged_in; then
-    cf_api "$api" "$skip_cert_check"
-    if [ -n "$client_id" ]; then
-      cf_auth_client "$client_id" "$client_secret"
-    else
-      cf_auth_user "$username" "$password" "$origin"
-    fi
-    cf_logged_in=true
-  fi
 
   if [ "create-org" = "$command" ]; then
     logger::info "Executing $(logger::highlight "$command"): $org"
