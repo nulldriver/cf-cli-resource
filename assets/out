@@ -61,7 +61,7 @@ if [ -n "$cf_home" ]; then
   fi
 
   if [ -z "$source_org" ]; then
-      source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
+    source_org=$(cat $CF_HOME/.cf/config.json | jq -r .OrganizationFields.Name)
   fi
 
   if [ -z "$source_space" ]; then
@@ -99,11 +99,6 @@ else
     cf_auth_client "$client_id" "$client_secret"
   else
     cf_auth_user "$username" "$password" "$origin"
-  fi
-
-  if ! cf_is_logged_in; then
-    printf '\e[91m[ERROR]\e[0m not logged in to cf (check your credentials)\n'
-    exit 1
   fi
 fi
 
