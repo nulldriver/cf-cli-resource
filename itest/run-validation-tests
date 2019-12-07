@@ -69,13 +69,9 @@ it_can_error_if_client_secret_not_set() {
 }
 
 it_can_error_if_command_file_not_found() {
-  local config=$(jq -n '{source: {
-      api: "https://api.run.example.com",
-      username: "some_user",
-      password: "some_password"
-    }, params: {
+  local config=$(echo $CCR_SOURCE | jq '.params = {
       command_file: "does_not_exist.yml"
-    }}')
+    }')
 
   set +e
   put_with_config "$config"
