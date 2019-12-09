@@ -11,18 +11,28 @@ source $test_dir/config.sh
 source $test_dir/helpers.sh
 source $test_dir/assert.sh
 
-it_can_error_if_api_not_set() {
+it_can_error_if_params_not_set() {
   local config=$(jq -n '{ source: {} }')
 
   set +e
   put_with_config "$config"
-  assert::equals "$E_MISSING_API" "$?"
+  assert::equals "$E_PARAMS_NOT_SET" "$?"
+  set -e
+}
+
+it_can_error_if_api_not_set() {
+  local config=$(jq -n '{ source: {}, params: {} }')
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_API_NOT_SET" "$?"
   set -e
 }
 
 it_can_error_if_neither_username_or_client_id_are_set() {
   local config=$(jq -n '{
-      source: { api: "https://api.run.example.com" }
+      source: { api: "https://api.run.example.com" },
+      params: {}
     }')
 
   set +e
@@ -32,11 +42,14 @@ it_can_error_if_neither_username_or_client_id_are_set() {
 }
 
 it_can_error_if_both_username_and_client_id_are_set() {
-  local config=$(jq -n '{source: {
-      api: "https://api.run.example.com",
-      username: "some_user",
-      client_id: "some_client_id"
-    }}')
+  local config=$(jq -n '{
+      source: {
+        api: "https://api.run.example.com",
+        username: "some_user",
+        client_id: "some_client_id"
+      },
+      params: {}
+    }')
 
   set +e
   put_with_config "$config"
@@ -45,10 +58,13 @@ it_can_error_if_both_username_and_client_id_are_set() {
 }
 
 it_can_error_if_password_not_set() {
-  local config=$(jq -n '{source: {
-      api: "https://api.run.example.com",
-      username: "some_user"
-    }}')
+  local config=$(jq -n '{
+      source: {
+        api: "https://api.run.example.com",
+        username: "some_user"
+      },
+      params: {}
+    }')
 
   set +e
   put_with_config "$config"
@@ -57,14 +73,26 @@ it_can_error_if_password_not_set() {
 }
 
 it_can_error_if_client_secret_not_set() {
-  local config=$(jq -n '{source: {
-      api: "https://api.run.example.com",
-      client_id: "some_client_id"
-    }}')
+  local config=$(jq -n '{
+      source: {
+        api: "https://api.run.example.com",
+        client_id: "some_client_id"
+      },
+      params: {}
+    }')
 
   set +e
   put_with_config "$config"
   assert::equals "$E_CLIENT_SECRET_NOT_SET" "$?"
+  set -e
+}
+
+it_can_error_if_command_not_set() {
+  local config=$(echo $CCR_SOURCE | jq '.params = {}')
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_COMMAND_NOT_SET" "$?"
   set -e
 }
 
@@ -91,7 +119,7 @@ it_can_error_if_zero_downtime_push_manifest_not_found() {
   set -e
 }
 
-if_can_error_if_unknown_command_set() {
+it_can_error_if_unknown_command_set() {
   local config=$(echo $CCR_SOURCE | jq '.params = {
       command: "does-not-exist"
     }')
@@ -102,11 +130,13 @@ if_can_error_if_unknown_command_set() {
   set -e
 }
 
+run it_can_error_if_params_not_set
 run it_can_error_if_api_not_set
 run it_can_error_if_neither_username_or_client_id_are_set
 run it_can_error_if_both_username_and_client_id_are_set
 run it_can_error_if_password_not_set
 run it_can_error_if_client_secret_not_set
+run it_can_error_if_command_not_set
 run it_can_error_if_command_file_not_found
 run it_can_error_if_zero_downtime_push_manifest_not_found
-run if_can_error_if_unknown_command_set
+run it_can_error_if_unknown_command_set

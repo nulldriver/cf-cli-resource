@@ -33,6 +33,12 @@ if [ "$debug" = "true" ]; then
   set -x
 fi
 
+params=$(jq -r '.params //empty' < $payload)
+if [ -z "$params" ]; then
+  logger::error 'invalid payload (missing params)'
+  exit $E_PARAMS_NOT_SET
+fi
+
 api=$(jq -r '.source.api //empty' < $payload)
 skip_cert_check=$(jq -r '.source.skip_cert_check //false' < $payload)
 username=$(jq -r '.source.username //empty' < $payload)
@@ -42,22 +48,20 @@ client_id=$(jq -r '.source.client_id //empty' < $payload)
 client_secret=$(jq -r '.source.client_secret //empty' < $payload)
 source_org=$(jq -r '.source.org //empty' < $payload)
 source_space=$(jq -r '.source.space //empty' < $payload)
-params=$(jq -r '.params //empty' < $payload)
+command_file=$(jq -r '.params.command_file //empty' < $payload)
 
 cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
 cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
 cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
-command_file=$(echo "$params" | jq -r '.command_file //empty')
 
-cf_home=$(jq -r '.params.cf_home // .source.cf_home // empty' < $payload)
-
+cf_home=$(jq -r '.params.cf_home // empty' < $payload)
 if [ -n "$cf_home" ]; then
   export CF_HOME=$cf_home
   export CF_PLUGIN_HOME=$HOME  # Keep the original plugins folder
 
   if ! cf_is_logged_in; then
-    printf '\e[91m[ERROR]\e[0m not logged in to cf (check %s/config.json)\n' $CF_HOME
-    exit 1
+    logger::error "not logged in to cf (check $CF_HOME/config.json)"
+    exit $E_NOT_LOGGED_IN
   fi
 
   if [ -z "$source_org" ]; then
@@ -70,7 +74,7 @@ if [ -n "$cf_home" ]; then
 else
   if [ -z "$api" ]; then
     logger::error 'invalid payload (missing api)'
-    exit $E_MISSING_API
+    exit $E_API_NOT_SET
   fi
 
   if [ -z "$username" ] && [ -z "$client_id" ]; then
@@ -112,12 +116,14 @@ if [ -n "$command_file" ]; then
   fi
 fi
 
-logger::info "$(cf version)"
-
-# convert the single command into a single element array
-if echo $params | jq -e 'has("command")' >/dev/null; then
+if ! echo $params | jq -e 'has("command")' >/dev/null; then
+  logger::error 'invalid payload (missing command)'
+  exit $E_COMMAND_NOT_SET
+else
   params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
 fi
+
+logger::info "$(cf version)"
 
 echo "$params" | jq -c '.commands[]' | while read -r options; do
 
