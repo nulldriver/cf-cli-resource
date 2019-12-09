@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+test_dir=$(dirname "$0")
+
+# TODO: fix this once we rename 'assets' to 'resource' for a consistent directory experience
+source "$(find "$test_dir/.." -name "error-codes.sh")"
+source "$test_dir"/config.sh
+source "$test_dir"/helpers.sh
+source "$test_dir"/assert.sh
+
+login_with_cf_home() {
+  cd "$(mktemp -d "$TMPDIR"/home.XXXXXX)"
+
+  CF_HOME=$PWD cf api "$CCR_CF_API" >&2
+  CF_HOME=$PWD cf auth "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD" >&2
+
+  pwd
+}
+
+it_can_succeed_if_cf_home_is_valid() {
+  local config=$(jq -n \
+    --arg cf_home "$(login_with_cf_home)" \
+    '{
+      source: {},
+      params: {
+        cf_home: $cf_home,
+        command: "does-not-exist"
+      }
+    }')
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_UNKNOWN_COMMAND" "$?"
+  set -e
+}
+
+it_can_error_if_cf_home_is_invalid() {
+  local config=$(jq -n \
+    --arg cf_home "$(mktemp -d "$TMPDIR"/home.XXXXXX)" \
+    '{
+      source: {},
+      params: {
+        cf_home: $cf_home,
+        command: "does-not-exist"
+      }
+    }')
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_NOT_LOGGED_IN" "$?"
+  set -e
+}
+
+describe "it can login with custom cf home"
+{
+  run it_can_succeed_if_cf_home_is_valid
+  run it_can_error_if_cf_home_is_invalid
+}
