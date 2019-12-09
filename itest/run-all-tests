@@ -8,6 +8,7 @@ test_dir=$(dirname $0)
 $test_dir/cleanup-failed-tests
 
 $test_dir/run-validation-tests
+$test_dir/run-auth-cf-home-tests
 
 $test_dir/run-app-push-tests
 $test_dir/run-app-tests
