@@ -116,11 +116,14 @@ if [ -n "$command_file" ]; then
   fi
 fi
 
-if ! echo $params | jq -e 'has("command")' >/dev/null; then
+# convert the single command into a single element array
+if echo $params | jq -e 'has("command")' >/dev/null; then
+  params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
+fi
+
+if ! echo $params | jq -e 'has("commands")' >/dev/null; then
   logger::error 'invalid payload (missing command)'
   exit $E_COMMAND_NOT_SET
-else
-  params=$(jq -n --argjson params "$params" '{commands: [ $params ] }')
 fi
 
 logger::info "$(cf version)"
@@ -140,7 +143,6 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   cf_trace=$(echo $options | jq -r '.cf_trace //empty') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
   org=$(echo $options | jq -r '.org //empty') && [ -z "$org" ] && org=$source_org
   space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
-
 
   if [ "create-org" = "$command" ]; then
     logger::info "Executing $(logger::highlight "$command"): $org"
