@@ -87,6 +87,30 @@ it gets even simpler:
       - command: create-space
 ```
 
+## CF_HOME
+
+The standard way to authenticate the `cf-cli-resource` with a target Cloud Foundry environment is to either use `username` and `password` or `client_id` and `client_secret`, which will save a `$CF_HOME/.cf/config.json` file containing the API endpoint, and access token.  For some pipeline workflows, it is necessary to authenticate using alternative methods and then supply the pre-configured `config.json` to the `cf-cli-resource`.
+
+For example:
+```yaml
+resources:
+- name: cf-prod
+  type: cf-cli-resource
+
+jobs:
+- name: deploy
+  plan:
+  - get: my-repo
+  - task: authenticate
+    file: my-repo/some-script-that-authenticates-and-creates-a-cf-config-json.yml
+  - put: cf-prod
+    params:
+      cf_home: authenticate-task-output
+      commands:
+      - command: push
+        path: my-repo/myapp
+        manifest: my-repo/manifest.yml
+```
 
 ## Command via file input
 
