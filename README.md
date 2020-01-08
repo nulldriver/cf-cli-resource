@@ -789,6 +789,7 @@ Push a new app or sync changes to an existing app
 * `docker_password`: *Optional.* This should be the users password when authenticating against a protected docker registry
 * `manifest`: *Optional.* Path to manifest
 * `hostname`: *Optional.* Hostname (e.g. my-subdomain)
+* `domain`: *Optional.* Domain to use instead of the default (e.g. apps.internal, subdomain.example.com)
 * `instances`: *Optional.* Number of instances
 * `disk_quota`: *Optional.* Disk limit (e.g. 256M, 1024M, 1G)
 * `memory`: *Optional.* Memory limit (e.g. 256M, 1024M, 1G)
