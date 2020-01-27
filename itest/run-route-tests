@@ -360,39 +360,90 @@ it_can_delete_a_route_with_hostname_and_path() {
   assert::failure cf_check_route "$org" "$domain" "$hostname" "$path"
 }
 
+it_can_push_an_app_with_hostname_and_domain() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+  local hostname=${4:?hostname null or not set}
+  local domain=${5:?domain null or not set}
+
+  local project=$(create_static_app "$app_name")
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg hostname "$hostname" \
+  --arg domain "$domain" \
+  --arg path "$project" \
+  --arg manifest "$project/manifest.yml" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    hostname: $hostname,
+    domain: $domain,
+    path: $path,
+    manifest: $manifest
+  }')
+
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf_is_app_started "$app_name"
+  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
+}
+
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
-domain="$(generate_test_name_with_hyphens "domain").com"
-app_name=$(generate_test_name_with_spaces "App")
-hostname=$(app_to_hostname "$app_name")
-path="foo"
-other_space=$(generate_test_name_with_spaces "Other Space")
 
 setup_integration_tests "$org" "$space"
-setup_integration_tests "$org" "$other_space"
 
-run it_can_create_a_domain \"$org\" \"$domain\"
+describe "create a domain and push an app with that domain"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+  hostname=$(app_to_hostname "$app_name")
+  domain="$(generate_test_name_with_hyphens "domain").com"
 
-run it_can_create_a_route \"$org\" \"$space\" \"$domain\" \"$other_space\"
-run it_can_create_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$other_space\"
-run it_can_create_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\" \"$other_space\"
+  run it_can_create_a_domain \"$org\" \"$domain\"
+  run it_can_push_an_app_with_hostname_and_domain \"$org\" \"$space\" \"$app_name\" \"$hostname\" \"$domain\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_a_domain \"$org\" \"$domain\"
+}
 
-run it_can_push_an_app \"$org\" \"$other_space\" \"$app_name\"
+describe "create, map, unmap, and delete routes to an app"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+  hostname=$(app_to_hostname "$app_name")
+  domain="$(generate_test_name_with_hyphens "domain").com"
+  path="foo"
+  other_space=$(generate_test_name_with_spaces "Other Space")
 
-run it_can_map_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
-run it_can_map_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
-run it_can_map_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
+  setup_integration_tests "$org" "$other_space"
 
-run it_can_unmap_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
-run it_can_unmap_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
-run it_can_unmap_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
+  run it_can_create_a_domain \"$org\" \"$domain\"
 
-run it_can_delete_an_app \"$org\" \"$other_space\" \"$app_name\"
+  run it_can_create_a_route \"$org\" \"$space\" \"$domain\" \"$other_space\"
+  run it_can_create_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$other_space\"
+  run it_can_create_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\" \"$other_space\"
 
-run it_can_delete_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\"
-run it_can_delete_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\"
-run it_can_delete_a_route \"$org\" \"$space\" \"$domain\"
+  run it_can_push_an_app \"$org\" \"$other_space\" \"$app_name\"
 
-run it_can_delete_a_domain \"$org\" \"$domain\"
+  run it_can_map_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
+  run it_can_map_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
+  run it_can_map_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
+
+  run it_can_unmap_a_route_with_hostname_and_path \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\" \"$path\"
+  run it_can_unmap_a_route_with_hostname \"$org\" \"$other_space\" \"$domain\" \"$app_name\" \"$hostname\"
+  run it_can_unmap_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
+
+  run it_can_delete_an_app \"$org\" \"$other_space\" \"$app_name\"
+
+  run it_can_delete_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\"
+  run it_can_delete_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\"
+  run it_can_delete_a_route \"$org\" \"$space\" \"$domain\"
+
+  run it_can_delete_a_domain \"$org\" \"$domain\"
+}
 
 teardown_integration_tests "$org" "$space"

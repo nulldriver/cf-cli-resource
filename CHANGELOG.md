@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `cf_home` param for supplying a `CF_HOME` folder which (in this initial release) allows for passing on a previously configured `.cf/config.json` file for CF API authentication (thanks to a PR by [@lbenedix](https://github.com/lbenedix))
 
+### Changed
+- `push` command now supports the `domain` param, thanks to a PR by [@vixus0](https://github.com/vixus0)
+
 ### Packaged Dependencies
 | Dependency | Version                                                             |
 |------------|:-------------------------------------------------------------------:|
