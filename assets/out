@@ -318,6 +318,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     docker_password=$(echo $options | jq -r '.docker_password //empty')
     manifest=$(echo $options | jq -r '.manifest //empty')
     hostname=$(echo $options | jq -r '.hostname //empty')
+    domain=$(echo $options | jq -r '.domain //empty')
     instances=$(echo $options | jq -r '.instances //empty')
     disk_quota=$(echo $options | jq -r '.disk_quota //empty')
     memory=$(echo $options | jq -r '.memory //empty')
@@ -338,6 +339,7 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
     [ -n "$docker_password" ] && export CF_DOCKER_PASSWORD="$docker_password"
     [ -n "$manifest" ]        && args+=(-f "$manifest")
     [ -n "$hostname" ]        && args+=(-n "$hostname")
+    [ -n "$domain" ]          && args+=(-d "$domain")
     [ -n "$instances" ]       && args+=(-i "$instances")
     [ -n "$disk_quota" ]      && args+=(-k "$disk_quota")
     [ -n "$memory" ]          && args+=(-m "$memory")
