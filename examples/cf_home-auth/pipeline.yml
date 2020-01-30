@@ -1,0 +1,62 @@
+---
+jobs:
+- name: deploy
+  plan:
+  - in_parallel:
+    - get: cf-demo
+      trigger: true
+    - get: cf-cli-resource-image
+  - task: authenticate
+    image: cf-cli-resource-image
+    config:
+      platform: linux
+      params:
+        CF_API: ((cf-api))
+        CF_USERNAME: ((cf-username))
+        CF_PASSWORD: ((cf-password))
+      outputs:
+      - name: task-output
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          export CF_HOME=$PWD/task-output
+          cf api $CF_API
+          cf auth
+          ls -al $CF_HOME
+  - put: cf-push
+    resource: cloud-foundry
+    params:
+      cf_home: task-output
+      commands:
+      - command: create-org
+      - command: create-space
+      - command: push
+        app_name: cf_home-auth-app
+        hostname: cf_home-auth-app
+        path: cf-demo/examples/zero-downtime-history/app
+        manifest: cf-demo/examples/zero-downtime-history/app/manifest.yml
+
+resources:
+- name: cf-demo
+  type: git
+  source:
+    uri: https://github.com/nulldriver/cf-cli-resource.git
+
+- name: cloud-foundry
+  type: cf-cli-resource-type
+  source:
+    org: examples
+    space: cf_home-auth
+
+- name: cf-cli-resource-image
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource-rc
+
+resource_types:
+- name: cf-cli-resource-type
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource-rc

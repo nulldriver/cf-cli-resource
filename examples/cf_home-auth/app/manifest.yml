@@ -1,0 +1,6 @@
+---
+applications:
+- name: cf-demo
+  memory: 64M
+  buildpacks:
+  - php_buildpack

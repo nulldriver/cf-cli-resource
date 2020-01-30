@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -eu
+
+usage() {
+  echo "Incorrect Usage: the required argument \`target\` was not provided"
+  exit 1
+}
+
+readonly target=${1:-}
+[[ -z "$target" ]] && usage
+
+fly -t "$target" set-pipeline --check-creds \
+    -p cf_home-auth \
+    -c pipeline.yml \
+    -l pipeline-secrets.yml
