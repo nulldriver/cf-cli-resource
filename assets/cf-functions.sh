@@ -142,7 +142,7 @@ function cf_create_users_from_file() {
     (( linenum++ ))
 
     if [ -z "$Username" ]; then
-      logger::error "no Username specified, unable to process line number: $(logger::highlight "$linenum")"
+      logger::warn "no Username specified, unable to process line number: $(logger::highlight "$linenum")"
       continue
     fi
 
