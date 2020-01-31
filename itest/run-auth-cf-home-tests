@@ -3,13 +3,12 @@
 set -eu
 set -o pipefail
 
-test_dir=$(dirname "$0")
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )/.." && pwd)
 
-# TODO: fix this once we rename 'assets' to 'resource' for a consistent directory experience
-source "$(find "$test_dir/.." -name "error-codes.sh")"
-source "$test_dir"/config.sh
-source "$test_dir"/helpers.sh
-source "$test_dir"/assert.sh
+source "$base_dir/resource/error-codes.sh"
+source "$base_dir/itest/config.sh"
+source "$base_dir/itest/helpers.sh"
+source "$base_dir/itest/assert.sh"
 
 login_with_cf_home() {
   cd "$(mktemp -d "$TMPDIR"/home.XXXXXX)"

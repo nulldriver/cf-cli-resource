@@ -2,8 +2,8 @@
 set -eu
 set -o pipefail
 
-# shellcheck source=assets/logger.sh
-source "$(dirname "${BASH_SOURCE[0]}")/logger.sh"
+this_dir=$(dirname "${BASH_SOURCE[0]}")
+source "$this_dir/logger.sh"
 
 function cf_curl() {
   CF_TRACE=false cf curl --fail "$@"

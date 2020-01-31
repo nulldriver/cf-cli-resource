@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-ADD assets/ /opt/resource/
+ADD resource/ /opt/resource/
 ADD itest/ /opt/itest/
 
 # Install uuidgen

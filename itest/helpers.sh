@@ -21,12 +21,8 @@ on_exit() {
 
 trap on_exit EXIT
 
-base_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-if [ -d "$base_dir/assets" ]; then
-  resource_dir=$base_dir/assets
-else
-  resource_dir=/opt/resource
-fi
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )/.." && pwd)
+resource_dir=$base_dir/resource
 
 source $resource_dir/cf-functions.sh
 source $(dirname $0)/assert.sh
