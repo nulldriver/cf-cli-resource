@@ -32,7 +32,7 @@ it_can_push_an_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
+  assert::success cf::is_app_started "$app_name"
 }
 
 it_can_create_a_service_broker() {
@@ -54,7 +54,7 @@ it_can_create_a_service_broker() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_broker_exists "$service_broker"
+  assert::success cf::service_broker_exists "$service_broker"
 }
 
 it_can_enable_service_access() {
@@ -71,8 +71,8 @@ it_can_enable_service_access() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  cf_target "$org" "$space"
-  assert::success cf_is_marketplace_service_available "$service_broker"
+  cf::target "$org" "$space"
+  assert::success cf::is_marketplace_service_available "$service_broker"
 }
 
 org=service-brokers

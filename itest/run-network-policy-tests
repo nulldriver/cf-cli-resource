@@ -30,7 +30,7 @@ it_can_add_network_policy_with_defaults() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_network_policy_exists "$source_app_name" "$destination_app_name" "tcp" "8080"
+  assert::success cf::network_policy_exists "$source_app_name" "$destination_app_name" "tcp" "8080"
 }
 
 it_can_add_network_policy_with_protocol_and_port() {
@@ -56,7 +56,7 @@ it_can_add_network_policy_with_protocol_and_port() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
+  assert::success cf::network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
 
 it_can_remove_network_policy() {
@@ -82,7 +82,7 @@ it_can_remove_network_policy() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
+  assert::failure cf::network_policy_exists "$source_app_name" "$destination_app_name" "udp" "9999"
 }
 
 org=$(generate_test_name_with_spaces "Org")

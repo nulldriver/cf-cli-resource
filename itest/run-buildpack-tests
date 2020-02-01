@@ -21,7 +21,7 @@ it_can_delete_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_has_buildpack "$buildpack"
+  assert::failure cf::has_buildpack "$buildpack"
 }
 
 it_can_delete_a_buildpack_with_stack() {
@@ -39,7 +39,7 @@ it_can_delete_a_buildpack_with_stack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_has_buildpack "$buildpack"
+  assert::failure cf::has_buildpack "$buildpack"
 }
 
 it_can_create_a_buildpack() {
@@ -58,8 +58,8 @@ it_can_create_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_has_buildpack "$buildpack"
-  assert::success cf_is_buildpack_enabled "$buildpack"
+  assert::success cf::has_buildpack "$buildpack"
+  assert::success cf::is_buildpack_enabled "$buildpack"
 }
 
 it_can_create_a_buildpack_that_is_enabled() {
@@ -79,8 +79,8 @@ it_can_create_a_buildpack_that_is_enabled() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_has_buildpack "$buildpack"
-  assert::success cf_is_buildpack_enabled "$buildpack"
+  assert::success cf::has_buildpack "$buildpack"
+  assert::success cf::is_buildpack_enabled "$buildpack"
 }
 
 it_can_create_a_buildpack_that_is_disabled() {
@@ -100,8 +100,8 @@ it_can_create_a_buildpack_that_is_disabled() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_has_buildpack "$buildpack"
-  assert::failure cf_is_buildpack_enabled "$buildpack"
+  assert::success cf::has_buildpack "$buildpack"
+  assert::failure cf::is_buildpack_enabled "$buildpack"
 }
 
 it_can_disable_a_buildpack() {
@@ -117,7 +117,7 @@ it_can_disable_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_buildpack_enabled "$buildpack"
+  assert::failure cf::is_buildpack_enabled "$buildpack"
 }
 
 it_can_enable_a_buildpack() {
@@ -133,7 +133,7 @@ it_can_enable_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_buildpack_enabled "$buildpack"
+  assert::success cf::is_buildpack_enabled "$buildpack"
 }
 
 it_can_lock_a_buildpack() {
@@ -149,7 +149,7 @@ it_can_lock_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_buildpack_locked "$buildpack"
+  assert::success cf::is_buildpack_locked "$buildpack"
 }
 
 it_can_unlock_a_buildpack() {
@@ -165,7 +165,7 @@ it_can_unlock_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_buildpack_locked "$buildpack"
+  assert::failure cf::is_buildpack_locked "$buildpack"
 }
 
 it_can_assign_a_stack_to_a_buildpack() {
@@ -183,7 +183,7 @@ it_can_assign_a_stack_to_a_buildpack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::equals "$stack" "$(cf_get_buildpack_stack "$buildpack")"
+  assert::equals "$stack" "$(cf::get_buildpack_stack "$buildpack")"
 }
 
 it_can_update_a_buildpack_path() {
@@ -201,7 +201,7 @@ it_can_update_a_buildpack_path() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::equals "$(basename "$(ls $path)")" "$(cf_get_buildpack_filename "$buildpack")"
+  assert::equals "$(basename "$(ls $path)")" "$(cf::get_buildpack_filename "$buildpack")"
 }
 
 it_can_update_a_buildpack_position() {
@@ -219,7 +219,7 @@ it_can_update_a_buildpack_position() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::equals "$position" "$(cf_get_buildpack_position "$buildpack")"
+  assert::equals "$position" "$(cf::get_buildpack_position "$buildpack")"
 }
 
 buildpack_url="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.18/java-buildpack-v4.18.zip"
@@ -284,19 +284,19 @@ describe "it_can_create_two_buildpacks_and_swap_their_positions"
   buildpack_1=$(generate_test_name_with_hyphens "buildpack_1")
   run it_can_create_a_buildpack \"$buildpack_1\" \"$path\"
 
-  position_1=$(cf_get_buildpack_position "$buildpack_1")
-  assert::equals "$(cf_get_buildpack_max_position)" "$position_1"
+  position_1=$(cf::get_buildpack_position "$buildpack_1")
+  assert::equals "$(cf::get_buildpack_max_position)" "$position_1"
 
   buildpack_2=$(generate_test_name_with_hyphens "buildpack_2")
   run it_can_create_a_buildpack \"$buildpack_2\" \"$path\"
 
-  position_2=$(cf_get_buildpack_position "$buildpack_2")
-  assert::equals "$(cf_get_buildpack_max_position)" "$position_2"
+  position_2=$(cf::get_buildpack_position "$buildpack_2")
+  assert::equals "$(cf::get_buildpack_max_position)" "$position_2"
 
   run it_can_update_a_buildpack_position \"$buildpack_2\" \"$position_1\"
 
-  assert::equals "$position_1" "$(cf_get_buildpack_position "$buildpack_2")"
-  assert::equals "$position_2" "$(cf_get_buildpack_position "$buildpack_1")"
+  assert::equals "$position_1" "$(cf::get_buildpack_position "$buildpack_2")"
+  assert::equals "$position_2" "$(cf::get_buildpack_position "$buildpack_1")"
 
   run it_can_delete_a_buildpack \"$buildpack_2\"
   run it_can_delete_a_buildpack \"$buildpack_1\"

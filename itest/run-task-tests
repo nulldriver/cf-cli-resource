@@ -31,7 +31,7 @@ it_can_run_a_task_with_disk_quota() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_was_task_run "$app_name" "run-task-with-disk_quota-test"
+  assert::success cf::was_task_run "$app_name" "run-task-with-disk_quota-test"
 }
 
 it_can_run_a_task_with_memory() {
@@ -56,7 +56,7 @@ it_can_run_a_task_with_memory() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_was_task_run "$app_name" "run-task-with-memory-test"
+  assert::success cf::was_task_run "$app_name" "run-task-with-memory-test"
 }
 
 it_can_run_a_task_with_name() {
@@ -81,7 +81,7 @@ it_can_run_a_task_with_name() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_was_task_run "$app_name" "run-task-with-name-test"
+  assert::success cf::was_task_run "$app_name" "run-task-with-name-test"
 }
 
 it_can_run_a_task() {
@@ -110,7 +110,7 @@ it_can_run_a_task() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_was_task_run "$app_name" "run-task-test-all"
+  assert::success cf::was_task_run "$app_name" "run-task-test-all"
 }
 
 org=$(generate_test_name_with_spaces "Org")

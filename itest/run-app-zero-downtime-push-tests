@@ -33,7 +33,7 @@ it_can_zero_downtime_push_an_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
+  assert::success cf::is_app_started "$app_name"
 }
 
 it_can_zero_downtime_push_an_app_with_env_vars() {
@@ -76,11 +76,11 @@ string"
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
-  assert::success cf_has_env "$app_name" "yaml_scalar" "$yaml_scalar"
-  assert::success cf_has_env "$app_name" "yaml_multiline_scalar" "$yaml_multiline_scalar"
-  assert::success cf_has_env "$app_name" "yaml_map" "$yaml_map"
-  assert::success cf_has_env "$app_name" "yaml_sequence" "$yaml_sequence"
+  assert::success cf::is_app_started "$app_name"
+  assert::success cf::has_env "$app_name" "yaml_scalar" "$yaml_scalar"
+  assert::success cf::has_env "$app_name" "yaml_multiline_scalar" "$yaml_multiline_scalar"
+  assert::success cf::has_env "$app_name" "yaml_map" "$yaml_map"
+  assert::success cf::has_env "$app_name" "yaml_sequence" "$yaml_sequence"
 }
 
 it_can_zero_downtime_push_an_app_with_stack() {
@@ -108,8 +108,8 @@ it_can_zero_downtime_push_an_app_with_stack() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
-  assert::equals "$stack" "$(cf_get_app_stack "$app_name")"
+  assert::success cf::is_app_started "$app_name"
+  assert::equals "$stack" "$(cf::get_app_stack "$app_name")"
 }
 
 org=$(generate_test_name_with_spaces "Org")

@@ -30,7 +30,7 @@ it_can_create_a_service_key() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_key_exists "$service_instance" "$service_key"
+  assert::success cf::service_key_exists "$service_instance" "$service_key"
 }
 
 it_can_delete_a_service_key() {
@@ -54,7 +54,7 @@ it_can_delete_a_service_key() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_service_key_exists "$service_instance" "$service_key"
+  assert::failure cf::service_key_exists "$service_instance" "$service_key"
 }
 
 org=$(generate_test_name_with_spaces "Org")

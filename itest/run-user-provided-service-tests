@@ -29,7 +29,7 @@ it_can_create_a_user_provided_service_with_credentials_string() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "$service_instance"
+  assert::success cf::service_exists "$service_instance"
 }
 
 it_can_create_a_user_provided_service_with_credentials_file() {
@@ -54,7 +54,7 @@ it_can_create_a_user_provided_service_with_credentials_file() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "$service_instance"
+  assert::success cf::service_exists "$service_instance"
 }
 
 it_can_create_a_user_provided_service_with_syslog() {
@@ -77,7 +77,7 @@ it_can_create_a_user_provided_service_with_syslog() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "$service_instance"
+  assert::success cf::service_exists "$service_instance"
 }
 
 org=$(generate_test_name_with_spaces "Org")

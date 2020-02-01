@@ -34,7 +34,7 @@ it_can_push_the_logger_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
+  assert::success cf::is_app_started "$app_name"
 }
 
 it_can_create_the_logger_route_service() {
@@ -72,7 +72,7 @@ it_can_bind_logger_route_service_to_logged_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
+  assert::success cf::is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space"
 }
 
 org=$(generate_test_name_with_spaces "Org")

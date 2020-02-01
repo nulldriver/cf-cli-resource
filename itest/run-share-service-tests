@@ -33,8 +33,8 @@ it_can_share_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  cf_target "$other_org" "$other_space"
-  assert::success cf_service_exists "$service_instance"
+  cf::target "$other_org" "$other_space"
+  assert::success cf::service_exists "$service_instance"
 }
 
 it_can_unshare_a_service() {
@@ -61,8 +61,8 @@ it_can_unshare_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  cf_target "$other_org" "$other_space"
-  assert::failure cf_service_exists "$service_instance"
+  cf::target "$other_org" "$other_space"
+  assert::failure cf::service_exists "$service_instance"
 }
 
 source_org=$(generate_test_name_with_spaces "Source Org")

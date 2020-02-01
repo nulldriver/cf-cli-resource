@@ -24,7 +24,7 @@ it_can_create_a_domain() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_has_private_domain "$org" "$domain"
+  assert::success cf::has_private_domain "$org" "$domain"
 }
 
 it_can_delete_a_domain() {
@@ -42,7 +42,7 @@ it_can_delete_a_domain() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_has_private_domain "$org" "$domain"
+  assert::failure cf::has_private_domain "$org" "$domain"
 }
 
 it_can_create_a_route() {
@@ -66,7 +66,7 @@ it_can_create_a_route() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_check_route "$org" "$domain"
+  assert::success cf::check_route "$org" "$domain"
 }
 
 it_can_create_a_route_with_hostname() {
@@ -93,7 +93,7 @@ it_can_create_a_route_with_hostname() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_check_route "$org" "$domain" "$hostname"
+  assert::success cf::check_route "$org" "$domain" "$hostname"
 }
 
 it_can_create_a_route_with_hostname_and_path() {
@@ -123,7 +123,7 @@ it_can_create_a_route_with_hostname_and_path() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_check_route "$org" "$domain" "$hostname" "$path"
+  assert::success cf::check_route "$org" "$domain" "$hostname" "$path"
 }
 
 it_can_map_a_route() {
@@ -147,7 +147,7 @@ it_can_map_a_route() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_mapped_to_route "$app_name" "$domain"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$domain"
 }
 
 it_can_map_a_route_with_hostname() {
@@ -174,7 +174,7 @@ it_can_map_a_route_with_hostname() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
 
 it_can_map_a_route_with_hostname_and_path() {
@@ -204,7 +204,7 @@ it_can_map_a_route_with_hostname_and_path() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
 
 it_can_unmap_a_route() {
@@ -228,7 +228,7 @@ it_can_unmap_a_route() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_app_mapped_to_route "$app_name" "$domain"
+  assert::failure cf::is_app_mapped_to_route "$app_name" "$domain"
 }
 
 it_can_unmap_a_route_with_hostname() {
@@ -255,7 +255,7 @@ it_can_unmap_a_route_with_hostname() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
+  assert::failure cf::is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
 
 it_can_unmap_a_route_with_hostname_and_path() {
@@ -285,7 +285,7 @@ it_can_unmap_a_route_with_hostname_and_path() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
+  assert::failure cf::is_app_mapped_to_route "$app_name" "$hostname.$domain/$path"
 }
 
 it_can_delete_a_route() {
@@ -306,7 +306,7 @@ it_can_delete_a_route() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_check_route "$org" "$domain"
+  assert::failure cf::check_route "$org" "$domain"
 }
 
 it_can_delete_a_route_with_hostname() {
@@ -330,7 +330,7 @@ it_can_delete_a_route_with_hostname() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_check_route "$org" "$domain" "$hostname"
+  assert::failure cf::check_route "$org" "$domain" "$hostname"
 }
 
 it_can_delete_a_route_with_hostname_and_path() {
@@ -357,7 +357,7 @@ it_can_delete_a_route_with_hostname_and_path() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_check_route "$org" "$domain" "$hostname" "$path"
+  assert::failure cf::check_route "$org" "$domain" "$hostname" "$path"
 }
 
 it_can_push_an_app_with_hostname_and_domain() {
@@ -390,8 +390,8 @@ it_can_push_an_app_with_hostname_and_domain() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
-  assert::success cf_is_app_mapped_to_route "$app_name" "$hostname.$domain"
+  assert::success cf::is_app_started "$app_name"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$hostname.$domain"
 }
 
 org=$(generate_test_name_with_spaces "Org")

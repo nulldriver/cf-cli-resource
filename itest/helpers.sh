@@ -258,7 +258,7 @@ it_can_create_an_org() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_org_exists "$org"
+  assert::success cf::org_exists "$org"
 }
 
 it_can_create_a_space() {
@@ -276,7 +276,7 @@ it_can_create_a_space() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_space_exists "$org" "$space"
+  assert::success cf::space_exists "$org" "$space"
 }
 
 # This test showcases the multi-command syntax
@@ -303,8 +303,8 @@ it_can_delete_a_space_and_org() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_space_exists "$org" "$space"
-  assert::failure cf_org_exists "$org"
+  assert::failure cf::space_exists "$org" "$space"
+  assert::failure cf::org_exists "$org"
 }
 
 it_can_push_an_app() {
@@ -332,7 +332,7 @@ it_can_push_an_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_started "$app_name"
+  assert::success cf::is_app_started "$app_name"
 }
 
 it_can_delete_an_app() {
@@ -354,7 +354,7 @@ it_can_delete_an_app() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_app_exists "$app_name"
+  assert::failure cf::app_exists "$app_name"
 }
 
 it_can_create_a_service() {
@@ -388,8 +388,8 @@ it_can_create_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "$service_instance"
-  assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
+  assert::success cf::service_exists "$service_instance"
+  assert::equals "$plan" "$(cf::get_service_instance_plan "$service_instance")"
 }
 
 it_can_create_a_user_provided_service_with_route() {
@@ -413,7 +413,7 @@ it_can_create_a_user_provided_service_with_route() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "$service_instance"
+  assert::success cf::service_exists "$service_instance"
 }
 
 it_can_update_a_service() {
@@ -446,9 +446,9 @@ it_can_update_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_service_exists "${service_instance}"
-  assert::equals "$plan" "$(cf_get_service_instance_plan "$service_instance")"
-  assert::equals "$tags" "$(cf_get_service_instance_tags "$service_instance")"
+  assert::success cf::service_exists "${service_instance}"
+  assert::equals "$plan" "$(cf::get_service_instance_plan "$service_instance")"
+  assert::equals "$tags" "$(cf::get_service_instance_tags "$service_instance")"
   #TODO: currently there is no way that I know of to retrieve an si's configuration...
 }
 
@@ -473,7 +473,7 @@ it_can_bind_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_app_bound_to_service "$app_name" "$service_instance"
+  assert::success cf::is_app_bound_to_service "$app_name" "$service_instance"
 }
 
 it_can_unbind_a_service() {
@@ -497,7 +497,7 @@ it_can_unbind_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_is_app_bound_to_service "$app_name" "$service_instance"
+  assert::failure cf::is_app_bound_to_service "$app_name" "$service_instance"
 }
 
 it_can_delete_a_service() {
@@ -519,7 +519,7 @@ it_can_delete_a_service() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::failure cf_service_exists "$service_instance"
+  assert::failure cf::service_exists "$service_instance"
 }
 
 it_can_enable_feature_flag() {
@@ -534,7 +534,7 @@ it_can_enable_feature_flag() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_feature_flag_enabled "$feature_flag"
+  assert::success cf::is_feature_flag_enabled "$feature_flag"
 }
 
 it_can_disable_feature_flag() {
@@ -549,21 +549,21 @@ it_can_disable_feature_flag() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf_is_feature_flag_disabled "$feature_flag"
+  assert::success cf::is_feature_flag_disabled "$feature_flag"
 }
 
 cleanup_test_orgs() {
-  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r org; do
-    cf_delete_org "$org"
+    cf::delete_org "$org"
   done < <(cf orgs | grep "$test_prefix " || true)
 }
 
 cleanup_test_users() {
-  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
@@ -572,7 +572,7 @@ cleanup_test_users() {
     local username=
 
     while read -r username; do
-      cf_delete_user "$username"
+      cf::delete_user "$username"
     done < <(echo "$output" | jq -r --arg userprefix "$test_prefix-" '.resources[] | select(.entity.username|startswith($userprefix)?) | .entity.username')
 
     next_url=$(echo "$output" | jq -r '.next_url')
@@ -580,17 +580,17 @@ cleanup_test_users() {
 }
 
 cleanup_service_brokers() {
-  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r broker; do
-    cf_delete_service_broker "$broker"
+    cf::delete_service_broker "$broker"
   done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 cleanup_buildpacks() {
-  cf_api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf_auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r buildpack; do
     cf delete-buildpack -f "$buildpack"
