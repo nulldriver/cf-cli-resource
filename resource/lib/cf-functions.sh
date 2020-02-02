@@ -2,8 +2,12 @@
 set -eu
 set -o pipefail
 
-this_dir=$(dirname "${BASH_SOURCE[0]}")
-source "$this_dir/logger.sh"
+# Return if cf already loaded.
+declare -f 'cf::curl' >/dev/null && return 0
+
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+
+source "$base_dir/resource/lib/logger.sh"
 
 function cf::curl() {
   CF_TRACE=false cf curl --fail "$@"
