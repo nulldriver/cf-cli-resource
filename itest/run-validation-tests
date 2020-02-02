@@ -3,12 +3,12 @@
 set -eu
 set -o pipefail
 
-base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )/.." && pwd)
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
-source "$base_dir/resource/error-codes.sh"
-source "$base_dir/itest/config.sh"
-source "$base_dir/itest/helpers.sh"
-source "$base_dir/itest/assert.sh"
+source "$base_dir/itest/lib/assert.sh"
+source "$base_dir/itest/lib/helpers.sh"
+source "$base_dir/itest/lib/config.sh"
+source "$base_dir/resource/lib/error-codes.sh"
 
 it_can_error_if_params_not_set() {
   local config=$(jq -n '{ source: {} }')

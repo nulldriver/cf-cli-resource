@@ -2,14 +2,17 @@
 set -eu
 set -o pipefail
 
-test_dir=$(dirname $0)
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+
+source "$base_dir/itest/lib/assert.sh"
+source "$base_dir/resource/lib/cf-functions.sh"
 
 export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
 export CF_HOME=$TMPDIR_ROOT  # Use a unique CF_HOME for sessions
 export CF_PLUGIN_HOME=$HOME  # But keep the original plugins folder
 
 readonly test_prefix=cfclitest
-readonly test_id=$($test_dir/bashids -e -s "$(uuidgen)" -l 10 "$RANDOM")
+readonly test_id=$("$base_dir/itest/lib/bashids" -e -s "$(uuidgen)" -l 10 "$RANDOM")
 
 on_exit() {
   exitcode=$?
@@ -20,12 +23,6 @@ on_exit() {
 }
 
 trap on_exit EXIT
-
-base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}" )/.." && pwd)
-resource_dir=$base_dir/resource
-
-source $resource_dir/cf-functions.sh
-source $(dirname $0)/assert.sh
 
 describe() {
   printf '\e[33m%s\e[0m...\n' "$@"
@@ -234,7 +231,7 @@ put_with_config() {
   local config=${1:?config null or not set}
   local working_dir=${2:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
 
-  echo $config | $resource_dir/out "$working_dir" | tee /dev/stderr
+  echo $config | "$base_dir/resource/out" "$working_dir" | tee /dev/stderr
 }
 
 put_with_params() {

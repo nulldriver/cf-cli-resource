@@ -3,11 +3,11 @@
 set -eu
 set -o pipefail
 
-test_dir=$(dirname $0)
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
-source $test_dir/config.sh
-source $test_dir/helpers.sh
-source $test_dir/assert.sh
+source "$base_dir/itest/lib/assert.sh"
+source "$base_dir/itest/lib/helpers.sh"
+source "$base_dir/itest/lib/config.sh"
 
 it_can_run_a_task_with_disk_quota() {
   local org=${1:?org null or not set}
