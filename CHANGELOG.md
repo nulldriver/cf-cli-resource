@@ -6,8 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.16.1 - Unreleased
 
+This release introduces some major changes to the project structure.  The `cf-cli-resource` has come a long way since its humble beginnings in early 2017 and it was about time to do some spring cleaning.  Thankfully our test cases have ensured that we were able to make these changes with confidence.  Check out the rest of the release notes for all the details.
+
+### Added
+- Added a [README](examples/README.md) for example pipelines.
+- Added [example pipeline](examples/cf_home-auth/pipeline.yml) for `cf_home` usage.
+
+### Fixed
+- The `create-users-from-file` command now logs a warning (instead of an error) if unable `Username` value is not set (since that's not a failing condition).
+
 ### Changed
 - Renamed `assets` folder to `resource`.  This makes it simpler to locate scripts whether we are running tests locally or in a Docker image.
+- Renamed `cf_*` functions to `cf::*` to follow the "package" naming convention.
+- Moved all supporting function libraries to respective `resource/lib` and `itest/lib` folders.
+- Refactored `resource/out` to invoke resource commands from separate files (see `resource/commands` folder).  This should make adding new commands much cleaner and easier.
 
 ### Packaged Dependencies
 | Dependency | Version                                                             |
