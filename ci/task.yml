@@ -1,12 +1,6 @@
 ---
 platform: linux
 
-inputs:
-- name: service-broker
-  optional: true
-- name: logging-route-service
-  optional: true
-
 params:
   TEST_SCRIPT:
   CCR_CF_SYSTEM_DOMAIN:
