@@ -30,33 +30,39 @@ payload=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
 
 cat > $payload <&0
 
-debug=$(jq -r '.source.debug //empty' < $payload)
+get_config() {
+  local key=${1:?config key null or not set}
+  local default=${2:-}
+  jq -r --arg default "$default" "$key // \$default" < "$payload"
+}
+
+debug=$(get_config '.source.debug')
 if [ "$debug" = "true" ]; then
   set -x
 fi
 
-params=$(jq -r '.params //empty' < $payload)
+params=$(get_config '.params')
 if [ -z "$params" ]; then
   logger::error 'invalid payload (missing params)'
   exit $E_PARAMS_NOT_SET
 fi
 
-api=$(jq -r '.source.api //empty' < $payload)
-skip_cert_check=$(jq -r '.source.skip_cert_check //false' < $payload)
-username=$(jq -r '.source.username //empty' < $payload)
-password=$(jq -r '.source.password //empty' < $payload)
-origin=$(jq -r '.source.origin //empty' < $payload)
-client_id=$(jq -r '.source.client_id //empty' < $payload)
-client_secret=$(jq -r '.source.client_secret //empty' < $payload)
-source_org=$(jq -r '.source.org //empty' < $payload)
-source_space=$(jq -r '.source.space //empty' < $payload)
-command_file=$(jq -r '.params.command_file //empty' < $payload)
+api=$(get_config '.source.api')
+skip_cert_check=$(get_config '.source.skip_cert_check' 'false')
+username=$(get_config '.source.username')
+password=$(get_config '.source.password')
+origin=$(get_config '.source.origin')
+client_id=$(get_config '.source.client_id')
+client_secret=$(get_config '.source.client_secret')
+source_org=$(get_config '.source.org')
+source_space=$(get_config '.source.space')
+command_file=$(get_config '.params.command_file')
 
-cf_color=$(jq -r '.source.cf_color //empty' < $payload) && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
-cf_dial_timeout=$(jq -r '.source.cf_dial_timeout //empty' < $payload) && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
-cf_trace=$(jq -r '.source.cf_trace //empty' < $payload) && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
+cf_color=$(get_config '.source.cf_color') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
+cf_dial_timeout=$(get_config '.source.cf_dial_timeout') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
+cf_trace=$(get_config '.source.cf_trace') && echo "$cf_trace" | grep -qi 'true' && export CF_TRACE=true
 
-cf_home=$(jq -r '.params.cf_home // empty' < $payload)
+cf_home=$(get_config '.params.cf_home')
 if [ -n "$cf_home" ]; then
   export CF_HOME=$cf_home
   export CF_PLUGIN_HOME=$HOME  # Keep the original plugins folder
@@ -132,7 +138,13 @@ logger::info "$(cf version)"
 
 echo "$params" | jq -c '.commands[]' | while read -r options; do
 
-  command=$(echo $options | jq -r '.command')
+  get_option() {
+    local key=${1:?config key null or not set}
+    local default=${2:-}
+    echo $options | jq -r --arg default "$default" "$key // \$default"
+  }
+
+  command=$(get_option '.command')
 
   # Backup the old values so we can reset at the end of the loop
   [ -n "${CF_COLOR:-}" ] && OLD_CF_COLOR=$CF_COLOR || true
@@ -140,11 +152,11 @@ echo "$params" | jq -c '.commands[]' | while read -r options; do
   [ -n "${CF_TRACE:-}" ] && OLD_CF_TRACE=$CF_TRACE || true
 
   # Override source values if set in params
-  cf_color=$(echo $options | jq -r '.cf_color //empty') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
-  cf_dial_timeout=$(echo $options | jq -r '.cf_dial_timeout //empty') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
-  cf_trace=$(echo $options | jq -r '.cf_trace //empty') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
-  org=$(echo $options | jq -r '.org //empty') && [ -z "$org" ] && org=$source_org
-  space=$(echo $options | jq -r '.space //empty') && [ -z "$space" ] && space=$source_space
+  cf_color=$(get_option '.cf_color') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
+  cf_dial_timeout=$(get_option '.cf_dial_timeout') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
+  cf_trace=$(get_option '.cf_trace') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
+  org=$(get_option '.org') && [ -z "$org" ] && org=$source_org
+  space=$(get_option '.space') && [ -z "$space" ] && space=$source_space
 
   if [ -f "$base_dir/resource/commands/$command.sh" ]; then
     source "$base_dir/resource/commands/$command.sh"
