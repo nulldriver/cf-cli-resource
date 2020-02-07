@@ -1,9 +1,9 @@
 
-manifest=$(echo $options | jq -r '.manifest //empty')
-path=$(echo $options | jq -r '.path //empty')
-current_app_name=$(echo $options | jq -r '.current_app_name //empty')
-environment_variables=$(echo $options | jq -r '.environment_variables //empty')
-stack=$(echo $options | jq -r '.stack //empty')
+manifest=$(get_option '.manifest')
+path=$(get_option '.path')
+current_app_name=$(get_option '.current_app_name')
+environment_variables=$(get_option '.environment_variables')
+stack=$(get_option '.stack')
 
 logger::info "Executing $(logger::highlight "$command"): $current_app_name"
 

@@ -1,5 +1,5 @@
 
-feature_name=$(echo $options | jq -r '.feature_name //empty')
+feature_name=$(get_option '.feature_name')
 
 logger::info "Executing $(logger::highlight "$command"): $feature_name"
 

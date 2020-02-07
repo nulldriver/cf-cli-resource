@@ -1,7 +1,7 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-configuration=$(echo $options | jq -r '.configuration //empty')
+app_name=$(get_option '.app_name')
+service_instance=$(get_option '.service_instance')
+configuration=$(get_option '.configuration')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 

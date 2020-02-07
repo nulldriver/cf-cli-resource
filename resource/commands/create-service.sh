@@ -1,12 +1,12 @@
 
-service=$(echo $options | jq -r '.service //empty')
-plan=$(echo $options | jq -r '.plan //empty')
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-configuration=$(echo $options | jq -r '.configuration //empty')
-tags=$(echo $options | jq -r '.tags //empty')
-timeout=$(echo $options | jq -r '.timeout //empty')
-wait=$(echo $options | jq -r '.wait_for_service //"false"')
-update_service=$(echo $options | jq -r '.update_service //"false"')
+service=$(get_option '.service')
+plan=$(get_option '.plan')
+service_instance=$(get_option '.service_instance')
+configuration=$(get_option '.configuration')
+tags=$(get_option '.tags')
+timeout=$(get_option '.timeout')
+wait=$(get_option '.wait_for_service' 'false')
+update_service=$(get_option '.update_service' 'false')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 

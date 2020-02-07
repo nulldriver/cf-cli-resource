@@ -1,6 +1,6 @@
 
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-timeout=$(echo $options | jq -r '.timeout //empty')
+service_instance=$(get_option '.service_instance')
+timeout=$(get_option '.timeout')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 

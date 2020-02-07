@@ -1,5 +1,5 @@
 
-domain=$(echo $options | jq -r '.domain //empty')
+domain=$(get_option '.domain')
 
 logger::info "Executing $(logger::highlight "$command"): $domain"
 

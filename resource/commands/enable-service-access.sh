@@ -1,8 +1,8 @@
 
-service_broker=$(echo $options | jq -r '.service_broker //empty')
-service=$(echo $options | jq -r '.service //empty')
-plan=$(echo $options | jq -r '.plan //empty')
-access_org=$(echo $options | jq -r '.access_org //empty')
+service_broker=$(get_option '.service_broker')
+service=$(get_option '.service')
+plan=$(get_option '.plan')
+access_org=$(get_option '.access_org')
 
 logger::info "Executing $(logger::highlight "$command"): $service"
 

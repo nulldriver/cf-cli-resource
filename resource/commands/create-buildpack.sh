@@ -1,8 +1,8 @@
 
-buildpack=$(echo $options | jq -r '.buildpack //empty')
-path=$(echo $options | jq -r '.path //empty')
-position=$(echo $options | jq -r '.position //empty')
-enabled=$(echo $options | jq -r '.enabled //empty')
+buildpack=$(get_option '.buildpack')
+path=$(get_option '.path')
+position=$(get_option '.position')
+enabled=$(get_option '.enabled')
 
 logger::info "Executing $(logger::highlight "$command"): $buildpack"
 

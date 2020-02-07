@@ -1,10 +1,10 @@
 
-buildpack=$(echo $options | jq -r '.buildpack //empty')
-enabled=$(echo $options | jq -r '.enabled //empty')
-locked=$(echo $options | jq -r '.locked //empty')
-assign_stack=$(echo $options | jq -r '.assign_stack //empty')
-path=$(echo $options | jq -r '.path //empty')
-position=$(echo $options | jq -r '.position //empty')
+buildpack=$(get_option '.buildpack')
+enabled=$(get_option '.enabled')
+locked=$(get_option '.locked')
+assign_stack=$(get_option '.assign_stack')
+path=$(get_option '.path')
+position=$(get_option '.position')
 
 logger::info "Executing $(logger::highlight "$command"): $buildpack"
 

@@ -1,8 +1,8 @@
 
-other_space=$(echo $options | jq -r '.other_space //empty')
-domain=$(echo $options | jq -r '.domain //empty')
-hostname=$(echo $options | jq -r '.hostname //empty')
-path=$(echo $options | jq -r '.path //empty')
+other_space=$(get_option '.other_space')
+domain=$(get_option '.domain')
+hostname=$(get_option '.hostname')
+path=$(get_option '.path')
 
 logger::info "Executing $(logger::highlight "$command"): $domain"
 

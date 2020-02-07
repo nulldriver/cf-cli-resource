@@ -1,8 +1,8 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
-instances=$(echo $options | jq -r '.instances //empty')
-memory=$(echo $options | jq -r '.memory //empty')
-disk_quota=$(echo $options | jq -r '.disk_quota //empty')
+app_name=$(get_option '.app_name')
+instances=$(get_option '.instances')
+memory=$(get_option '.memory')
+disk_quota=$(get_option '.disk_quota')
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
 

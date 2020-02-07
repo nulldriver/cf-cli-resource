@@ -1,7 +1,7 @@
 
-domain=$(echo $options | jq -r '.domain //empty')
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-hostname=$(echo $options | jq -r '.hostname //empty')
+domain=$(get_option '.domain')
+service_instance=$(get_option '.service_instance')
+hostname=$(get_option '.hostname')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 

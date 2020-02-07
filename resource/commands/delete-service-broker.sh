@@ -1,5 +1,5 @@
 
-service_broker=$(echo $options | jq -r '.service_broker //empty')
+service_broker=$(get_option '.service_broker')
 
 logger::info "Executing $(logger::highlight "$command"): $service_broker"
 

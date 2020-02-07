@@ -1,9 +1,9 @@
 
-service_broker=$(echo $options | jq -r '.service_broker //empty')
-username=$(echo $options | jq -r '.username //empty')
-password=$(echo $options | jq -r '.password //empty')
-url=$(echo $options | jq -r '.url //empty')
-is_space_scoped=$(echo $options | jq -r '.space_scoped //"false"')
+service_broker=$(get_option '.service_broker')
+username=$(get_option '.username')
+password=$(get_option '.password')
+url=$(get_option '.url')
+is_space_scoped=$(get_option '.space_scoped' 'false')
 
 logger::info "Executing $(logger::highlight "$command"): $service_broker"
 

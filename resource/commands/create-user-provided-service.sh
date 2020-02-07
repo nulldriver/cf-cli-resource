@@ -1,8 +1,8 @@
 
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-credentials=$(echo $options | jq -r '.credentials //empty')
-syslog_drain_url=$(echo $options | jq -r '.syslog_drain_url //empty')
-route_service_url=$(echo $options | jq -r '.route_service_url //empty')
+service_instance=$(get_option '.service_instance')
+credentials=$(get_option '.credentials')
+syslog_drain_url=$(get_option '.syslog_drain_url')
+route_service_url=$(get_option '.route_service_url')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 

@@ -1,7 +1,7 @@
 
-new_username=$(echo $options | jq -r '.username //empty')
-new_password=$(echo $options | jq -r '.password //empty')
-new_origin=$(echo $options | jq -r '.origin //empty')
+new_username=$(get_option '.username')
+new_password=$(get_option '.password')
+new_origin=$(get_option '.origin')
 
 logger::info "Executing $(logger::highlight "$command"): $new_username"
 

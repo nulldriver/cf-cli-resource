@@ -1,6 +1,6 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
-delete_mapped_routes=$(echo $options | jq -r '.delete_mapped_routes //empty')
+app_name=$(get_option '.app_name')
+delete_mapped_routes=$(get_option '.delete_mapped_routes')
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
 

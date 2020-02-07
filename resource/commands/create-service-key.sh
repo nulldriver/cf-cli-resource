@@ -1,7 +1,7 @@
 
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-service_key=$(echo $options | jq -r '.service_key //empty')
-configuration=$(echo $options | jq -r '.configuration //empty')
+service_instance=$(get_option '.service_instance')
+service_key=$(get_option '.service_key')
+configuration=$(get_option '.configuration')
 
 logger::info "Executing $(logger::highlight "$command"): $service_key"
 

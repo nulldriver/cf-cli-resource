@@ -1,6 +1,6 @@
 
-buildpack=$(echo $options | jq -r '.buildpack //empty')
-stack=$(echo $options | jq -r '.stack //empty')
+buildpack=$(get_option '.buildpack')
+stack=$(get_option '.stack')
 
 logger::info "Executing $(logger::highlight "$command"): $buildpack"
 

@@ -1,5 +1,5 @@
 
-file=$(echo $options | jq -r '.file //empty')
+file=$(get_option '.file')
 
 logger::info "Executing $(logger::highlight "$command"): $file"
 

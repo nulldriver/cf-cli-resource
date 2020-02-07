@@ -1,5 +1,5 @@
 
-username=$(echo $options | jq -r '.username //empty')
+username=$(get_option '.username')
 
 logger::info "Executing $(logger::highlight "$command"): $username"
 

@@ -1,5 +1,5 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
+app_name=$(get_option '.app_name')
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
 

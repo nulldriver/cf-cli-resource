@@ -1,7 +1,7 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
-staging_timeout=$(echo $options | jq -r '.staging_timeout //empty')
-startup_timeout=$(echo $options | jq -r '.startup_timeout //empty')
+app_name=$(get_option '.app_name')
+staging_timeout=$(get_option '.staging_timeout')
+startup_timeout=$(get_option '.startup_timeout')
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
 

@@ -1,7 +1,7 @@
 
-app_name=$(echo $options | jq -r '.app_name //empty')
-env_var_name=$(echo $options | jq -r '.env_var_name //empty')
-env_var_value=$(echo $options | jq -r '.env_var_value //empty')
+app_name=$(get_option '.app_name')
+env_var_name=$(get_option '.env_var_name')
+env_var_value=$(get_option '.env_var_value')
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
 

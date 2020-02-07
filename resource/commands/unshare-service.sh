@@ -1,7 +1,7 @@
 
-service_instance=$(echo $options | jq -r '.service_instance //empty')
-other_space=$(echo $options | jq -r '.other_space //empty')
-other_org=$(echo $options | jq -r '.other_org //empty')
+service_instance=$(get_option '.service_instance')
+other_space=$(get_option '.other_space')
+other_org=$(get_option '.other_org')
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 
