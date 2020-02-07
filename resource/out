@@ -26,14 +26,14 @@ cd "$working_dir"
 PATH=/usr/local/bin:$PATH:.
 
 TMPDIR=${TMPDIR:-/tmp}
-payload=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
+PAYLOAD=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
 
-cat > $payload <&0
+cat > $PAYLOAD <&0
 
 get_config() {
   local key=${1:?config key null or not set}
   local default=${2:-}
-  jq -r --arg default "$default" "$key // \$default" < "$payload"
+  jq -r --arg default "$default" "$key // \$default" < "$PAYLOAD"
 }
 
 debug=$(get_config '.source.debug')
@@ -136,40 +136,32 @@ fi
 
 logger::info "$(cf version)"
 
-echo "$params" | jq -c '.commands[]' | while read -r options; do
+get_option() {
+  local key=${1:?config key null or not set}
+  local default=${2:-}
+  echo "$OPTIONS" | jq -r --arg default "$default" "$key // \$default"
+}
 
-  get_option() {
-    local key=${1:?config key null or not set}
-    local default=${2:-}
-    echo $options | jq -r --arg default "$default" "$key // \$default"
-  }
+echo "$params" | jq -c '.commands[]' | while read -r OPTIONS; do
+  (
+    command=$(get_option '.command')
 
-  command=$(get_option '.command')
+    # Override source values if set in params
+    cf_color=$(get_option '.cf_color') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
+    cf_dial_timeout=$(get_option '.cf_dial_timeout') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
+    cf_trace=$(get_option '.cf_trace') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
 
-  # Backup the old values so we can reset at the end of the loop
-  [ -n "${CF_COLOR:-}" ] && OLD_CF_COLOR=$CF_COLOR || true
-  [ -n "${CF_DIAL_TIMEOUT:-}" ] && OLD_CF_DIAL_TIMEOUT=$CF_DIAL_TIMEOUT || true
-  [ -n "${CF_TRACE:-}" ] && OLD_CF_TRACE=$CF_TRACE || true
+    org=$(get_option '.org' "$source_org")
+    space=$(get_option '.space' "$source_space")
 
-  # Override source values if set in params
-  cf_color=$(get_option '.cf_color') && [ -n "$cf_color" ] && export CF_COLOR=$cf_color
-  cf_dial_timeout=$(get_option '.cf_dial_timeout') && [ -n "$cf_dial_timeout" ] && export CF_DIAL_TIMEOUT=$cf_dial_timeout
-  cf_trace=$(get_option '.cf_trace') && [ -n "$cf_trace" ] && export CF_TRACE=$cf_trace
-  org=$(get_option '.org') && [ -z "$org" ] && org=$source_org
-  space=$(get_option '.space') && [ -z "$space" ] && space=$source_space
-
-  if [ -f "$base_dir/resource/commands/$command.sh" ]; then
-    source "$base_dir/resource/commands/$command.sh"
-  else
-    logger::error "invalid payload (unknown command: $command)"
-    exit $E_UNKNOWN_COMMAND
-  fi
-
-  # Reset back to the old values for the next iteration
-  [ -n "${OLD_CF_COLOR:-}" ] && CF_COLOR=$OLD_CF_COLOR || true
-  [ -n "${OLD_CF_DIAL_TIMEOUT:-}" ] && CF_DIAL_TIMEOUT=$OLD_CF_DIAL_TIMEOUT || true
-  [ -n "${OLD_CF_TRACE:-}" ] && CF_TRACE=$OLD_CF_TRACE || true
-
+    command_script=$base_dir/resource/commands/$command.sh
+    if [ -f "$command_script" ]; then
+      source "$command_script"
+    else
+      logger::error "invalid payload (unknown command: $command)"
+      exit $E_UNKNOWN_COMMAND
+    fi
+  )
 done
 
 jq -n \
