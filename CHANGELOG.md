@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.16.1 - Unreleased
+## 2.17.0 - Unreleased
 
 This release introduces some major changes to the project structure.  The `cf-cli-resource` has come a long way since its humble beginnings in early 2017 and it was about time to do some spring cleaning.  Thankfully our test cases have ensured that we were able to make these changes with confidence.  Check out the rest of the release notes for all the details.
 
@@ -24,7 +24,7 @@ This release introduces some major changes to the project structure.  The `cf-cl
 ### Packaged Dependencies
 | Dependency | Version                                                             |
 |------------|:-------------------------------------------------------------------:|
-| cf cli     | [6.45.0](https://github.com/cloudfoundry/cli/releases/tag/v6.45.0)  |
+| cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)  |
 | autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
 | yq         | [2.3.0](https://github.com/mikefarah/yq/releases/tag/2.3.0)         |
 
