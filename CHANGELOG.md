@@ -11,12 +11,13 @@ This release introduces some major changes to the project structure.  The `cf-cl
 ### Added
 - Added a [README](examples/README.md) for example pipelines.
 - Added [example pipeline](examples/cf_home-auth/pipeline.yml) for `cf_home` usage.
-- `add-network-policy` and `remove-network-policy` now support targeting a destination app in a different org and/or space.
 
 ### Fixed
 - The `create-users-from-file` command now logs a warning (instead of an error) if unable `Username` value is not set (since that's not a failing condition).
 
 ### Changed
+- `add-network-policy` and `remove-network-policy` commands now support the `destination_org` and `destination_space` params for targeting a destination app in a different org and/or space.
+- `create-service` command now supports the `broker` param to disambiguate if you have two services with the same name.
 - Renamed `assets` folder to `resource`.  This makes it simpler to locate scripts whether we are running tests locally or in a Docker image.
 - Renamed `cf_*` functions to `cf::*` to follow the "package" naming convention.
 - Moved all supporting function libraries to respective `resource/lib` and `itest/lib` folders.

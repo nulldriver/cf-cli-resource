@@ -451,6 +451,7 @@ Create a service instance
 * `service`: *Required.* The marketplace service name to create
 * `plan`: *Required.* The service plan name to create
 * `service_instance`: *Required.* The name to give the service instance
+* `broker`: *Optional.* Create a service instance from a particular broker. Required when service name is ambiguous
 * `configuration`: *Optional.* Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 * `tags`: *Optional.* User provided tags
 * `timeout`: *Optional.* Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)

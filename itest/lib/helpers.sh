@@ -360,9 +360,10 @@ it_can_create_a_service() {
   local service=${3:?service null or not set}
   local plan=${4:?plan null or not set}
   local service_instance=${5:?service_instance null or not set}
-  local configuration=${6:-}
-  local wait_for_service=${7:-}
-  local update_service=${8:-}
+  local broker=${6:-}
+  local configuration=${7:-}
+  local wait_for_service=${8:-}
+  local update_service=${9:-}
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -379,6 +380,7 @@ it_can_create_a_service() {
     service_instance: $service_instance
   }')
 
+  [ -n "$broker" ]           && params=$(echo $params | jq --arg value "$broker"           '.broker           = $value')
   [ -n "$configuration" ]    && params=$(echo $params | jq --arg value "$configuration"    '.configuration    = $value')
   [ -n "$wait_for_service" ] && params=$(echo $params | jq --arg value "$wait_for_service" '.wait_for_service = $value')
   [ -n "$update_service" ]   && params=$(echo $params | jq --arg value "$update_service"   '.update_service   = $value')

@@ -417,10 +417,12 @@ function cf::create_service() {
   local service=${1:?service null or not set}
   local plan=${2:?plan null or not set}
   local service_instance=${3:?service_instance null or not set}
-  local configuration=${4:-}
-  local tags=${5:-}
+  local broker=${4:-}
+  local configuration=${5:-}
+  local tags=${6:-}
 
   local args=("$service" "$plan" "$service_instance")
+  [ -n "$broker" ]        && args+=(-b "$broker")
   [ -n "$configuration" ] && args+=(-c "$configuration")
   [ -n "$tags" ]          && args+=(-t "$tags")
 
@@ -445,13 +447,14 @@ function cf::create_or_update_service() {
   local service=${1:?service null or not set}
   local plan=${2:?plan null or not set}
   local service_instance=${3:?service_instance null or not set}
-  local configuration=${4:-}
-  local tags=${5:-}
+  local broker=${4:-}
+  local configuration=${5:-}
+  local tags=${6:-}
 
   if cf::service_exists "$service_instance"; then
     cf::update_service "$service_instance" "$plan" "$configuration" "$tags"
   else
-    cf::create_service "$service" "$plan" "$service_instance" "$configuration" "$tags"
+    cf::create_service "$service" "$plan" "$service_instance" "$broker" "$configuration" "$tags"
   fi
 }
 
