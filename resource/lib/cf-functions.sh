@@ -763,28 +763,6 @@ function cf::rename() {
   cf rename "$app_name" "$new_app_name"
 }
 
-function cf::add_network_policy() {
-  local source_app=${1:?source_app null or not set}
-  local destination_app=${2:?destination_app null or not set}
-  local protocol=$3
-  local port=$4
-
-  local args=("$source_app" --destination-app "$destination_app")
-  [ -n "$protocol" ] && args+=(--protocol "$protocol")
-  [ -n "$port" ] && args+=(--port "$port")
-
-  cf add-network-policy "${args[@]}"
-}
-
-function cf::remove_network_policy() {
-  local source_app=${1:?source_app null or not set}
-  local destination_app=${2:?destination_app null or not set}
-  local protocol=${3:?protocol null or not set}
-  local port=${4:?port null or not set}
-
-  cf remove-network-policy "$source_app" --destination-app "$destination_app" --protocol "$protocol" --port "$port"
-}
-
 function cf::network_policy_exists() {
   local source_app=${1:?source_app null or not set}
   local destination_app=${2:?destination_app null or not set}

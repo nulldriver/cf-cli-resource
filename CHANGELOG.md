@@ -11,6 +11,7 @@ This release introduces some major changes to the project structure.  The `cf-cl
 ### Added
 - Added a [README](examples/README.md) for example pipelines.
 - Added [example pipeline](examples/cf_home-auth/pipeline.yml) for `cf_home` usage.
+- `add-network-policy` and `remove-network-policy` now support targeting a destination app in a different org and/or space.
 
 ### Fixed
 - The `create-users-from-file` command now logs a warning (instead of an error) if unable `Username` value is not set (since that's not a failing condition).

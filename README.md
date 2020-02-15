@@ -984,6 +984,8 @@ Create policy to allow direct network traffic from one app to another
 * `destination_app`: *Required.* Name of app to connect to
 * `port`: *Optional.* Port or range of ports for connection to destination app (Default: 8080)
 * `protocol`: *Optional.* Protocol to connect apps with (Default: tcp)
+* `destination_org`: *Optional.* The org of the destination app (Default: targeted org)
+* `destination_space`: *Optional.* The space of the destination app (Default: targeted space)
 
 ```yml
   - put: cf-add-network-policy
@@ -1006,6 +1008,8 @@ Remove network traffic policy of an app
 * `destination_app`: *Required.* Name of app to connect to
 * `port`: *Required.* Port or range of ports that destination app is connected with
 * `protocol`: *Required.* Protocol that apps are connected with
+* `destination_org`: *Optional.* The org of the destination app (Default: targeted org)
+* `destination_space`: *Optional.* The space of the destination app (Default: targeted space)
 
 ```yml
   - put: cf-remove-network-policy
