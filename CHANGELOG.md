@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.17.0 - Unreleased
+## 2.17.0 - 2020-02-27
 
 This release introduces some major changes to the project structure.  The `cf-cli-resource` has come a long way since its humble beginnings in early 2017 and it was about time to do some spring cleaning.  Thankfully our test cases have ensured that we were able to make these changes with confidence.  Check out the rest of the release notes for all the details.
 
@@ -13,9 +13,10 @@ This release introduces some major changes to the project structure.  The `cf-cl
 - Added [example pipeline](examples/cf_home-auth/pipeline.yml) for `cf_home` usage.
 
 ### Fixed
-- The `create-users-from-file` command now logs a warning (instead of an error) if unable `Username` value is not set (since that's not a failing condition).
+- The `create-users-from-file` command now logs a warning (instead of an error) if the `Username` value is not set (since that's not a failing condition).
 
 ### Changed
+- Updated to [cf cli v6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)
 - `add-network-policy` and `remove-network-policy` commands now support the `destination_org` and `destination_space` params for targeting a destination app in a different org and/or space.
 - `create-service` command now supports the `broker` param to disambiguate if you have two services with the same name.
 - Renamed `assets` folder to `resource`.  This makes it simpler to locate scripts whether we are running tests locally or in a Docker image.
