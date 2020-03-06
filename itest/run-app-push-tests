@@ -123,6 +123,83 @@ it_can_push_an_app_with_vars_files() {
   assert::equals 64 "$(cf::get_app_memory "$app_name")"
 }
 
+it_can_push_an_app_with_env_vars() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local key1="some_key1"
+  local value1="some_value1"
+  local key2="some_key2"
+  local value2="some_value2"
+
+  local project=$(create_static_app "$app_name")
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: $path,
+    manifest: $manifest,
+    environment_variables: {
+      ($key1): $value1,
+      ($key2): $value2
+    }
+  }')
+
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf::is_app_started "$app_name"
+  assert::success cf::has_env "$app_name" "$key1" "$value1"
+  assert::success cf::has_env "$app_name" "$key2" "$value2"
+}
+
+it_can_push_an_app_with_env_vars_no_start() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local key1="some_key1"
+  local value1="some_value1"
+  local key2="some_key2"
+  local value2="some_value2"
+
+  local project=$(create_static_app "$app_name")
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: $path,
+    manifest: $manifest,
+    no_start: "true"
+    environment_variables: {
+      ($key1): $value1,
+      ($key2): $value2
+    }
+  }')
+
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf::is_app_stopped "$app_name"
+  assert::success cf::has_env "$app_name" "$key1" "$value1"
+  assert::success cf::has_env "$app_name" "$key2" "$value2"
+}
+
 it_can_push_an_app_with_stack() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
@@ -165,6 +242,8 @@ run it_can_push_an_app_with_startup_command \"$org\" \"$space\" \"$app_name\"
 
 run it_can_push_an_app_with_vars \"$org\" \"$space\" \"$app_name\"
 run it_can_push_an_app_with_vars_files \"$org\" \"$space\" \"$app_name\"
+run it_can_push_an_app_with_env_vars \"$org\" \"$space\" \"$app_name\"
+run it_can_push_an_app_with_env_vars_no_start \"$org\" \"$space\" \"$app_name\"
 
 run it_can_push_an_app_with_stack \"$org\" \"$space\" \"$app_name\" \"$stack\"
 

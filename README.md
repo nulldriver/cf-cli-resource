@@ -799,6 +799,7 @@ Push a new app or sync changes to an existing app
 * `stack`: *Optional.* Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 * `vars`: *Optional.* Map of variables to pass to manifest
 * `vars_files`: *Optional.* List of variables files to pass to manifest
+* `environment_variables`: *Optional.* Map of environment variables to pass to application
 * `staging_timeout`: *Optional.* Max wait time for buildpack staging, in minutes
 * `startup_timeout`: *Optional.* Max wait time for app instance startup, in minutes
 
@@ -816,6 +817,9 @@ Push a new app or sync changes to an existing app
         instances: 3
       vars_files:
       - path/to/vars.yml
+      environment_variables:
+        key: value
+        key2: value2
 ```
 
 #### zero-downtime-push
