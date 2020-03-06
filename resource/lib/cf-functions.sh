@@ -677,14 +677,6 @@ function cf::is_app_bound_to_route_service() {
     jq -e --arg service_instance "$service_instance" 'select (.resources[].entity.service_instance.entity.name == $service_instance) | true' >/dev/null
 }
 
-function cf::set_env() {
-  local app_name=${1:?app_name null or not set}
-  local env_var_name=${2:?env_var_name null or not set}
-  local env_var_value=${3:?env_var_value null or not set}
-
-  cf set-env "$app_name" "$env_var_name" "$env_var_value"
-}
-
 function cf::has_env() {
   local app_name=${1:?app_name null or not set}
   local env_var_name=${2:?env_var_name null or not set}

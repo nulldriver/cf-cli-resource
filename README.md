@@ -850,8 +850,7 @@ Set an env variable for an app
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `app_name`: *Required.* The name of the application
-* `env_var_name`: *Optional.* Environment variable name
-* `env_var_value`: *Optional.* Environment variable value
+* `environment_variables`: *Required.*  Environment variable key/value pairs to set.
 
 ```yml
   - put: cf-set-env
@@ -859,8 +858,9 @@ Set an env variable for an app
     params:
       command: set-env
       app_name: myapp-ui
-      env_var_name: JBP_CONFIG_OPEN_JDK_JRE
-      env_var_value: '{ jre: { version: 1.8.0_+ }, memory_calculator: { stack_threads: 200 } }'
+      environment_variables:
+        JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 11.+ }, memory_calculator: { stack_threads: 25 } }'
+        SOME_OTHER_KEY: SOME_OTHER_VALUE
 ```
 
 #### start
