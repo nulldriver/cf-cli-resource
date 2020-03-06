@@ -672,8 +672,7 @@ function cf::is_app_bound_to_route_service() {
   local org=${3:?org null or not set}
   local space=${4:?space null or not set}
   local space_guid=$(cf::get_space_guid "$org" "$space")
-  CF_TRACE=false \
-    cf curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | \
+  cf::curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | \
     jq -e --arg app_name "$app_name" 'select (.resources[].entity.apps[].entity.name == $app_name)' | \
     jq -e --arg service_instance "$service_instance" 'select (.resources[].entity.service_instance.entity.name == $service_instance) | true' >/dev/null
 }
@@ -817,19 +816,19 @@ function cf::app_exists() {
 function cf::get_app_instances() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf::get_app_guid "$app_name")
-  cf curl "/v2/apps/$guid" | jq -r '.entity.instances'
+  cf::curl "/v2/apps/$guid" | jq -r '.entity.instances'
 }
 
 function cf::get_app_memory() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf::get_app_guid "$app_name")
-  cf curl "/v2/apps/$guid" | jq -r '.entity.memory'
+  cf::curl "/v2/apps/$guid" | jq -r '.entity.memory'
 }
 
 function cf::get_app_disk_quota() {
   local app_name=${1:?app_name null or not set}
   local guid=$(cf::get_app_guid "$app_name")
-  cf curl "/v2/apps/$guid" | jq -r '.entity.disk_quota'
+  cf::curl "/v2/apps/$guid" | jq -r '.entity.disk_quota'
 }
 
 function cf::get_app_stack() {
