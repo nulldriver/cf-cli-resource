@@ -241,20 +241,56 @@ it_can_push_an_app_with_stack() {
 
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
-app_name=$(generate_test_name_with_spaces "App")
-stack=cflinuxfs3
 
 setup_integration_tests "$org" "$space"
 
-run it_can_push_an_app_with_startup_command \"$org\" \"$space\" \"$app_name\"
+describe "push an app with a startup command"
+{
+  app_name=$(generate_test_name_with_spaces "App")
 
-run it_can_push_an_app_with_vars \"$org\" \"$space\" \"$app_name\"
-run it_can_push_an_app_with_vars_files \"$org\" \"$space\" \"$app_name\"
-run it_can_push_an_app_with_env_vars \"$org\" \"$space\" \"$app_name\"
-run it_can_push_an_app_with_env_vars_no_start \"$org\" \"$space\" \"$app_name\"
+  run it_can_push_an_app_with_startup_command \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
 
-run it_can_push_an_app_with_stack \"$org\" \"$space\" \"$app_name\" \"$stack\"
+describe "push an app with vars"
+{
+  app_name=$(generate_test_name_with_spaces "App")
 
-run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+  run it_can_push_an_app_with_vars \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
+
+describe "push an app with vars files"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+
+  run it_can_push_an_app_with_vars_files \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
+
+describe "push an app with environment variables"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+
+  run it_can_push_an_app_with_env_vars \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
+
+describe "push an app (and don't start) with environment variables"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+
+  run it_can_push_an_app_with_env_vars_no_start \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
+
+describe "push an app with stack"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+  stack=cflinuxfs3
+
+  run it_can_push_an_app_with_stack \"$org\" \"$space\" \"$app_name\" \"$stack\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
 
 teardown_integration_tests "$org" "$space"
