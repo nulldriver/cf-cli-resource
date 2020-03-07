@@ -16,6 +16,7 @@ path=$(get_option '.path')
 stack=$(get_option '.stack')
 vars=$(get_option '.vars')
 vars_files=$(get_option '.vars_files')
+environment_variables=$(get_option '.environment_variables')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
@@ -51,7 +52,26 @@ cf::target "$org" "$space"
 [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
 [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
-cf push "${args[@]}"
+# after setting env vars, app requires restage, so ensure do `cf push ... --no-start`
+# then `cf start` app if required
+if [ -n "$environment_variables" ]; then
+  if [ -n "$no_start" ]; then
+    cf push "${args[@]}"
+  else
+    cf push "${args[@]}" --no-start
+  fi
+
+  for key in $(echo $environment_variables | jq -r 'keys[]'); do
+    value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
+    cf set-env "$app_name" "$key" "$value"
+  done
+
+  if [ -z "$no_start" ]; then
+    cf start "$app_name"
+  fi
+else
+ cf push "${args[@]}"
+fi
 
 unset CF_STAGING_TIMEOUT
 unset CF_STARTUP_TIMEOUT
