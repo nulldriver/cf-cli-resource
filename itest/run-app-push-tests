@@ -141,6 +141,10 @@ it_can_push_an_app_with_env_vars() {
   --arg app_name "$app_name" \
   --arg path "$project/content" \
   --arg manifest "$project/manifest.yml" \
+  --arg key1 "$key1" \
+  --arg value1 "$value1" \
+  --arg key2 "$key2" \
+  --arg value2 "$value2" \
   '{
     command: "push",
     org: $org,
@@ -179,6 +183,10 @@ it_can_push_an_app_with_env_vars_no_start() {
   --arg app_name "$app_name" \
   --arg path "$project/content" \
   --arg manifest "$project/manifest.yml" \
+  --arg key1 "$key1" \
+  --arg value1 "$value1" \
+  --arg key2 "$key2" \
+  --arg value2 "$value2" \
   '{
     command: "push",
     org: $org,
@@ -186,7 +194,7 @@ it_can_push_an_app_with_env_vars_no_start() {
     app_name: $app_name,
     path: $path,
     manifest: $manifest,
-    no_start: "true"
+    no_start: "true",
     environment_variables: {
       ($key1): $value1,
       ($key2): $value2
