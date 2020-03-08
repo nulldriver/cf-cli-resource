@@ -1,0 +1,72 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+source "$base_dir/itest/lib/assert.sh"
+source "$base_dir/itest/lib/helpers.sh"
+
+create_manifest() {
+  local app_name=${1:?app_name null or not set}
+
+  cd "$(mktemp -d $TMPDIR/app.XXXXXX)"
+  yq new "applications[+].name" "$app_name" >"manifest.yml"
+
+  echo "$PWD/manifest.yml"
+}
+
+it_can_set_environment_variables_as_deprecated_global_attributes() {
+  local app_name=${1:?app_name null or not set}
+
+  local manifest=$(create_manifest "$app_name")
+
+  local environment_variables=$(jq -n '{
+    key1: "value1",
+    key2: "value2"
+  }')
+
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables"
+
+  assert::equals "value1" "$(yq read "$manifest" 'env.key1')"
+  assert::equals "value2" "$(yq read "$manifest" 'env.key2')"
+}
+
+it_can_set_environment_variables_as_deprecated_global_attributes_if_given_app_name_does_not_exist() {
+  local app_name=${1:?app_name null or not set}
+
+  local manifest=$(create_manifest "$app_name")
+
+  local environment_variables=$(jq -n '{
+    key1: "value1",
+    key2: "value2"
+  }')
+
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "does not exist"
+
+  assert::equals "value1" "$(yq read "$manifest" 'env.key1')"
+  assert::equals "value2" "$(yq read "$manifest" 'env.key2')"
+}
+
+it_can_set_environment_variables_as_application_attributes() {
+  local app_name=${1:?app_name null or not set}
+
+  local manifest=$(create_manifest "$app_name")
+
+  local environment_variables=$(jq -n '{
+    key1: "value1",
+    key2: "value2"
+  }')
+
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+
+  assert::equals "value1" "$(yq read "$manifest" "applications(name==$app_name).env.key1")"
+  assert::equals "value2" "$(yq read "$manifest" "applications(name==$app_name).env.key2")"
+}
+
+app_name=$(generate_test_name_with_spaces "App")
+
+run it_can_set_environment_variables_as_deprecated_global_attributes \"$app_name\"
+run it_can_set_environment_variables_as_deprecated_global_attributes_if_given_app_name_does_not_exist \"$app_name\"
+run it_can_set_environment_variables_as_application_attributes \"$app_name\"
