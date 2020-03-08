@@ -20,6 +20,14 @@ environment_variables=$(get_option '.environment_variables')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
+if [ -n "$environment_variables" ]; then
+  if [ -z "$manifest" ]; then
+    manifest="manifest-for-environment-variables.yml"
+    touch "$manifest"
+  fi
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+fi
+
 args=()
 [ -n "$app_name" ]        && args+=("$app_name")
 [ -n "$buildpack" ]       && args+=(-b "$buildpack")
@@ -52,29 +60,8 @@ cf::target "$org" "$space"
 [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
 [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
-# after setting env vars, app requires restage, so ensure do `cf push ... --no-start`
-# then `cf start` app if required
-if [ -n "$environment_variables" ]; then
-  if [ -n "$no_start" ]; then
-    cf push "${args[@]}"
-  else
-    cf push "${args[@]}" --no-start
-  fi
-
-  for key in $(echo $environment_variables | jq -r 'keys[]'); do
-    value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-    cf set-env "$app_name" "$key" "$value"
-  done
-
-  if [ -z "$no_start" ]; then
-    cf start "$app_name"
-  fi
-else
- cf push "${args[@]}"
-fi
+cf push "${args[@]}"
 
 unset CF_STAGING_TIMEOUT
 unset CF_STARTUP_TIMEOUT
-if [ -n "$docker_password" ]; then
-  unset CF_DOCKER_PASSWORD
-fi
+unset CF_DOCKER_PASSWORD

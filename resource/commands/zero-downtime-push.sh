@@ -13,11 +13,7 @@ if [ ! -f "$manifest" ]; then
 fi
 
 if [ -n "$environment_variables" ]; then
-  cp "$manifest" "$manifest.original"
-  for key in $(echo $environment_variables | jq -r 'keys[]'); do
-    value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-    yq w -i "$manifest" -- "env.$key" "$value"
-  done
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables"
 fi
 
 args=(-f "$manifest")

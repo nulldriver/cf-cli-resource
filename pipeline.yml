@@ -145,6 +145,12 @@ jobs:
       params:
         <<: *test-params
         TEST_SCRIPT: run-docker-tests
+    - task: run-manifest-manipulation-tests
+      file: project/ci/task.yml
+      image: cf-cli-resource-image-rc
+      params:
+        <<: *test-params
+        TEST_SCRIPT: run-manifest-manipulation-tests
     - task: run-task-tests
       file: project/ci/task.yml
       image: cf-cli-resource-image-rc

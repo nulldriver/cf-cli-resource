@@ -19,6 +19,7 @@ base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 "$base_dir/itest/run-buildpack-tests"
 "$base_dir/itest/run-docker-tests"
 "$base_dir/itest/run-file-tests"
+"$base_dir/itest/run-manifest-manipulation-tests"
 "$base_dir/itest/run-network-policy-tests"
 "$base_dir/itest/run-route-service-tests"
 "$base_dir/itest/run-route-tests"

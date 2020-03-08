@@ -20,7 +20,7 @@ RUN chmod +x /tmp/autopilot-linux && \
   rm -f /tmp/autopilot-linux
 
 # Install yaml cli
-ADD https://github.com/mikefarah/yq/releases/download/2.3.0/yq_linux_amd64 /tmp/yq_linux_amd64
+ADD https://github.com/mikefarah/yq/releases/download/3.2.1/yq_linux_amd64 /tmp/yq_linux_amd64
 RUN install /tmp/yq_linux_amd64 /usr/local/bin/yq && \
   yq --version && \
   rm -f /tmp/yq_linux_amd64
