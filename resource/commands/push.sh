@@ -1,4 +1,3 @@
-
 app_name=$(get_option '.app_name')
 buildpack=$(get_option '.buildpack')
 startup_command=$(get_option '.startup_command')
@@ -23,7 +22,7 @@ startup_timeout=$(get_option '.startup_timeout' 0)
 if [ -n "$environment_variables" ]; then
   if [ -z "$manifest" ]; then
     manifest="manifest-for-environment-variables.yml"
-    touch "$manifest"
+    echo $'applications:\n - name: $app_name' > $manifest 
   fi
   cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
 fi
