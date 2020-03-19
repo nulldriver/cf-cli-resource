@@ -20,11 +20,11 @@ staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
 if [ -n "$environment_variables" ]; then
-  if [ -z "$manifest" ]; then
-    manifest="manifest-for-environment-variables.yml"
-    echo $'applications:\n - name: $app_name' > $manifest 
-  fi
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+    if [ -z "$manifest" ]; then
+        manifest="manifest-for-environment-variables.yml"
+        echo $'applications:\n - name: $app_name' > $manifest
+    fi
+    cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
 fi
 
 args=()
@@ -45,12 +45,12 @@ args=()
 [ -n "$stack" ]           && args+=(-s "$stack")
 
 for key in $(echo $vars | jq -r 'keys[]'); do
-  value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
-  args+=(--var "$key=$value")
+    value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
+    args+=(--var "$key=$value")
 done
 
 for vars_file in $(echo $vars_files | jq -r '.[]'); do
-  args+=(--vars-file "$vars_file")
+    args+=(--vars-file "$vars_file")
 done
 
 logger::info "Executing $(logger::highlight "$command"): $app_name"
