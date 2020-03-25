@@ -934,21 +934,6 @@ function cf::get_buildpack_max_position() {
   cf::curl "/v2/buildpacks" | jq -r '[.resources[].entity.position] | max'
 }
 
-function cf::set_manifest_environment_variables() {
-  local manifest=${1:?manifest null or not set}
-  local environment_variables=${2:?environment_variables null or not set}
-  local app_name=${3:-}
-
-  for key in $(echo $environment_variables | jq -r 'keys[]'); do
-    value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-    if [ -n "$app_name" ] && [ -n "$(yq read "$manifest" "applications.name==$app_name")" ]; then
-      yq w -i "$manifest" -- "applications(name==$app_name).env.$key" "$value"
-    else
-      yq w -i "$manifest" -- "env.$key" "$value"
-    fi
-  done
-}
-
 function cf::set_manifest_environment_variables() (
   local manifest=${1:?manifest null or not set}
   local environment_variables=${2:?environment_variables null or not set}
