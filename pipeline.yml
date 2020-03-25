@@ -506,10 +506,3 @@ resources:
     repository: docker.nulldriver.com/test-app
     username: ((docker-private.username))
     password: ((docker-private.password))
-
-resource_types:
-- name: file-url
-  type: registry-image
-  source:
-    repository: pivotalservices/concourse-curl-resource
-    tag: latest
