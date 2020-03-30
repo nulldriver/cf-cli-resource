@@ -17,5 +17,5 @@ cf::target "$org" "$space"
 
 for key in $(echo $environment_variables | jq -r 'keys[]'); do
   value=$(echo $environment_variables | jq -r --arg key "$key" '.[$key]')
-  cf set-env "$app_name" "$key" "$value"
+  cf::cf set-env "$app_name" "$key" "$value"
 done

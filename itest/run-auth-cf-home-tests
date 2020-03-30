@@ -13,8 +13,8 @@ source "$base_dir/resource/lib/error-codes.sh"
 login_with_cf_home() {
   cd "$(mktemp -d "$TMPDIR"/home.XXXXXX)"
 
-  CF_HOME=$PWD cf api "$CCR_CF_API" >&2
-  CF_HOME=$PWD cf auth "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD" >&2
+  CF_HOME=$PWD cf::cf api "$CCR_CF_API" >&2
+  CF_HOME=$PWD cf::cf auth "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD" >&2
 
   pwd
 }

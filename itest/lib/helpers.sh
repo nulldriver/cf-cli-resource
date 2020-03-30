@@ -30,7 +30,7 @@ describe() {
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
-  cf logout
+  cf::cf logout
   # convert multiple args to single arg so printf doesn't output multiple lines
   printf 'running \e[33m%s\e[0m...\n' "$(echo "$@")"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
@@ -557,7 +557,7 @@ cleanup_test_orgs() {
 
   while read -r org; do
     cf::delete_org "$org"
-  done < <(cf orgs | grep "$test_prefix " || true)
+  done < <(cf::cf orgs | grep "$test_prefix " || true)
 }
 
 cleanup_test_users() {
@@ -567,7 +567,7 @@ cleanup_test_users() {
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
 
-    local output=$(CF_TRACE=false cf curl "$next_url")
+    local output=$(CF_TRACE=false cf::cf curl "$next_url")
     local username=
 
     while read -r username; do
@@ -584,7 +584,7 @@ cleanup_service_brokers() {
 
   while read -r broker; do
     cf::delete_service_broker "$broker"
-  done < <(cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
+  done < <(cf::cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 cleanup_buildpacks() {
@@ -592,8 +592,8 @@ cleanup_buildpacks() {
   cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
   while read -r buildpack; do
-    cf delete-buildpack -f "$buildpack"
-  done < <(cf curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')
+    cf::cf delete-buildpack -f "$buildpack"
+  done < <(cf::cf curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')
 
 }
 

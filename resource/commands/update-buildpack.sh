@@ -18,4 +18,4 @@ args=("$buildpack")
 [ -n "$path" ] && args+=(-p $path) # don't quote so we can support globbing
 [ -n "$position" ] && args+=(-i "$position")
 
-cf update-buildpack "${args[@]}"
+cf::cf update-buildpack "${args[@]}"

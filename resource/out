@@ -134,7 +134,7 @@ if ! echo $params | jq -e 'has("commands")' >/dev/null; then
   exit $E_COMMAND_NOT_SET
 fi
 
-logger::info "$(cf version)"
+logger::info "$(cf::cf version)"
 
 get_option() {
   local key=${1:?config key null or not set}

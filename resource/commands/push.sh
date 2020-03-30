@@ -60,7 +60,7 @@ cf::target "$org" "$space"
 [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
 [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
-cf push "${args[@]}"
+cf::cf push "${args[@]}"
 
 unset CF_STAGING_TIMEOUT
 unset CF_STARTUP_TIMEOUT

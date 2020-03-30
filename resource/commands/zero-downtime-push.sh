@@ -24,7 +24,7 @@ cf::target "$org" "$space"
 
 if [ -n "$current_app_name" ]; then
   # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
-  CF_TRACE=false cf zero-downtime-push "$current_app_name" "${args[@]}"
+  CF_TRACE=false cf::cf zero-downtime-push "$current_app_name" "${args[@]}"
 else
-  cf push "${args[@]}"
+  cf::cf push "${args[@]}"
 fi

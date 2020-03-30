@@ -14,4 +14,4 @@ args=("$source_app" --destination-app "$destination_app" --protocol "$protocol" 
 [ -n "$destination_org" ] && args+=(-o "$destination_org")
 [ -n "$destination_space" ] && args+=(-s "$destination_space")
 
-cf remove-network-policy "${args[@]}"
+cf::cf remove-network-policy "${args[@]}"

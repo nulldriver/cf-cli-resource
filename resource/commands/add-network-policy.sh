@@ -16,4 +16,4 @@ args=("$source_app" --destination-app "$destination_app")
 [ -n "$protocol" ] && args+=(--protocol "$protocol")
 [ -n "$port" ] && args+=(--port "$port")
 
-cf add-network-policy "${args[@]}"
+cf::cf add-network-policy "${args[@]}"

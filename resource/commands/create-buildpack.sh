@@ -10,4 +10,4 @@ args=("$buildpack" $path "$position") # don't quote $path so we can support glob
 [ "$enabled" == "true" ]  && args+=(--enable)
 [ "$enabled" == "false" ] && args+=(--disable)
 
-cf create-buildpack "${args[@]}"
+cf::cf create-buildpack "${args[@]}"

@@ -7,4 +7,4 @@ logger::info "Executing $(logger::highlight "$command"): $buildpack"
 args=("$buildpack")
 [ -n "$stack" ] && args+=(-s "$stack")
 
-cf delete-buildpack -f "${args[@]}"
+cf::cf delete-buildpack -f "${args[@]}"
