@@ -567,7 +567,7 @@ cleanup_test_users() {
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
 
-    local output=$(CF_TRACE=false cf::cf curl "$next_url")
+    local output=$(cf::curl "$next_url")
     local username=
 
     while read -r username; do
@@ -584,7 +584,7 @@ cleanup_service_brokers() {
 
   while read -r broker; do
     cf::delete_service_broker "$broker"
-  done < <(cf::cf curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
+  done < <(cf::curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 cleanup_buildpacks() {
@@ -593,8 +593,7 @@ cleanup_buildpacks() {
 
   while read -r buildpack; do
     cf::cf delete-buildpack -f "$buildpack"
-  done < <(cf::cf curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')
-
+  done < <(cf::curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')
 }
 
 setup_integration_tests() {
