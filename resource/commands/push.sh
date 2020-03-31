@@ -24,6 +24,9 @@ if [ -n "$environment_variables" ]; then
   if [ -z "$manifest" ]; then
     manifest="manifest-for-environment-variables.yml"
     touch "$manifest"
+    if [ -n "$app_name" ]; then
+      yq new "applications[+].name" "$app_name" > "$manifest"
+    fi
   fi
   cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
 fi

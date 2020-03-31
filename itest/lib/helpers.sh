@@ -56,6 +56,7 @@ create_static_app() {
 
   mkdir -p "content"
   echo "Hello" > "content/index.html"
+  touch "content/Staticfile"
 
   cat <<EOF >"manifest.yml"
 ---

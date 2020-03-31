@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.18.1 - Unreleased
 
+### Fixed
+- When `push`ing an app with `environment_variables` without a manifest, we create a temporary manifest that contains the `env:` attribute.  This was being done at the global attribute level, resulting in cli deprecation warnings: `Deprecation warning: Specifying app manifest attributes at the top level is deprecated. Found: env.`  This is now fixed by creating a manifest with the `env:` attribute properly set at the application level.  No more deprecation warnings :-)
+
 ### Changed
 - Replaced all direct calls to `cf` cli with a `cf::cf` wrapper function.  This is the first pass at being able to specify which version of the cf cli you want to use (in preparation for testing the [cf7](https://github.com/cloudfoundry/cli#downloading-the-v7-beta-cli) version of the cli)
 

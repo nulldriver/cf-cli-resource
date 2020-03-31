@@ -123,7 +123,7 @@ it_can_push_an_app_with_vars_files() {
   assert::equals 64 "$(cf::get_app_memory "$app_name")"
 }
 
-it_can_push_an_app_with_env_vars() {
+it_can_push_an_app_with_env_vars_with_manifest() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
@@ -165,7 +165,7 @@ it_can_push_an_app_with_env_vars() {
   assert::success cf::has_env "$app_name" "$key2" "$value2"
 }
 
-it_can_push_an_app_with_env_vars_no_start() {
+it_can_push_an_app_with_env_vars_without_manifest() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
@@ -182,7 +182,6 @@ it_can_push_an_app_with_env_vars_no_start() {
   --arg space "$space" \
   --arg app_name "$app_name" \
   --arg path "$project/content" \
-  --arg manifest "$project/manifest.yml" \
   --arg key1 "$key1" \
   --arg value1 "$value1" \
   --arg key2 "$key2" \
@@ -193,8 +192,6 @@ it_can_push_an_app_with_env_vars_no_start() {
     space: $space,
     app_name: $app_name,
     path: $path,
-    manifest: $manifest,
-    no_start: "true",
     environment_variables: {
       ($key1): $value1,
       ($key2): $value2
@@ -203,7 +200,7 @@ it_can_push_an_app_with_env_vars_no_start() {
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
-  assert::success cf::is_app_stopped "$app_name"
+  assert::success cf::is_app_started "$app_name"
   assert::success cf::has_env "$app_name" "$key1" "$value1"
   assert::success cf::has_env "$app_name" "$key2" "$value2"
 }
@@ -268,19 +265,19 @@ describe "push an app with vars files"
   run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 }
 
-describe "push an app with environment variables"
+describe "push an app with environment variables using a manifest"
 {
   app_name=$(generate_test_name_with_spaces "App")
 
-  run it_can_push_an_app_with_env_vars \"$org\" \"$space\" \"$app_name\"
+  run it_can_push_an_app_with_env_vars_with_manifest \"$org\" \"$space\" \"$app_name\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 }
 
-describe "push an app (and don't start) with environment variables"
+describe "push an app with environment variables without using a manifest"
 {
   app_name=$(generate_test_name_with_spaces "App")
 
-  run it_can_push_an_app_with_env_vars_no_start \"$org\" \"$space\" \"$app_name\"
+  run it_can_push_an_app_with_env_vars_without_manifest \"$org\" \"$space\" \"$app_name\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 }
 
