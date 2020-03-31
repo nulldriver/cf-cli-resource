@@ -4,10 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.18.1 - Unreleased
+## 2.18.2 - Unreleased
+
+### Packaged Dependencies
+| Dependency | Version                                                             |
+|------------|:-------------------------------------------------------------------:|
+| cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
+| yq         | [3.2.1](https://github.com/mikefarah/yq/releases/tag/3.2.1)         |
+
+## 2.18.1 - 2020-03-31
 
 ### Fixed
-- When `push`ing an app with `environment_variables` without a manifest, we create a temporary manifest that contains the `env:` attribute.  This was being done at the global attribute level, resulting in cli deprecation warnings: `Deprecation warning: Specifying app manifest attributes at the top level is deprecated. Found: env.`  This is now fixed by creating a manifest with the `env:` attribute properly set at the application level.  No more deprecation warnings :-)
+- When `push`ing an app with `environment_variables` without a manifest, we create a temporary manifest that contains the `env:` attribute.  This was being done at the global attribute level, resulting in cli deprecation warnings: `Deprecation warning: Specifying app manifest attributes at the top level is deprecated. Found: env.`  This is now fixed by creating a manifest with the `env:` attribute properly set at the application level.  No more deprecation warnings (thanks to a PR by [@destasys](https://github.com/destasys))
 
 ### Changed
 - Replaced all direct calls to `cf` cli with a `cf::cf` wrapper function.  This is the first pass at being able to specify which version of the cf cli you want to use (in preparation for testing the [cf7](https://github.com/cloudfoundry/cli#downloading-the-v7-beta-cli) version of the cli)
@@ -18,7 +27,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 | cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)  |
 | autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
 | yq         | [3.2.1](https://github.com/mikefarah/yq/releases/tag/3.2.1)         |
-
 
 ## 2.18.0 - 2020-03-24
 
