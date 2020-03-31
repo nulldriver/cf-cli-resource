@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.18.2 - Unreleased
 
+### Changed
+- We use Alpine Linux as the base image for `cf-cli-resource` when it runs inside of Concourse.  With Alipine `v3.8` headed to [End of Support on 2020-05-01](https://wiki.alpinelinux.org/wiki/Alpine_Linux:Releases) it was time to update to Alpine `v3.11` which should keep us up-to-date till 2021-11-01.
+
 ### Packaged Dependencies
 | Dependency | Version                                                             |
 |------------|:-------------------------------------------------------------------:|
