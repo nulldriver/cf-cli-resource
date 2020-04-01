@@ -129,6 +129,68 @@ it_can_error_if_unknown_command_set() {
   set -e
 }
 
+get_path_without_cf_binaries() {
+  cd $(mktemp -d $TMPDIR/usr_local_bin.XXXXXX)
+  ln -s /usr/local/bin/jq "$PWD/jq"
+  echo "/bin:/usr/bin:$PWD"
+}
+
+it_can_error_if_cf_cli_binary_not_found() {
+  local config=$(echo $CCR_SOURCE | jq '.params = {
+      command: "does-not-exist"
+    }')
+
+  PATH="/bin:/usr/bin:$tmp_usr_local_bin"
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_CF_CLI_BINARY_NOT_FOUND" "$?"
+  set -e
+}
+
+it_can_error_if_cf6_cli_binary_not_found() {
+  local config=$(echo $CCR_SOURCE | jq '.params = {
+      command: "does-not-exist"
+    }')
+
+  PATH=$(get_path_without_cf_binaries)
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_CF_CLI_BINARY_NOT_FOUND" "$?"
+  set -e
+}
+
+it_can_error_if_cf7_cli_binary_not_found() {
+  local config=$(echo $CCR_SOURCE | jq \
+    '
+      .source.cf_cli_version = 7
+      |
+      .params = { command: "does-not-exist" }
+    ')
+
+  PATH=$(get_path_without_cf_binaries)
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_CF_CLI_BINARY_NOT_FOUND" "$?"
+  set -e
+}
+
+it_can_error_if_unsupported_cf_cli_version_specified() {
+  local config=$(echo $CCR_SOURCE | jq \
+    '
+      .source.cf_cli_version = 0
+      |
+      .params = { command: "does-not-exist" }
+    ')
+
+  set +e
+  put_with_config "$config"
+  assert::equals "$E_UNSUPPORTED_CF_CLI_VERSION" "$?"
+  set -e
+}
+
 run it_can_error_if_params_not_set
 run it_can_error_if_api_not_set
 run it_can_error_if_neither_username_or_client_id_are_set
@@ -139,3 +201,6 @@ run it_can_error_if_command_not_set
 run it_can_error_if_command_file_not_found
 run it_can_error_if_zero_downtime_push_manifest_not_found
 run it_can_error_if_unknown_command_set
+run it_can_error_if_cf6_cli_binary_not_found
+run it_can_error_if_cf7_cli_binary_not_found
+run it_can_error_if_unsupported_cf_cli_version_specified

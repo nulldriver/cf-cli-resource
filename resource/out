@@ -9,7 +9,6 @@ exec 1>&2 # redirect all output to stderr for logging
 
 base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
-source "$base_dir/resource/lib/cf-functions.sh"
 source "$base_dir/resource/lib/logger.sh"
 source "$base_dir/resource/lib/error-codes.sh"
 
@@ -21,9 +20,6 @@ if [ -z "$working_dir" ]; then
 fi
 
 cd "$working_dir"
-
-# for jq
-PATH=/usr/local/bin:$PATH:.
 
 TMPDIR=${TMPDIR:-/tmp}
 PAYLOAD=$(mktemp "$TMPDIR/cf-cli-resource-request.XXXXXX")
@@ -40,6 +36,9 @@ debug=$(get_config '.source.debug')
 if [ "$debug" = "true" ]; then
   set -x
 fi
+
+export CF_CLI_VERSION=$(get_config '.source.cf_cli_version' "${CF_CLI_VERSION:-6}")
+source "$base_dir/resource/lib/cf-functions.sh"
 
 params=$(get_config '.params')
 if [ -z "$params" ]; then

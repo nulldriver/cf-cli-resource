@@ -6,15 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.18.2 - Unreleased
 
+### Added
+- Introduced experimental support for `cf7` cli!  This is enabled by configuring `cf_cli_version: 7` globally on the `resource`.
+
 ### Changed
 - We use Alpine Linux as the base image for `cf-cli-resource` when it runs inside of Concourse.  With Alipine `v3.8` headed to [End of Support on 2020-05-01](https://wiki.alpinelinux.org/wiki/Alpine_Linux:Releases) it was time to update to Alpine `v3.11` which should keep us up-to-date till 2021-11-01.
 
 ### Packaged Dependencies
-| Dependency | Version                                                             |
-|------------|:-------------------------------------------------------------------:|
-| cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)  |
-| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8) |
-| yq         | [3.2.1](https://github.com/mikefarah/yq/releases/tag/3.2.1)         |
+| Dependency | Version                                                                           |
+|------------|:---------------------------------------------------------------------------------:|
+| cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0)                |
+| cf7 cli    | [7.0.0-beta.30](https://github.com/cloudfoundry/cli/releases/tag/v7.0.0-beta.30)  |
+| autopilot  | [0.0.8](https://github.com/contraband/autopilot/releases/tag/0.0.8)               |
+| yq         | [3.2.1](https://github.com/mikefarah/yq/releases/tag/3.2.1)                       |
 
 ## 2.18.1 - 2020-03-31
 

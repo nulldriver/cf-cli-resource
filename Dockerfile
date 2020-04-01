@@ -13,6 +13,13 @@ RUN mkdir -p /usr/local/bin && \
   cf --version && \
   rm -f /tmp/cf-cli.tgz
 
+# Install Cloud Foundry cli v7
+ADD https://packages.cloudfoundry.org/stable?release=linux64-binary&version=7.0.0-beta.30 /tmp/cf7-cli.tgz
+RUN mkdir -p /usr/local/bin && \
+  tar -xf /tmp/cf7-cli.tgz -C /usr/local/bin && \
+  cf --version && \
+  rm -f /tmp/cf7-cli.tgz
+
 # Install cf cli Autopilot plugin
 ADD https://github.com/contraband/autopilot/releases/download/0.0.8/autopilot-linux /tmp/autopilot-linux
 RUN chmod +x /tmp/autopilot-linux && \

@@ -32,6 +32,7 @@ fi
 : "${CCR_DOCKER_PRIVATE_PASSWORD:?}"
 : "${CCR_SERVICE_KEY_SERVICE:?}"
 : "${CCR_SERVICE_KEY_PLAN:?}"
+: "${CCR_CF_CLI_VERSION:-6}"
 
 CCR_CF_API="https://api.$CCR_CF_SYSTEM_DOMAIN"
 
@@ -40,12 +41,14 @@ CCR_SOURCE=$(jq -n \
 --arg skip_cert_check "$CCR_CF_SKIP_CERT_CHECK" \
 --arg username "$CCR_CF_USERNAME" \
 --arg password "$CCR_CF_PASSWORD" \
+--arg cf_cli_version "$CCR_CF_CLI_VERSION" \
 '{
   source: {
     api: $api,
     skip_cert_check: $skip_cert_check,
     username: $username,
     password: $password,
+    cf_cli_version: $cf_cli_version,
     cf_color: true,
     cf_dial_timeout: 5,
     cf_trace: false

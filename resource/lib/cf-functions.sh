@@ -8,11 +8,28 @@ declare -f 'cf::cf' >/dev/null && return 0
 base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 
 source "$base_dir/resource/lib/logger.sh"
+source "$base_dir/resource/lib/error-codes.sh"
 
-CF_CLI=$(command -v cf)
+CF_CLI=
+default_version=6
+case "${CF_CLI_VERSION:-$default_version}" in
+  6)  if ! CF_CLI=$(command -v cf); then
+        logger::error "unable to locate cf cli v6 binary: $(logger::highlight "cf") "
+        exit $E_CF_CLI_BINARY_NOT_FOUND
+      fi
+      ;;
+  7)  if ! CF_CLI=$(command -v cf7); then
+        logger::error "unable to locate cf cli v7 binary: $(logger::highlight "cf7") "
+        exit $E_CF_CLI_BINARY_NOT_FOUND
+      fi
+      ;;
+  *)  logger::error "unsupported cf cli version: $(logger::highlight "$CF_CLI_VERSION")"
+      exit $E_UNSUPPORTED_CF_CLI_VERSION
+      ;;
+esac
 
 function cf::cf() {
-  $CF_CLI "$@"
+  "$CF_CLI" "$@"
 }
 
 function cf::curl() {
