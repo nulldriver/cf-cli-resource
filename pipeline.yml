@@ -42,6 +42,72 @@ test-jobs: &test-jobs
 - user-tests
 - validation-tests
 
+groups:
+- name: develop
+  jobs:
+  - build
+  - app-tests
+  - auth-tests
+  - buildpack-tests
+  - command-file-tests
+  - network-policy-tests
+  - route-tests
+  - service-broker-tests
+  - service-tests
+  - user-tests
+  - validation-tests
+- name: cf7
+  jobs:
+  - app-tests-cf7
+  - auth-tests-cf7
+  - buildpack-tests-cf7
+  - command-file-tests-cf7
+  - network-policy-tests-cf7
+  - route-tests-cf7
+  - service-broker-tests-cf7
+  - service-tests-cf7
+  - user-tests-cf7
+  - validation-tests-cf7
+- name: setup
+  jobs:
+  - setup
+  - cleanup-failed-tests
+- name: publish
+  jobs:
+  - shipit
+  - patch
+  - major
+  - minor
+- name: all
+  jobs:
+  - build
+  - app-tests
+  - auth-tests
+  - buildpack-tests
+  - command-file-tests
+  - network-policy-tests
+  - route-tests
+  - service-broker-tests
+  - service-tests
+  - user-tests
+  - validation-tests
+  - app-tests-cf7
+  - auth-tests-cf7
+  - buildpack-tests-cf7
+  - command-file-tests-cf7
+  - network-policy-tests-cf7
+  - route-tests-cf7
+  - service-broker-tests-cf7
+  - service-tests-cf7
+  - user-tests-cf7
+  - validation-tests-cf7
+  - setup
+  - cleanup-failed-tests
+  - shipit
+  - patch
+  - major
+  - minor
+
 jobs:
 - name: setup
   public: true
