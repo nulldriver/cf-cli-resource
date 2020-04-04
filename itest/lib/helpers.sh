@@ -323,7 +323,6 @@ it_can_push_an_app() {
     org: $org,
     space: $space,
     app_name: $app_name,
-    hostname: $app_name,
     path: $path,
     manifest: $manifest
   }')
