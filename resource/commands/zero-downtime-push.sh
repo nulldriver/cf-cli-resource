@@ -23,8 +23,22 @@ args=(-f "$manifest")
 cf::target "$org" "$space"
 
 if [ -n "$current_app_name" ]; then
-  # autopilot (tested v0.0.2 - v0.0.6) doesn't like CF_TRACE=true
-  CF_TRACE=false cf::cf zero-downtime-push "$current_app_name" "${args[@]}"
+
+  venerable_app_name="$current_app_name-venerable"
+  cf::rename "$current_app_name"  "$venerable_app_name"
+
+  if ! cf::cf push "${args[@]}"; then
+    output=$(cf::cf logs "$current_app_name" --recent)
+
+    cf::cf delete -f "$current_app_name"
+    cf::rename "$venerable_app_name" "$current_app_name"
+
+    logger::error "$output"
+    exit 1
+  fi
+
+  cf::cf delete -f "$venerable_app_name"
+
 else
   cf::cf push "${args[@]}"
 fi
