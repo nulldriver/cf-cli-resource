@@ -4,6 +4,8 @@ path=$(get_option '.path')
 current_app_name=$(get_option '.current_app_name')
 environment_variables=$(get_option '.environment_variables')
 stack=$(get_option '.stack')
+vars=$(get_option '.vars')
+vars_files=$(get_option '.vars_files')
 
 logger::info "Executing $(logger::highlight "$command"): $current_app_name"
 
@@ -19,6 +21,15 @@ fi
 args=(-f "$manifest")
 [ -n "$path" ]  && args+=(-p $path) # don't quote so we can support globbing
 [ -n "$stack" ] && args+=(-s "$stack")
+
+for key in $(echo $vars | jq -r 'keys[]'); do
+  value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
+  args+=(--var "$key=$value")
+done
+
+for vars_file in $(echo $vars_files | jq -r '.[]'); do
+  args+=(--vars-file "$vars_file")
+done
 
 cf::target "$org" "$space"
 

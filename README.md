@@ -824,14 +824,14 @@ Push a new app or sync changes to an existing app
 
 #### zero-downtime-push
 
-Push a single app using the [autopilot plugin](https://github.com/contraband/autopilot).
-
 * `org`: *Optional.* The organization to target (required if not set in the source config)
 * `space`: *Optional.* The space to target (required if not set in the source config)
 * `manifest`: *Required.* Path to a application manifest file.
 * `path`: *Optional.* Path to the application to push. If this isn't set then it will be read from the manifest instead.
 * `stack`: *Optional.* Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 * `current_app_name`: *Optional.* This should be the name of the application that this will re-deploy over. If this is set the resource will perform a zero-downtime deploy.
+* `vars`: *Optional.* Map of variables to pass to manifest
+* `vars_files`: *Optional.* List of variables files to pass to manifest
 * `environment_variables`: *Optional.*  Environment variable key/value pairs to add to the manifest.
 
 ```yml
@@ -842,6 +842,10 @@ Push a single app using the [autopilot plugin](https://github.com/contraband/aut
       manifest: path/to/manifest.yml
       path: path/to/myapp-*.jar
       current_app_name: myapp-ui
+      vars:
+        instances: 3
+      vars_files:
+      - path/to/vars.yml
       environment_variables:
         key: value
         key2: value2
