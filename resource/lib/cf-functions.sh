@@ -976,7 +976,7 @@ function cf::set_manifest_environment_variables() (
   }
 
   has_one_app() {
-    [ -n "$app_name" ] && [ "1" == "$(yq read "$manifest" "applications" -l)" ]
+    [ "1" == "$(yq read "$manifest" "applications" -l)" ]
   }
 
   for key in $(get_keys); do

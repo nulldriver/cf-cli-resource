@@ -10,10 +10,15 @@ source "$base_dir/itest/lib/helpers.sh"
 
 it_can_set_env_on_application_with_app_name() {
   local app_name=${1:?app_name null or not set}
+  local other_app_name=${2:?other_app_name null or not set}
 
   local manifest=$(mktemp $TMPDIR/manifest.XXXXXX)
+  # app 1
   yq new "applications[+].name" "$app_name" > "$manifest"
   yq write -i "$manifest" "applications(name==$app_name).path" "some/path"
+  # app 2
+  yq write -i "$manifest" "applications[+].name" "$other_app_name"
+  yq write -i "$manifest" "applications(name==$other_app_name).path" "other/path"
 
   local environment_variables=$(jq -n '{
     key1: "value1",
@@ -30,8 +35,6 @@ it_can_set_env_on_application_with_app_name() {
 }
 
 it_can_set_env_on_application_without_app_name() {
-  local app_name=${1:?app_name null or not set}
-
   local manifest=$(mktemp $TMPDIR/manifest.XXXXXX)
   yq new "applications[+].path" "some/path" > "$manifest"
 
@@ -40,7 +43,7 @@ it_can_set_env_on_application_without_app_name() {
     key2: "value2"
   }')
 
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables"
 
   cat "$manifest"
 
@@ -50,8 +53,6 @@ it_can_set_env_on_application_without_app_name() {
 }
 
 it_can_set_env_as_deprecated_global_attribute() {
-  local app_name=${1:?app_name null or not set}
-
   local manifest=$(mktemp $TMPDIR/manifest.XXXXXX)
   yq new "applications[+].path" "some/path" > "$manifest"
   yq write -i "$manifest" "applications[+].path" "other/path"
@@ -61,7 +62,7 @@ it_can_set_env_as_deprecated_global_attribute() {
     key2: "value2"
   }')
 
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables"
 
   cat "$manifest"
 
@@ -71,6 +72,6 @@ it_can_set_env_as_deprecated_global_attribute() {
 
 app_name=$(generate_test_name_with_spaces "App")
 
-run it_can_set_env_on_application_with_app_name \"$app_name\"
-run it_can_set_env_on_application_without_app_name \"$app_name\"
-run it_can_set_env_as_deprecated_global_attribute \"$app_name\"
+run it_can_set_env_on_application_with_app_name \"$app_name\" \"Some Other App Name\"
+run it_can_set_env_on_application_without_app_name
+run it_can_set_env_as_deprecated_global_attribute

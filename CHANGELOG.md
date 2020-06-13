@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Introduced experimental support for `cf7` cli! This is enabled by configuring `cf_cli_version: 7` globally on the `resource`.
 
+### Fixed
+
+- The `environment_variables` handling introduced for the `push` command introduced in v2.18.1 wasn't properly placing the `env` node at the application level (it was placing it at the deprecated global level) with only one application in the manifest but no `app_name` declared. This has been corrected and the test case updated to properly check for this condition.
+
 ### Changed
 
 - We use Alpine Linux as the base image for `cf-cli-resource` when it runs inside of Concourse. With Alipine `v3.8` headed to [End of Support on 2020-05-01](https://wiki.alpinelinux.org/wiki/Alpine_Linux:Releases) it was time to update to Alpine `v3.11` which should keep us up-to-date till 2021-11-01.
