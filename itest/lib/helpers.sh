@@ -12,7 +12,6 @@ export CF_HOME=$TMPDIR_ROOT  # Use a unique CF_HOME for sessions
 export CF_PLUGIN_HOME=$HOME  # But keep the original plugins folder
 
 readonly test_prefix=cfclitest
-readonly test_id=$("$base_dir/itest/lib/bashids" -e -s "$(uuidgen)" -l 10 "$RANDOM")
 
 on_exit() {
   exitcode=$?
@@ -37,12 +36,16 @@ run() {
   echo ""
 }
 
+generate_test_id() {
+  "$base_dir/itest/lib/bashids" -e -s "$(uuidgen)" -l 10 "$RANDOM"
+}
+
 generate_test_name_with_spaces() {
-  echo "$test_prefix $1 $test_id"
+  echo "$test_prefix $1 $(generate_test_id)"
 }
 
 generate_test_name_with_hyphens() {
-  echo "$test_prefix-${1// /-}-$test_id"
+  echo "$test_prefix-${1// /-}-$(generate_test_id)"
 }
 
 app_to_hostname() {
