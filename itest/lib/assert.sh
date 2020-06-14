@@ -45,6 +45,17 @@ assert::equals() {
   fi
 }
 
+assert::not_equals() {
+  local unexpected=$1
+  local actual=$2
+
+  if [ "$unexpected" == "$actual" ]; then
+    printf '\e[91mAssertion Failure:\e[0m\n'
+    printf '  Expected not equal but was:\e[91m%s\e[0m\n' "$actual"
+    exit 1
+  fi
+}
+
 assert::matches() {
   local pattern=$1
   local actual=$2

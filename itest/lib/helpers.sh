@@ -69,7 +69,8 @@ applications:
   disk_quota: 64M
   instances: 1
   path: content
-  buildpack: staticfile_buildpack
+  buildpacks:
+  - staticfile_buildpack
 EOF
 
   pwd
@@ -91,7 +92,8 @@ applications:
   disk_quota: 64M
   instances: ((instances))
   path: content
-  buildpack: staticfile_buildpack
+  buildpacks:
+  - staticfile_buildpack
 EOF
 
   cat <<EOF >"vars-file1.yml"

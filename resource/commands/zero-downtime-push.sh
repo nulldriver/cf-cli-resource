@@ -1,13 +1,20 @@
 
 manifest=$(get_option '.manifest')
-path=$(get_option '.path')
 current_app_name=$(get_option '.current_app_name')
+show_app_log=$(get_option '.show_app_log')
+path=$(get_option '.path')
 environment_variables=$(get_option '.environment_variables')
-stack=$(get_option '.stack')
 vars=$(get_option '.vars')
 vars_files=$(get_option '.vars_files')
+docker_image=$(get_option '.docker_image')
+docker_username=$(get_option '.docker_username')
+docker_password=$(get_option '.docker_password')
+no_start=$(get_option '.no_start')
+stack=$(get_option '.stack')
+staging_timeout=$(get_option '.staging_timeout' 0)
+startup_timeout=$(get_option '.startup_timeout' 0)
 
-logger::info "Executing $(logger::highlight "$command"): $current_app_name"
+logger::info "Executing $(logger::highlight "$command")"
 
 if [ ! -f "$manifest" ]; then
   logger::error "invalid payload (manifest is not a file: $manifest)"
@@ -15,12 +22,18 @@ if [ ! -f "$manifest" ]; then
 fi
 
 if [ -n "$environment_variables" ]; then
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables"
+  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$current_app_name"
 fi
 
-args=(-f "$manifest")
-[ -n "$path" ]  && args+=(-p $path) # don't quote so we can support globbing
-[ -n "$stack" ] && args+=(-s "$stack")
+args=()
+[ -n "$current_app_name" ] && args+=("$current_app_name")
+args+=(-f "$manifest")
+[ -n "$path" ]             && args+=(-p $path) # don't quote so we can support globbing
+[ -n "$docker_image" ]     && args+=(--docker-image "$docker_image")
+[ -n "$docker_username" ]  && args+=(--docker-username "$docker_username")
+[ -n "$docker_password" ]  && export CF_DOCKER_PASSWORD="$docker_password"
+[ -n "$no_start" ]         && args+=(--no-start)
+[ -n "$stack" ]            && args+=(-s "$stack")
 
 for key in $(echo $vars | jq -r 'keys[]'); do
   value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
@@ -33,23 +46,31 @@ done
 
 cf::target "$org" "$space"
 
-if [ -n "$current_app_name" ]; then
+[ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
+[ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
+if [ -n "$current_app_name" ] && cf::app_exists "$current_app_name"; then
   venerable_app_name="$current_app_name-venerable"
-  cf::rename "$current_app_name"  "$venerable_app_name"
+  cf::rename "$current_app_name" "$venerable_app_name"
 
   if ! cf::cf push "${args[@]}"; then
-    output=$(cf::cf logs "$current_app_name" --recent)
+    if [ "true" == "$show_app_log" ]; then
+      cf::logs "$current_app_name"
+    fi
 
-    cf::cf delete -f "$current_app_name"
+    logger::error "Error encountered during zero-downtime-push. Rolling back to current app."
+
+    cf::delete "$current_app_name"
     cf::rename "$venerable_app_name" "$current_app_name"
 
-    logger::error "$output"
-    exit 1
+    exit $E_ZERO_DOWNTIME_PUSH_FAILED
   fi
 
-  cf::cf delete -f "$venerable_app_name"
-
+  cf::delete "$venerable_app_name"
 else
   cf::cf push "${args[@]}"
 fi
+
+unset CF_STAGING_TIMEOUT
+unset CF_STARTUP_TIMEOUT
+unset CF_DOCKER_PASSWORD

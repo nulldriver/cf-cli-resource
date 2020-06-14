@@ -889,6 +889,12 @@ function cf::get_app_startup_command() {
   echo $output | jq -r '.command // empty'
 }
 
+function cf::logs() {
+  local app_name=${1:?app_name null or not set}
+
+  cf::cf logs "$app_name" --recent
+}
+
 function cf::service_broker_exists() {
   local service_broker=${1:?service_broker null or not set}
   cf::curl /v2/service_brokers | jq -e --arg name "$service_broker" '.resources[] | select(.entity.name == $name) | true' >/dev/null
