@@ -785,7 +785,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 
 - `org`: _Optional._ The organization to target (required if not set in the source config)
 - `space`: _Optional._ The space to target (required if not set in the source config)
-- `app_name`: _Required._ The name of the application
+- `app_name`: _Required._ The name of the application (_Optional_ if using a `manifest` that specifies the application name)
 - `buildpack`: _Optional._ Custom buildpack by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify 'default' or 'null'
 - `startup_command`: _Optional._ Startup command, set to null to reset to default start command
 - `docker_image`: _Optional._ Docker-image to be used (e.g. user/docker-image-name)
@@ -803,6 +803,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `vars`: _Optional._ Map of variables to pass to manifest
 - `vars_files`: _Optional._ List of variables files to pass to manifest
 - `environment_variables`: _Optional._ Map of environment variables to pass to application
+- `show_app_log`: _Optional._ Outputs the app log after a failed startup, useful to debug issues when used together with the `app_name` option.
 - `staging_timeout`: _Optional._ Max wait time for buildpack staging, in minutes
 - `startup_timeout`: _Optional._ Max wait time for app instance startup, in minutes
 
@@ -838,7 +839,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `docker_image`: _Optional._ Docker-image to be used (e.g. user/docker-image-name)
 - `docker_username`: _Optional._ This is used as the username to authenticate against a protected docker registry
 - `docker_password`: _Optional._ This should be the users password when authenticating against a protected docker registry
-- `show_app_log`: _Optional._ Outputs the app log after a failed startup, useful to debug issues when using blue/green deploys together with the `current_app_name` option.
+- `show_app_log`: _Optional._ Outputs the app log after a failed startup, useful to debug issues when used together with the `current_app_name` option.
 - `no_start`: _Optional._ Deploys the app but does not start it.
 - `stack`: _Optional._ Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
 - `staging_timeout`: _Optional._ Max wait time for buildpack staging, in minutes

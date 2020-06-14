@@ -9,6 +9,38 @@ source "$base_dir/itest/lib/assert.sh"
 source "$base_dir/itest/lib/helpers.sh"
 source "$base_dir/itest/lib/config.sh"
 
+it_can_show_logs_on_a_failed_push() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local project=$(create_static_app "$app_name")
+
+  # force push failure by setting container disk space way too low
+  local disk_quota="1M"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg manifest "$project/manifest.yml" \
+  --arg disk_quota "$disk_quota" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    manifest: $manifest,
+    disk_quota: $disk_quota,
+    show_app_log: true
+  }')
+
+  set +e
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+  assert::equals "$E_PUSH_FAILED_WITH_APP_LOGS_SHOWN" "$?"
+  set -e
+}
+
 it_can_push_an_app_with_startup_command() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
@@ -240,6 +272,14 @@ org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
 setup_integration_tests "$org" "$space"
+
+describe "show logs on a failed push"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+
+  run it_can_show_logs_on_a_failed_push \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
 
 describe "push an app with a startup command"
 {

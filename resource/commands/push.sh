@@ -17,6 +17,7 @@ stack=$(get_option '.stack')
 vars=$(get_option '.vars')
 vars_files=$(get_option '.vars_files')
 environment_variables=$(get_option '.environment_variables')
+show_app_log=$(get_option '.show_app_log')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
@@ -63,8 +64,18 @@ cf::target "$org" "$space"
 [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
 [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
+set +e
 cf::cf push "${args[@]}"
+status=$?
+set -e
+
+if (( status != 0 )) && [ -n "$app_name" ] && [ "true" == "$show_app_log" ]; then
+  status=$E_PUSH_FAILED_WITH_APP_LOGS_SHOWN
+  cf::logs "$app_name"
+fi
 
 unset CF_STAGING_TIMEOUT
 unset CF_STARTUP_TIMEOUT
 unset CF_DOCKER_PASSWORD
+
+exit $status
