@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.18.2 - Unreleased
+## 2.19.0 - Unreleased
 
 ### Added
 
@@ -17,8 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Major changes to `zero-downtime-push` command!!! The command has been refactored to no longer depend on the deprecated [autopilot](https://github.com/contraband/autopilot) plugin and now provides a "hand crafted" zero downtime push experience and supports `vars` and `vars_files` arguments (thanks to a PR by [shyamz-22](https://github.com/shyamz-22)). It also now supports `docker_image`, `show_app_log` on failed pushes, the `no_start` flag, and `staging_timeout` and `startup_timeout` params. The `zero-downtime-push` integration tests have also received a major overhaul to ensure a seamless transition.
+- Major changes to `zero-downtime-push` command!!! The command has been refactored to no longer depend on the deprecated [autopilot](https://github.com/contraband/autopilot) plugin and now provides a "hand crafted" zero downtime push experience and supports `vars` and `vars_files` arguments, thanks to a PR by [shyamz-22](https://github.com/shyamz-22). It also now supports `docker_image`, `show_app_log` on failed pushes, the `no_start` flag, and `staging_timeout` and `startup_timeout` params. The `zero-downtime-push` integration tests have also received a major overhaul to ensure a seamless transition.
 - `push` command now supports the `show_app_log` option to output app logs after a failed push (use with `app_name` option)
+- `bind-route-service` command now supports the `path` option (used in combination with `hostname` and `domain` to specify the route to bind), thanks to a PR by [shyamz-22](https://github.com/shyamz-22)!
 - We use Alpine Linux as the base image for `cf-cli-resource` when it runs inside of Concourse. With Alipine `v3.8` headed to [End of Support on 2020-05-01](https://wiki.alpinelinux.org/wiki/Alpine_Linux:Releases) it was time to update to Alpine `v3.11` which should keep us up-to-date till 2021-11-01.
 
 ### Packaged Dependencies

@@ -670,19 +670,6 @@ function cf::unbind_service() {
   cf::cf unbind-service "$app_name" "$service_instance"
 }
 
-function cf::bind_route_service() {
-  local domain=${1:?domain null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  local hostname=${3:-}
-  local path=${4:-}
-
-  local args=("$domain" "$service_instance")
-  [ -n "$hostname" ] && args+=(--hostname "$hostname")
-  [ -n "$path" ]     && args+=(--path "$path")
-
-  cf::cf bind-route-service "${args[@]}"
-}
-
 function cf::is_app_bound_to_service() {
   local app_name=${1:?app_name null or not set}
   local service_instance=${2:?service_instance null or not set}
@@ -696,10 +683,14 @@ function cf::is_app_bound_to_route_service() {
   local service_instance=${2:?service_instance null or not set}
   local org=${3:?org null or not set}
   local space=${4:?space null or not set}
+  local path=${5:-}
+
   local space_guid=$(cf::get_space_guid "$org" "$space")
-  cf::curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | \
-    jq -e --arg app_name "$app_name" 'select (.resources[].entity.apps[].entity.name == $app_name)' | \
-    jq -e --arg service_instance "$service_instance" 'select (.resources[].entity.service_instance.entity.name == $service_instance) | true' >/dev/null
+  cf::curl "/v2/spaces/$space_guid/routes?inline-relations-depth=1" | jq -e \
+    --arg service_instance "$service_instance" \
+    --arg app_name "$app_name" \
+    --arg path "$path" \
+    '.resources[].entity | select (.service_instance.entity.name == $service_instance and .apps[].entity.name == $app_name and .path == $path) | true' >/dev/null
 }
 
 function cf::has_env() {

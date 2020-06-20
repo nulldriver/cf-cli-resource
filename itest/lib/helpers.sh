@@ -54,6 +54,7 @@ app_to_hostname() {
 
 create_static_app() {
   local app_name=${1:?app_name null or not set}
+  local manifest=${2:-}
 
   cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
@@ -61,17 +62,20 @@ create_static_app() {
   echo "Hello" > "content/index.html"
   touch "content/Staticfile"
 
-  cat <<EOF >"manifest.yml"
+  if [ -n "$manifest" ]; then
+    echo "$manifest" >"manifest.yml"
+  else
+    cat <<EOF >"manifest.yml"
 ---
 applications:
 - name: $app_name
   memory: 64M
   disk_quota: 64M
-  instances: 1
   path: content
   buildpacks:
   - staticfile_buildpack
 EOF
+  fi
 
   pwd
 }
