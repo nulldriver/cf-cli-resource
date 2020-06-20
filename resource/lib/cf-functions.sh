@@ -674,9 +674,11 @@ function cf::bind_route_service() {
   local domain=${1:?domain null or not set}
   local service_instance=${2:?service_instance null or not set}
   local hostname=${3:-}
+  local path=${4:-}
 
   local args=("$domain" "$service_instance")
   [ -n "$hostname" ] && args+=(--hostname "$hostname")
+  [ -n "$path" ]     && args+=(--path "$path")
 
   cf::cf bind-route-service "${args[@]}"
 }

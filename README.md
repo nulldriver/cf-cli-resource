@@ -738,6 +738,7 @@ Bind a service instance to an HTTP route
 - `domain`: _Required._ The domain to bind the route to
 - `service_instance`: _Required._ The service instance to bind the route to
 - `hostname`: _Optional._ Hostname used in combination with `domain` to specify the route to bind
+- `path`: _Optional._ Path for the HTTP route to bind
 
 ```yml
 - put: cf-bind-route-service
@@ -747,6 +748,7 @@ Bind a service instance to an HTTP route
     domain: example.com
     service_instance: mylogger
     hostname: myhost
+    path: foo
 ```
 
 #### enable-feature-flag
