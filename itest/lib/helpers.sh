@@ -29,7 +29,9 @@ describe() {
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
-  cf::cf logout
+  if cf::is_logged_in; then
+    cf::cf logout
+  fi
   # convert multiple args to single arg so printf doesn't output multiple lines
   printf 'running \e[33m%s\e[0m...\n' "$(echo "$@")"
   eval "$@" 2>&1 | sed -e 's/^/  /g'

@@ -37,7 +37,7 @@ if [ "$debug" = "true" ]; then
   set -x
 fi
 
-export CF_CLI_VERSION=$(get_config '.source.cf_cli_version' "${CF_CLI_VERSION:-6}")
+export CCR_CF_CLI_VERSION=$(get_config '.source.cf_cli_version' "${CCR_CF_CLI_VERSION:-6}")
 source "$base_dir/resource/lib/cf-functions.sh"
 
 params=$(get_config '.params')

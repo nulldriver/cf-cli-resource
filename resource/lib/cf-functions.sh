@@ -12,7 +12,7 @@ source "$base_dir/resource/lib/error-codes.sh"
 
 CF_CLI=
 default_version=6
-case "${CF_CLI_VERSION:-$default_version}" in
+case "${CCR_CF_CLI_VERSION:-$default_version}" in
   6)  if ! CF_CLI=$(command -v cf); then
         logger::error "unable to locate cf cli v6 binary: $(logger::highlight "cf") "
         exit $E_CF_CLI_BINARY_NOT_FOUND
@@ -23,7 +23,7 @@ case "${CF_CLI_VERSION:-$default_version}" in
         exit $E_CF_CLI_BINARY_NOT_FOUND
       fi
       ;;
-  *)  logger::error "unsupported cf cli version: $(logger::highlight "$CF_CLI_VERSION")"
+  *)  logger::error "unsupported cf cli version: $(logger::highlight "$CCR_CF_CLI_VERSION")"
       exit $E_UNSUPPORTED_CF_CLI_VERSION
       ;;
 esac
