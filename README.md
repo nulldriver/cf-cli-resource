@@ -830,6 +830,12 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 
 #### zero-downtime-push
 
+Deploy an application to a Cloud Foundry
+
+Pushes an application to the Cloud Foundry detailed in the source configuration. A [manifest](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html) that describes the application must be specified.
+
+_NOTE_: This command is designed to function as a replacement for the Concourse [cf-resource](https://github.com/cloudfoundry-community/cf-resource).
+
 - `org`: _Optional._ The organization to target (required if not set in the source config)
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `manifest`: _Required._ Path to a application manifest file.
