@@ -693,6 +693,8 @@ jobs:
       passed: *test-jobs
       params: {bump: final}
     - get: pipeline-tasks
+  - load_var: version-number
+    file: version/version
   - task: generate-github-release
     file: pipeline-tasks/generate-github-release/task.yml
     output_mapping: {task-output: generate-github-release-output}
@@ -716,6 +718,13 @@ jobs:
     params:
       image: cf-cli-resource-image-rc/image.tar
       additional_tags: version/version
+  - put: notify
+    params:
+      message: |
+        New release announcement!
+        https://github.com/nulldriver/cf-cli-resource/releases/tag/v((.:version-number))
+      mode: concise
+      alert_type: success
 
 - name: major
   public: true
@@ -816,3 +825,14 @@ resources:
     repository: docker.nulldriver.com/test-app
     username: ((docker-private.username))
     password: ((docker-private.password))
+
+- name: notify
+  type: slack-notifier
+  source:
+    url: {{slack-webhook-url}}
+
+resource_types:
+- name: slack-notifier
+  type: docker-image
+  source:
+    repository: mockersf/concourse-slack-notifier
