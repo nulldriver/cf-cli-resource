@@ -43,7 +43,7 @@ generate_test_id() {
 }
 
 is_cf7() {
-  [ -n "$CCR_CF_CLI_VERSION" ] && (( CCR_CF_CLI_VERSION == 7 ))
+  [ -n "${CCR_CF_CLI_VERSION:-}" ] && (( CCR_CF_CLI_VERSION == 7 ))
 }
 
 generate_test_name_with_spaces() {
