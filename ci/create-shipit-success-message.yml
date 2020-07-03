@@ -1,0 +1,26 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: alpine
+    tag: '3.11'
+
+inputs:
+- name: version
+
+outputs:
+- name: message
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    version=$(cat version/version)
+    cd message
+    cat <<EOF >"message"
+    Announcing the release of cf-cli-resource v${version}!
+    Check out the release notes here: https://github.com/nulldriver/cf-cli-resource/releases/tag/v${version}
+    EOF
