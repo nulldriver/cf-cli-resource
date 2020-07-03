@@ -758,7 +758,7 @@ jobs:
 resources:
 - name: cf-cli-resource
   type: git
-  icon: github-circle
+  icon: github
   source:
     uri: {{git-uri}}
     branch: {{git-branch}}
@@ -799,7 +799,7 @@ resources:
 
 - name: pipeline-tasks
   type: git
-  icon: github-circle
+  icon: github
   source:
     uri: {{pipeline-tasks-git-uri}}
     branch: {{pipeline-tasks-git-branch}}
@@ -828,6 +828,7 @@ resources:
 
 - name: notify
   type: slack-notifier
+  icon: slack
   source:
     url: {{slack-webhook-url}}
 
