@@ -116,6 +116,8 @@ EOF
 }
 
 create_logging_route_service_app() {
+  local app_name=${1:?app_name null or not set}
+
   cd $(mktemp -d $TMPDIR/app.XXXXXX)
 
   wget -q https://github.com/nulldriver/logging-route-service/archive/master.zip -O logging-route-service.zip
@@ -124,6 +126,8 @@ create_logging_route_service_app() {
   mv logging-route-service-*/* .
   rm -rf logging-route-service-*
   rm logging-route-service.zip
+
+  yq write -i manifest.yml -- 'applications[0].name' "$app_name"
 
   pwd
 }

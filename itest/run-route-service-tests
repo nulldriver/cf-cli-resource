@@ -14,7 +14,7 @@ it_can_push_the_logger_app() {
   local space=${2:?space null or not set}
   local app_name=${3:?app_name null or not set}
 
-  local project=$(create_logging_route_service_app)
+  local project=$(create_logging_route_service_app "$app_name")
 
   local params=$(jq -n \
   --arg org "$org" \
@@ -26,8 +26,6 @@ it_can_push_the_logger_app() {
     command: "push",
     org: $org,
     space: $space,
-    app_name: $app_name,
-    memory: "64M",
     path: $path,
     manifest: $manifest
   }')
