@@ -42,13 +42,9 @@ generate_test_id() {
   "$base_dir/itest/lib/bashids" -e -s "$(uuidgen)" -l 10 "$RANDOM"
 }
 
-is_cf7() {
-  [ -n "${CCR_CF_CLI_VERSION:-}" ] && (( CCR_CF_CLI_VERSION == 7 ))
-}
-
 generate_test_name_with_spaces() {
   # TODO: remove after this issue is resolved: https://github.com/cloudfoundry/cli/issues/1966
-  if is_cf7; then
+  if cf::is_cf7; then
     generate_test_name_with_hyphens "$1"
   else
     echo "$test_prefix $1 $(generate_test_id)"

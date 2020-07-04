@@ -28,6 +28,10 @@ case "${CCR_CF_CLI_VERSION:-$default_version}" in
       ;;
 esac
 
+function cf::is_cf7() {
+  [ -n "${CCR_CF_CLI_VERSION:-}" ] && (( CCR_CF_CLI_VERSION == 7 ))
+}
+
 function cf::cf() {
   "$CF_CLI" "$@"
 }
@@ -780,21 +784,6 @@ function cf::network_policy_exists() {
   local port=${4:=8080}
 
   CF_TRACE=false cf::cf network-policies --source "$source_app" | grep "$destination_app" | grep "$protocol" | grep -q "$port"
-}
-
-function cf::run_task() {
-  local app_name=${1:?app_name null or not set}
-  local task_command=${2:?task_command null or not set}
-  local task_name=${3:-}
-  local memory=${4:-}
-  local disk_quota=${5:-}
-
-  local args=("$app_name" "$task_command")
-  [ -n "$task_name" ] && args+=(--name "$task_name")
-  [ -n "$memory" ] && args+=(-m "$memory")
-  [ -n "$disk_quota" ] && args+=(-k "$disk_quota")
-
-  cf::cf run-task "${args[@]}"
 }
 
 # very loose match on some "task name" (or command...) in the cf tasks output
