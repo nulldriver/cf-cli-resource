@@ -29,7 +29,6 @@ it_can_push_a_docker_image_from_a_private_registry() {
     org: $org,
     space: $space,
     app_name: $app_name,
-    hostname: $app_name,
     docker_image: $docker_image,
     docker_username: $docker_username,
     docker_password: $docker_password
