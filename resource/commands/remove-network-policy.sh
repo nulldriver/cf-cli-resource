@@ -10,7 +10,15 @@ logger::info "Executing $(logger::highlight "$command"): $source_app"
 
 cf::target "$org" "$space"
 
-args=("$source_app" --destination-app "$destination_app" --protocol "$protocol" --port "$port")
+args=("$source_app")
+
+if cf::is_cf7; then
+  args+=("$destination_app")
+else
+  args+=(--destination-app "$destination_app")
+fi
+
+args+=(--protocol "$protocol" --port "$port")
 [ -n "$destination_org" ] && args+=(-o "$destination_org")
 [ -n "$destination_space" ] && args+=(-s "$destination_space")
 

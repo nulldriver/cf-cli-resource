@@ -111,7 +111,7 @@ it_can_enable_service_access() {
   assert::success cf::is_marketplace_service_available "$service" "$plan" "$access_org"
 }
 
-it_can_enable_service_access_using_deprecated_param() {
+it_can_enable_service_access_using_deprecated_service_broker_param() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service=${3:?service null or not set}
@@ -159,7 +159,7 @@ it_can_disable_service_access() {
   assert::failure cf::is_marketplace_service_available "$service" "$plan"  "$access_org"
 }
 
-it_can_disable_service_access_using_deprecated_param() {
+it_can_disable_service_access_using_deprecated_service_broker_param() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service=${3:?service null or not set}
@@ -231,8 +231,8 @@ describe "it_can_push_and_create_and_enable_and_disable_a_service_broker"
   run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
   run it_can_create_a_service_broker \"$org\" \"$space\" \"$service_broker\" \"$service_broker_url\"
 
-  run it_can_enable_service_access_using_deprecated_param \"$org\" \"$space\" \"$service\"
-  run it_can_disable_service_access_using_deprecated_param \"$org\" \"$space\" \"$service\"
+  run it_can_enable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
+  run it_can_disable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
 
   run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"
   run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"

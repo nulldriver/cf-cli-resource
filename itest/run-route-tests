@@ -373,8 +373,40 @@ it_can_push_an_app_with_hostname_and_domain() {
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
+  --arg path "$project" \
+  --arg manifest "$project/manifest.yml" \
   --arg hostname "$hostname" \
   --arg domain "$domain" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: $path,
+    manifest: $manifest,
+    hostname: $hostname,
+    domain: $domain
+  }')
+
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf::is_app_started "$app_name"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$hostname.$domain"
+}
+
+it_can_push_an_app_with_route() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+  local route=${4:?route null or not set}
+
+  local project=$(create_static_app "$app_name")
+  yq write -i "$project/manifest.yml" 'applications[0].routes[+].route' "$route"
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
   --arg path "$project" \
   --arg manifest "$project/manifest.yml" \
   '{
@@ -382,8 +414,6 @@ it_can_push_an_app_with_hostname_and_domain() {
     org: $org,
     space: $space,
     app_name: $app_name,
-    hostname: $hostname,
-    domain: $domain,
     path: $path,
     manifest: $manifest
   }')
@@ -391,7 +421,7 @@ it_can_push_an_app_with_hostname_and_domain() {
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf::is_app_started "$app_name"
-  assert::success cf::is_app_mapped_to_route "$app_name" "$hostname.$domain"
+  assert::success cf::is_app_mapped_to_route "$app_name" "$route"
 }
 
 org=$(generate_test_name_with_spaces "Org")
@@ -406,7 +436,11 @@ describe "create a domain and push an app with that domain"
   domain="$(generate_test_name_with_hyphens "domain").com"
 
   run it_can_create_a_domain \"$org\" \"$domain\"
-  run it_can_push_an_app_with_hostname_and_domain \"$org\" \"$space\" \"$app_name\" \"$hostname\" \"$domain\"
+  # if cf::is_cf7; then
+    run it_can_push_an_app_with_route \"$org\" \"$space\" \"$app_name\" \"$hostname.$domain\"
+  # else
+    # run it_can_push_an_app_with_hostname_and_domain \"$org\" \"$space\" \"$app_name\" \"$hostname\" \"$domain\"
+  # fi
   run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
   run it_can_delete_a_domain \"$org\" \"$domain\"
 }

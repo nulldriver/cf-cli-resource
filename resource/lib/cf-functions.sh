@@ -292,19 +292,6 @@ function cf::delete_domain() {
   cf::cf delete-domain -f "$domain"
 }
 
-function cf::create_route() {
-  local space=${1:?space null or not set}
-  local domain=${2:?domain null or not set}
-  local hostname=${3:-}
-  local path=${4:-}
-
-  local args=("$space" "$domain")
-  [ -n "$hostname" ] && args+=(--hostname "$hostname")
-  [ -n "$path" ]     && args+=(--path "$path")
-
-  cf::cf create-route "${args[@]}"
-}
-
 function cf::delete_route() {
   local domain=${1:?domain null or not set}
   local hostname=${2:-}

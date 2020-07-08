@@ -6,5 +6,16 @@ path=$(get_option '.path')
 
 logger::info "Executing $(logger::highlight "$command"): $domain"
 
-cf::target "$org" "$space"
-cf::create_route "${other_space:-$space}" "$domain" "$hostname" "$path"
+args=()
+if cf::is_cf7; then
+  cf::target "$org" "${other_space:-$space}"
+  args+=("$domain")
+else
+  cf::target "$org" "$space"
+  args+=("${other_space:-$space}" "$domain")
+fi
+
+[ -n "$hostname" ] && args+=(--hostname "$hostname")
+[ -n "$path" ]     && args+=(--path "$path")
+
+cf::cf create-route "${args[@]}"
