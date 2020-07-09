@@ -18,6 +18,7 @@ vars=$(get_option '.vars')
 vars_files=$(get_option '.vars_files')
 environment_variables=$(get_option '.environment_variables')
 show_app_log=$(get_option '.show_app_log')
+strategy=$(get_option '.strategy')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
@@ -48,6 +49,7 @@ args=()
 [ -n "$no_start" ]        && args+=(--no-start)
 [ -n "$path" ]            && args+=(-p $path) # don't quote so we can support globbing
 [ -n "$stack" ]           && args+=(-s "$stack")
+[ -n "$strategy" ]        && args+=(--strategy "$strategy")
 
 for key in $(echo $vars | jq -r 'keys[]'); do
   value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
