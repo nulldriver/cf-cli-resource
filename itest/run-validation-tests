@@ -149,9 +149,12 @@ it_can_error_if_cf_cli_binary_not_found() {
 }
 
 it_can_error_if_cf6_cli_binary_not_found() {
-  local config=$(echo $CCR_SOURCE | jq '.params = {
-      command: "does-not-exist"
-    }')
+  local config=$(echo $CCR_SOURCE | jq \
+    '
+      .source.cf_cli_version = 6
+      |
+      .params = { command: "does-not-exist" }
+    ')
 
   PATH=$(get_path_without_cf_binaries)
 
