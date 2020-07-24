@@ -617,10 +617,12 @@ function cf::create_service_broker() {
 
 function cf::enable_service_access() {
   local service=${1:?service null or not set}
-  local plan=${2:-}
-  local access_org=${3:-}
+  local broker=${2:-}
+  local plan=${3:-}
+  local access_org=${4:-}
 
   local args=("$service")
+  [ -n "$broker" ] && args+=(-b "$broker")
   [ -n "$plan" ] && args+=(-p "$plan")
   [ -n "$access_org" ] && args+=(-o "$access_org")
 

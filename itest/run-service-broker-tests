@@ -91,15 +91,18 @@ it_can_enable_service_access() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service=${3:?service null or not set}
-  local plan=${4:-}
-  local access_org=${5:-}
+  local broker=${4:-}
+  local plan=${5:-}
+  local access_org=${6:-}
 
   local params=$(jq -n \
     --arg service "$service" \
+    --arg broker "$broker" \
     --arg plan "$plan" \
     --arg access_org "$access_org" \
     '{
       command: "enable-service-access",
+      broker: $broker,
       service: $service,
       plan: $plan,
       access_org: $access_org

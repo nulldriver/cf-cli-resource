@@ -660,6 +660,7 @@ Wait for a service instance to start
 Enable access to a service or service plan for one or all orgs
 
 - `service`: _Required._ The marketplace service name to enable
+- `broker`: _Optional._ Enable access to a service from a particular service broker. Required when service name is ambiguous
 - `access_org`: _Optional._ Enable access for a specified organization
 - `plan`: _Optional._ Enable access to a specified service plan
 
@@ -669,6 +670,7 @@ Enable access to a service or service plan for one or all orgs
   params:
     command: enable-service-access
     service: some-service
+    broker: some-service-broker
     access_org: myorg
     plan: simple
 ```
