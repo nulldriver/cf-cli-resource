@@ -102,8 +102,8 @@ it_can_enable_service_access() {
     --arg access_org "$access_org" \
     '{
       command: "enable-service-access",
-      broker: $broker,
       service: $service,
+      broker: $broker,
       plan: $plan,
       access_org: $access_org
     }')
@@ -237,11 +237,15 @@ describe "it_can_push_and_create_and_enable_and_disable_a_service_broker"
   run it_can_enable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
   run it_can_disable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
 
-  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"
-  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"\" \"$org\"
+  broker=""
+  plan=""
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$plan\" \"$org\"
 
-  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"small\" \"$org\"
-  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"small\" \"$org\"
+  broker=""
+  plan="small"
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$plan\" \"$org\"
 
   run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker\"
