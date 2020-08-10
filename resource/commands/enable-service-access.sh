@@ -10,4 +10,9 @@ logger::info "Executing $(logger::highlight "$command"): $service"
 # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
 service=${service:-$service_broker}
 
-cf::enable_service_access "$service" "$broker" "$plan" "$access_org"
+args=("$service")
+[ -n "$broker" ] && args+=(-b "$broker")
+[ -n "$plan" ] && args+=(-p "$plan")
+[ -n "$access_org" ] && args+=(-o "$access_org")
+
+cf::cf enable-service-access "${args[@]}"

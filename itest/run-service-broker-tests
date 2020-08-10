@@ -142,16 +142,19 @@ it_can_disable_service_access() {
   local org=${1:?org null or not set}
   local space=${2:?space null or not set}
   local service=${3:?service null or not set}
-  local plan=${4:-}
-  local access_org=${5:-}
+  local broker=${4:-}
+  local plan=${5:-}
+  local access_org=${6:-}
 
   local params=$(jq -n \
     --arg service "$service" \
+    --arg broker "$broker" \
     --arg plan "$plan" \
     --arg access_org "$access_org" \
     '{
       command: "disable-service-access",
       service: $service,
+      broker: $broker,
       plan: $plan,
       access_org: $access_org
     }')
@@ -212,43 +215,72 @@ space=$(generate_test_name_with_spaces "Space")
 
 setup_integration_tests "$org" "$space"
 
-describe "it_can_push_and_create_a_service_broker_that_is_space_scoped"
+describe "it can create a space scoped service broker"
 {
   service_broker=$(generate_test_name_with_spaces "Space Scoped Broker")
   service_broker_url="https://$(app_to_hostname "$service_broker").$CCR_CF_APPS_DOMAIN"
 
   run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
-
   run it_can_create_a_service_broker_space_scoped \"$org\" \"$space\" \"$service_broker\" \"$service_broker_url\"
 
   run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker\"
 }
 
-describe "it_can_push_and_create_and_enable_and_disable_a_service_broker"
+describe "it can create a service broker and enable and disable service access"
 {
   service_broker=$(generate_test_name_with_spaces "Broker")
   service_broker_url="https://$(app_to_hostname "$service_broker").$CCR_CF_APPS_DOMAIN"
-  service=overview-service
 
   run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker\"
   run it_can_create_a_service_broker \"$org\" \"$space\" \"$service_broker\" \"$service_broker_url\"
 
+  service=overview-service
+  broker=""
+  plan=""
+  access_org=$org
+
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+
+  plan="small"
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+
   run it_can_enable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
   run it_can_disable_service_access_using_deprecated_service_broker_param \"$org\" \"$space\" \"$service\"
 
-  broker=""
-  plan=""
-  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$org\"
-  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$plan\" \"$org\"
-
-  broker=""
-  plan="small"
-  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$org\"
-  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$plan\" \"$org\"
-
   run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker\"
+}
+
+describe "it can enable and disable service access from a particular service broker"
+{
+  service_broker_1=$(generate_test_name_with_spaces "Broker 1")
+  service_broker_1_url="https://$(app_to_hostname "$service_broker_1").$CCR_CF_APPS_DOMAIN"
+
+  run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker_1\"
+  run it_can_create_a_service_broker \"$org\" \"$space\" \"$service_broker_1\" \"$service_broker_1_url\"
+
+  service_broker_2=$(generate_test_name_with_spaces "Broker 2")
+  service_broker_2_url="https://$(app_to_hostname "$service_broker_2").$CCR_CF_APPS_DOMAIN"
+
+  run it_can_push_the_service_broker_app \"$org\" \"$space\" \"$service_broker_2\"
+  run it_can_create_a_service_broker \"$org\" \"$space\" \"$service_broker_2\" \"$service_broker_2_url\"
+
+  service=overview-service
+  broker=$service_broker_1
+  plan=""
+  access_org=$org
+
+  run it_can_enable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+  run it_can_disable_service_access \"$org\" \"$space\" \"$service\" \"$broker\" \"$plan\" \"$access_org\"
+
+  run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker_2\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker_2\"
+
+  run it_can_delete_a_service_broker \"$org\" \"$space\" \"$service_broker_1\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$service_broker_1\"
 }
 
 teardown_integration_tests "$org" "$space"

@@ -615,32 +615,6 @@ function cf::create_service_broker() {
   fi
 }
 
-function cf::enable_service_access() {
-  local service=${1:?service null or not set}
-  local broker=${2:-}
-  local plan=${3:-}
-  local access_org=${4:-}
-
-  local args=("$service")
-  [ -n "$broker" ] && args+=(-b "$broker")
-  [ -n "$plan" ] && args+=(-p "$plan")
-  [ -n "$access_org" ] && args+=(-o "$access_org")
-
-  cf::cf enable-service-access "${args[@]}"
-}
-
-function cf::disable_service_access() {
-  local service=${1:?service null or not set}
-  local plan=${2:-}
-  local access_org=${3:-}
-
-  local args=("$service")
-  [ -n "$plan" ] && args+=(-p "$plan")
-  [ -n "$access_org" ] && args+=(-o "$access_org")
-
-  cf::cf disable-service-access "${args[@]}"
-}
-
 function cf::delete_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   cf::cf delete-service-broker "$service_broker" -f
