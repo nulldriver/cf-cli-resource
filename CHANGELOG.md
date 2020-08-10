@@ -5,18 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.21.0 - Unreleased
+## 2.21.0 - 2020-08-09
 
 # Changed
 
 - `enable-service-access` and `disable-service-access` commands now supports the `broker` option, thanks to a PR by [dominikmueller](https://github.com/dominikmueller)
+- Updated to [cf cli v6.51.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0)
+- Updated to [cf7 cli v7.0.2](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)
 
 ### Packaged Dependencies
 
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
-| cf cli     | [6.49.0](https://github.com/cloudfoundry/cli/releases/tag/v6.49.0) |
-| cf7 cli    |  [7.0.1](https://github.com/cloudfoundry/cli/releases/tag/v7.0.1)  |
+| cf cli     | [6.51.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
+| cf7 cli    |  [7.0.2](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
 | yq         |    [3.3.2](https://github.com/mikefarah/yq/releases/tag/3.3.2)     |
 
 ## 2.20.0 - 2020-07-09
