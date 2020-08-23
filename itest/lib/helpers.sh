@@ -9,7 +9,24 @@ source "$base_dir/resource/lib/cf-functions.sh"
 
 export TMPDIR_ROOT=$(mktemp -d /tmp/cf-cli-tests.XXXXXX)
 export CF_HOME=$TMPDIR_ROOT  # Use a unique CF_HOME for sessions
-export CF_PLUGIN_HOME=$HOME  # But keep the original plugins folder
+
+login() {
+  local org=${1:-}
+  local space=${2:-}
+
+  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
+  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+
+  local args=()
+  test -n "$org" && args+=(-o "$org")
+  test -n "$space" && args+=(-s "$space")
+
+  test -n "${args:-}" && cf::cf target "${args[@]}" || true
+}
+
+logout() {
+  cf::cf logout
+}
 
 readonly test_prefix=cfclitest
 
@@ -29,13 +46,12 @@ describe() {
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
-  if cf::is_logged_in; then
-    cf::cf logout
-  fi
+  login
   # convert multiple args to single arg so printf doesn't output multiple lines
   printf 'running \e[33m%s\e[0m...\n' "$(echo "$@")"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
   echo ""
+  logout
 }
 
 generate_test_id() {
@@ -572,18 +588,12 @@ it_can_disable_feature_flag() {
 }
 
 cleanup_test_orgs() {
-  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-
   while read -r org; do
     cf::delete_org "$org"
   done < <(cf::cf orgs | grep "$test_prefix " || true)
 }
 
 cleanup_test_users() {
-  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-
   local next_url='/v2/users?order-direction=asc&page=1'
   while [ "$next_url" != "null" ]; do
 
@@ -599,18 +609,12 @@ cleanup_test_users() {
 }
 
 cleanup_service_brokers() {
-  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-
   while read -r broker; do
     cf::delete_service_broker "$broker"
   done < <(cf::curl /v2/service_brokers | jq -r --arg brokerprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($brokerprefix)) | .entity.name')
 }
 
 cleanup_buildpacks() {
-  cf::api "$CCR_CF_API" "$CCR_CF_SKIP_CERT_CHECK"
-  cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-
   while read -r buildpack; do
     cf::cf delete-buildpack -f "$buildpack"
   done < <(cf::curl /v2/buildpacks | jq -r --arg buildpackprefix "$test_prefix" '.resources[] | select(.entity.name | startswith($buildpackprefix)) | .entity.name')

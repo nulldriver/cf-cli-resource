@@ -64,7 +64,6 @@ cf_trace=$(get_config '.source.cf_trace') && echo "$cf_trace" | grep -qi 'true' 
 cf_home=$(get_config '.params.cf_home')
 if [ -n "$cf_home" ]; then
   export CF_HOME=$cf_home
-  export CF_PLUGIN_HOME=$HOME  # Keep the original plugins folder
 
   if ! cf::is_logged_in; then
     logger::error "not logged in to cf (check $CF_HOME/config.json)"
@@ -79,6 +78,8 @@ if [ -n "$cf_home" ]; then
     source_space=$(cat $CF_HOME/.cf/config.json | jq -r .SpaceFields.Name)
   fi
 else
+  export CF_HOME=$(mktemp -d "$TMPDIR/cf_home.XXXXXX")
+
   if [ -z "$api" ]; then
     logger::error 'invalid payload (missing api)'
     exit $E_API_NOT_SET
