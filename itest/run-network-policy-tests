@@ -166,8 +166,6 @@ cf::target "$source_org" "$source_space"
 
 describe "allow the source app to connect to the destination app in the same org and space"
 {
-  org=$source_org
-  space=$source_space
   run it_can_push_an_app \"$source_org\" \"$source_space\" \"$source_app_name\"
   run it_can_push_an_app \"$source_org\" \"$source_space\" \"$destination_app_name\"
 
@@ -183,8 +181,11 @@ describe "allow the source app to connect to the destination app in the same org
 describe "allow the source app to connect to the destination app in a different org and space"
 {
   run it_can_push_an_app \"$source_org\" \"$source_space\" \"$source_app_name\"
+
+  cf::target "$destination_org" "$destination_space"
   run it_can_push_an_app \"$destination_org\" \"$destination_space\" \"$destination_app_name\"
 
+  cf::target "$source_org" "$source_space"
   run it_can_add_network_policy_with_targeted_org_and_space \"$source_org\" \"$source_space\" \"$source_app_name\" \"$destination_org\" \"$destination_space\" \"$destination_app_name\"
 
   run it_can_remove_network_policy_with_targeted_org_and_space \"$source_org\" \"$source_space\" \"$source_app_name\" \"$destination_org\" \"$destination_space\" \"$destination_app_name\"

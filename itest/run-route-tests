@@ -465,6 +465,8 @@ describe "create, map, unmap, and delete routes to an app"
   run it_can_create_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$other_space\"
   run it_can_create_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\" \"$other_space\"
 
+  cf::target "$org" "$other_space"
+
   run it_can_push_an_app \"$org\" \"$other_space\" \"$app_name\"
 
   run it_can_map_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
@@ -476,6 +478,8 @@ describe "create, map, unmap, and delete routes to an app"
   run it_can_unmap_a_route \"$org\" \"$other_space\" \"$domain\" \"$app_name\"
 
   run it_can_delete_an_app \"$org\" \"$other_space\" \"$app_name\"
+
+  # cf::target "$org" "$space"
 
   run it_can_delete_a_route_with_hostname_and_path \"$org\" \"$space\" \"$domain\" \"$hostname\" \"$path\"
   run it_can_delete_a_route_with_hostname \"$org\" \"$space\" \"$domain\" \"$hostname\"
