@@ -116,7 +116,11 @@ logged_app_hostname=$(app_to_hostname "$logged_app_name")
 logged_app_path=foo
 service_instance=mylogger
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_push_the_logger_app \"$org\" \"$space\" \"$logger_app_name\"
 run it_can_create_the_logger_route_service \"$org\" \"$space\" \"mylogger\" \"$logger_route_service_url\"

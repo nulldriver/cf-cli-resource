@@ -286,7 +286,11 @@ it_can_rollback_a_failed_push() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_error_if_zero_downtime_push_manifest_not_found
 

@@ -307,7 +307,11 @@ it_can_push_an_app_with_stack() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 describe "push using rolling strategy"
 {

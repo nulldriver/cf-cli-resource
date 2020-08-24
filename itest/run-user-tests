@@ -129,7 +129,11 @@ username=$(generate_test_name_with_hyphens "User")
 password=$(generate_test_name_with_spaces "Password")
 origin_username=$(generate_test_name_with_hyphens "Origin User")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_create_a_user_with_password \"$org\" \"$space\" \"$username\" \"$password\"
 run it_can_create_a_user_with_origin \"$org\" \"$space\" \"$origin_username\" "sso"

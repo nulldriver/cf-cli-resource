@@ -157,11 +157,17 @@ destination_org=$(generate_test_name_with_spaces "Destination Org")
 destination_space=$(generate_test_name_with_spaces "Destination Space")
 destination_app_name=$(generate_test_name_with_spaces "Destination App")
 
+login
+
 setup_integration_tests "$source_org" "$source_space"
 setup_integration_tests "$destination_org" "$destination_space"
 
+cf::target "$source_org" "$source_space"
+
 describe "allow the source app to connect to the destination app in the same org and space"
 {
+  org=$source_org
+  space=$source_space
   run it_can_push_an_app \"$source_org\" \"$source_space\" \"$source_app_name\"
   run it_can_push_an_app \"$source_org\" \"$source_space\" \"$destination_app_name\"
 

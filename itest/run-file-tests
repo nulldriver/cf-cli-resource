@@ -67,6 +67,8 @@ org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 app_name=$(generate_test_name_with_spaces "App")
 
+login
+
 run it_can_create_an_org_with_file \"$org\"
 run it_can_create_a_space_with_file \"$org\" \"$space\"
 

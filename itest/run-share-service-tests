@@ -76,9 +76,13 @@ plan=$CCR_SHARE_PLAN
 configuration=$CCR_SHARE_CONFIGURATION
 service_instance=$(generate_test_name_with_spaces "Shared Service")
 
+login
+
 setup_integration_tests "$source_org" "$source_space"
 setup_integration_tests "$source_org" "$other_space"
 setup_integration_tests "$other_org" "$other_space"
+
+cf::target "$source_org" "$source_space"
 
 run it_can_disable_feature_flag \"service_instance_sharing\"
 run it_can_enable_feature_flag \"service_instance_sharing\"

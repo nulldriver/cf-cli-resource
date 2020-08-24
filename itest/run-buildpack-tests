@@ -225,6 +225,8 @@ it_can_update_a_buildpack_position() {
 buildpack_url="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.18/java-buildpack-v4.18.zip"
 updated_buildpack_url="https://github.com/cloudfoundry/java-buildpack/releases/download/v4.19.1/java-buildpack-v4.19.1.zip"
 
+login
+
 describe "it_can_create_and_disable_a_buildpack"
 {
   buildpack=$(generate_test_name_with_hyphens "buildpack")

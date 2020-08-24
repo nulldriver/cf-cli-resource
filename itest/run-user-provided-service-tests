@@ -90,7 +90,11 @@ syslog_si=$(generate_test_name_with_spaces "cups syslog")
 route_si=$(generate_test_name_with_spaces "cups route")
 route_service_url="https://example.com"
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_push_an_app \"$org\" \"$space\" \"$app_name\"
 

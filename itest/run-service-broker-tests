@@ -213,7 +213,11 @@ it_can_delete_a_service_broker() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 describe "it can create a space scoped service broker"
 {

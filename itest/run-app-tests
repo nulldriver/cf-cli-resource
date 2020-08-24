@@ -316,7 +316,11 @@ it_can_restage_an_app() {
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 describe "push an app then start, restart, restage, and stop it"
 {

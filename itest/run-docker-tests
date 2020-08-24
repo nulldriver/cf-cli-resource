@@ -47,7 +47,11 @@ docker_private_image=$CCR_DOCKER_PRIVATE_IMAGE
 docker_private_username=$CCR_DOCKER_PRIVATE_USERNAME
 docker_private_password=$CCR_DOCKER_PRIVATE_PASSWORD
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_disable_feature_flag \"diego_docker\"
 run it_can_enable_feature_flag \"diego_docker\"

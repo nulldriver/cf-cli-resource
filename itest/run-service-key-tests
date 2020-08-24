@@ -65,7 +65,11 @@ plan=$CCR_SERVICE_KEY_PLAN
 service_instance=$(generate_test_name_with_spaces "Service For Service Key")
 service_key=$(generate_test_name_with_spaces "Service Key")
 
+login
+
 setup_integration_tests "$org" "$space"
+
+cf::target "$org" "$space"
 
 run it_can_create_a_service \"$org\" \"$space\" \"$service\" \"$plan\" \"$service_instance\"
 

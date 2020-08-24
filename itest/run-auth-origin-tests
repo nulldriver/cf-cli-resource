@@ -14,5 +14,7 @@ CCR_SOURCE=$(echo $CCR_SOURCE | jq '.source.origin = "uaa"')
 org=$(generate_test_name_with_spaces "Org")
 space=$(generate_test_name_with_spaces "Space")
 
+login
+
 setup_integration_tests "$org" "$space"
 teardown_integration_tests "$org" "$space"

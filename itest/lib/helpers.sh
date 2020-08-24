@@ -46,15 +46,10 @@ describe() {
 
 run() {
   export TMPDIR=$(mktemp -d $TMPDIR_ROOT/cf-cli-tests.XXXXXX)
-  login
-  if [ -n "${org:-}" ] && [ -n "${space:-}" ] && cf::space_exists "$org" "$space"; then
-    cf::target "$org" "$space"
-  fi
   # convert multiple args to single arg so printf doesn't output multiple lines
   printf 'running \e[33m%s\e[0m...\n' "$(echo "$@")"
   eval "$@" 2>&1 | sed -e 's/^/  /g'
   echo ""
-  logout
 }
 
 generate_test_id() {
