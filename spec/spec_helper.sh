@@ -21,7 +21,7 @@ shellspec_spec_helper_configure() {
   quiet() {
     local output=
     if ! output=$("$@" 2>&1); then
-      local status=$?
+      local status=${PIPESTATUS[0]}
       echo "[ERROR] $output"
       exit $status
     fi
