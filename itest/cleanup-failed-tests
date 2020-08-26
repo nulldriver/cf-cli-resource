@@ -8,6 +8,8 @@ base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 source "$base_dir/itest/lib/config.sh"
 source "$base_dir/itest/lib/helpers.sh"
 
+login
+
 run cleanup_test_orgs
 run cleanup_test_users
 run cleanup_service_brokers
