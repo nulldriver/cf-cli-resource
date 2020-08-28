@@ -91,6 +91,8 @@ it gets even simpler:
 
 The standard way to authenticate the `cf-cli-resource` with a target Cloud Foundry environment is to either use `username` and `password` or `client_id` and `client_secret`, which will save a `$CF_HOME/.cf/config.json` file containing the API endpoint, and access token. For some pipeline workflows, it is necessary to authenticate using alternative methods and then supply the pre-configured `config.json` to the `cf-cli-resource`.
 
+> See [examples/cf_home-auth/pipeline.yml](examples/cf_home-auth/pipeline.yml) for a full example
+
 For example:
 
 ```yaml
