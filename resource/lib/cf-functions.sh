@@ -746,7 +746,12 @@ function cf::network_policy_exists() {
   local protocol=${3=tcp}
   local port=${4:=8080}
 
-  CF_TRACE=false cf::cf network-policies --source "$source_app" | grep "$destination_app" | grep "$protocol" | grep -q "$port"
+  local output=
+  if ! output=$(CF_TRACE=false cf::cf network-policies --source "$source_app"); then
+    logger::error "$output"
+    exit 1
+  fi
+  echo "$output" | grep "$destination_app" | grep "$protocol" | grep -q "$port"
 }
 
 # very loose match on some "task name" (or command...) in the cf tasks output
@@ -758,8 +763,19 @@ function cf::was_task_run() {
 
 function cf::is_app_started() {
   local app_name=${1:?app_name null or not set}
-  local guid=$(cf::get_app_guid "$app_name")
-  cf::curl "/v2/apps/$guid" | jq -e '.entity.state == "STARTED"' >/dev/null
+  local guid=
+  if ! guid=$(cf::get_app_guid "$app_name"); then
+    local status=${PIPESTATUS[0]}
+    logger::error "$guid"
+    exit $status
+  fi
+  local output=
+  if ! output=$(cf::curl "/v2/apps/$guid/summary"); then
+    local status=${PIPESTATUS[0]}
+    logger::error "$guid"
+    exit $status
+  fi
+  echo $output | jq -e '.instances == .running_instances' >/dev/null
 }
 
 function cf::is_app_stopped() {
