@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.XX.X - Unreleased
+
+### Added
+
+- Introduced new tests (see `spec` folder) using the [shellspec](https://shellspec.info/) BDD testing framework. The existing home-grown test framework in the `itest` folder has served this project well, but it's time to move
+
+### Changed
+
+- Resource and test executions are now isolated from each other thanks to setting their own unique `CF_HOME` locations.
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.51.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
+| cf7 cli    |  [7.0.2](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
+| yq         |    [3.3.2](https://github.com/mikefarah/yq/releases/tag/3.3.2)     |
+
 ## 2.21.0 - 2020-08-09
 
 # Changed
