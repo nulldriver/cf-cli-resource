@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Introduced new tests (see `spec` folder) using the [shellspec](https://shellspec.info/) BDD testing framework. The existing home-grown test framework in the `itest` folder has served this project well, but it's time to move
+- `push` command now supports to specify multiple `buildpacks`
 
 ### Changed
 

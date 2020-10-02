@@ -1,6 +1,7 @@
 
 app_name=$(get_option '.app_name')
 buildpack=$(get_option '.buildpack')
+buildpacks=$(get_option '.buildpacks')
 startup_command=$(get_option '.startup_command')
 docker_image=$(get_option '.docker_image')
 docker_username=$(get_option '.docker_username')
@@ -54,6 +55,10 @@ args=()
 for key in $(echo $vars | jq -r 'keys[]'); do
   value=$(echo $vars | jq -r --arg key "$key" '.[$key]')
   args+=(--var "$key=$value")
+done
+
+for buildpack in $(echo $buildpacks | jq -r '.[]'); do
+  args+=(-b "$buildpack")
 done
 
 for vars_file in $(echo $vars_files | jq -r '.[]'); do
