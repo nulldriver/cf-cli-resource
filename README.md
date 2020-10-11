@@ -755,6 +755,28 @@ Bind a service instance to an HTTP route
     path: foo
 ```
 
+#### unbind-route-service
+
+Unbind a service instance from an HTTP route
+
+- `org`: _Optional._ The organization to target (required if not set in the source config)
+- `space`: _Optional._ The space to target (required if not set in the source config)
+- `domain`: _Required._ The domain to unbind the route from
+- `service_instance`: _Required._ The service instance to unbind the route from
+- `hostname`: _Optional._ Hostname used in combination with DOMAIN to specify the route to unbind
+- `path`: _Optional._ Path used in combination with HOSTNAME and DOMAIN to specify the route to unbind
+
+```yml
+- put: cf-unbind-route-service
+  resource: cf-env
+  params:
+    command: unbind-route-service
+    domain: example.com
+    service_instance: mylogger
+    hostname: myhost
+    path: foo
+```
+
 #### enable-feature-flag
 
 Allow use of a feature

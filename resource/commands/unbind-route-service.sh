@@ -12,4 +12,4 @@ args=("$domain" "$service_instance")
 [ -n "$hostname" ] && args+=(--hostname "$hostname")
 [ -n "$path" ] && args+=(--path "$path")
 
-cf::cf unbind-route-service "${args[@]}"
+cf::cf unbind-route-service -f "${args[@]}"

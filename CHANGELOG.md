@@ -10,10 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Introduced new tests (see `spec` folder) using the [shellspec](https://shellspec.info/) BDD testing framework. The existing home-grown test framework in the `itest` folder has served this project well, but it's time to move on to something better. Over the upcoming releases, we'll slowly start converting more of the `itest` tests to the newer `spec` tests.
-- `push` command now supports specifying multiple `buildpacks`, thanks to a PR by [tenjaa](https://github.com/tenjaa). The original `buildpack` option is now deprecated and superceded by `buildpacks`.
+- `unbind-route-service` - Unbind a service instance from an HTTP route, thanks to a PR by [JHjava](https://github.com/JHjava)
 
 ### Changed
 
+- `push` command now supports specifying multiple `buildpacks`, thanks to a PR by [tenjaa](https://github.com/tenjaa). The original `buildpack` option is now deprecated and superceded by `buildpacks`.
 - Resource and test executions are now isolated from each other thanks to setting their own unique `CF_HOME` locations.
 
 ### Packaged Dependencies
