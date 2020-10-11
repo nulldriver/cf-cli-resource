@@ -828,12 +828,12 @@ function cf::get_app_buildpacks() {
   local app_name=${1:?app_name null or not set}
 
   local output
-  if ! output=$(cf::curl "/v2/apps/$(cf::get_app_guid "$app_name")/droplets/current"); then
+  if ! output=$(cf::curl "/v3/apps/$(cf::get_app_guid "$app_name")"); then
     logger::error "$output"
     exit 1
   fi
 
-  echo $output | jq -r '.buildpacks | map(.name) | join(",")'
+  echo $output | jq -r '.lifecycle | select(.type == "buildpack") | .data.buildpacks | join(",")'
 }
 
 function cf::scale() {

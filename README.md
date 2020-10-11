@@ -794,8 +794,8 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `org`: _Optional._ The organization to target (required if not set in the source config)
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `app_name`: _Required._ The name of the application (_Optional_ if using a `manifest` that specifies the application name)
-- `buildpack`: _Optional._ Custom buildpack by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify 'default' or 'null'
-- `buildpacks`: _Optional._ Multiple buildpacks as an array
+- `buildpack`: _Optional._ _Deprecated_, please use `buildpacks` instead.
+- `buildpacks`: _Optional._ List of custom buildpacks by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify 'default' or 'null'
 - `disk_quota`: _Optional._ Disk limit (e.g. 256M, 1024M, 1G)
 - `docker_image`: _Optional._ Docker-image to be used (e.g. user/docker-image-name)
 - `docker_username`: _Optional._ This is used as the username to authenticate against a protected docker registry
@@ -833,7 +833,8 @@ _NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` 
     app_name: myapp-ui
     memory: 1G
     path: path/to/myapp-*.jar
-    buildpack: java_buildpack
+    buildpacks:
+      - java_buildpack
     manifest: path/to/manifest.yml
     vars:
       instances: 3

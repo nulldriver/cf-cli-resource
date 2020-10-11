@@ -315,7 +315,6 @@ it_can_push_an_app_with_multiple_buildpacks() {
   --arg org "$org" \
   --arg space "$space" \
   --arg app_name "$app_name" \
-  --arg stack "$stack" \
   --arg path "$project/content" \
   --arg manifest "$project/manifest.yml" \
   '{
@@ -325,15 +324,50 @@ it_can_push_an_app_with_multiple_buildpacks() {
     app_name: $app_name,
     path: $path,
     manifest: $manifest,
-    buildpacks:
-    - binary_buildpack
-    - staticfile_buildpack
+    buildpacks: [
+      "binary_buildpack",
+      "staticfile_buildpack"
+    ]
   }')
 
   put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
 
   assert::success cf::is_app_started "$app_name"
   assert::equals "binary_buildpack,staticfile_buildpack" "$(cf::get_app_buildpacks "$app_name")"
+}
+
+it_can_push_an_app_with_deprecated_buildpack_param() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  local app_name=${3:?app_name null or not set}
+
+  local project=$(create_static_app "$app_name", "---
+applications:
+- name: $app_name
+  memory: 64M
+  disk_quota: 64M
+  path: content")
+
+  local params=$(jq -n \
+  --arg org "$org" \
+  --arg space "$space" \
+  --arg app_name "$app_name" \
+  --arg path "$project/content" \
+  --arg manifest "$project/manifest.yml" \
+  '{
+    command: "push",
+    org: $org,
+    space: $space,
+    app_name: $app_name,
+    path: $path,
+    manifest: $manifest,
+    buildpack: "staticfile_buildpack"
+  }')
+
+  put_with_params "$CCR_SOURCE" "$params" | jq -e '.version | keys == ["timestamp"]'
+
+  assert::success cf::is_app_started "$app_name"
+  assert::equals "staticfile_buildpack" "$(cf::get_app_buildpacks "$app_name")"
 }
 
 org=$(generate_test_name_with_spaces "Org")
@@ -418,9 +452,16 @@ describe "push an app with stack"
 describe "push an app with multiple buildpacks"
 {
   app_name=$(generate_test_name_with_spaces "App")
-  stack=cflinuxfs3
 
-  run it_can_push_an_app_with_stack \"$org\" \"$space\" \"$app_name\"
+  run it_can_push_an_app_with_multiple_buildpacks \"$org\" \"$space\" \"$app_name\"
+  run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
+}
+
+describe "push an app with deprecated buildpack param"
+{
+  app_name=$(generate_test_name_with_spaces "App")
+
+  run it_can_push_an_app_with_deprecated_buildpack_param \"$org\" \"$space\" \"$app_name\"
   run it_can_delete_an_app \"$org\" \"$space\" \"$app_name\"
 }
 

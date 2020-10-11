@@ -1,7 +1,16 @@
+json_array_push() {
+  local array=${1:?array null or not set}
+  local value=${2:-}
+  if [ -n "$value" ]; then
+    echo "$array" | jq --arg value "$value" '. + [ $value ]'
+  else
+    echo "$array"
+  fi
+}
 
 app_name=$(get_option '.app_name')
-buildpack=$(get_option '.buildpack')
-buildpacks=$(get_option '.buildpacks')
+# backwards compatibility for deprecated 'buildpack' param (https://github.com/nulldriver/cf-cli-resource/issues/87)
+buildpacks=$(get_option '.buildpacks' "$(json_array_push '[]' "$(get_option '.buildpack')")")
 startup_command=$(get_option '.startup_command')
 docker_image=$(get_option '.docker_image')
 docker_username=$(get_option '.docker_username')
@@ -36,7 +45,6 @@ fi
 
 args=()
 [ -n "$app_name" ]        && args+=("$app_name")
-[ -n "$buildpack" ]       && args+=(-b "$buildpack")
 [ -n "$startup_command" ] && args+=(-c "$startup_command")
 [ -n "$docker_image" ]    && args+=(--docker-image "$docker_image")
 [ -n "$docker_username" ] && args+=(--docker-username "$docker_username")

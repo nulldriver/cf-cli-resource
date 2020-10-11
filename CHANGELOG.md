@@ -5,12 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.XX.X - Unreleased
+## 2.22.0 - Unreleased
 
 ### Added
 
-- Introduced new tests (see `spec` folder) using the [shellspec](https://shellspec.info/) BDD testing framework. The existing home-grown test framework in the `itest` folder has served this project well, but it's time to move
-- `push` command now supports to specify multiple `buildpacks`
+- Introduced new tests (see `spec` folder) using the [shellspec](https://shellspec.info/) BDD testing framework. The existing home-grown test framework in the `itest` folder has served this project well, but it's time to move on to something better. Over the upcoming releases, we'll slowly start converting more of the `itest` tests to the newer `spec` tests.
+- `push` command now supports specifying multiple `buildpacks`, thanks to a PR by [tenjaa](https://github.com/tenjaa). The original `buildpack` option is now deprecated and superceded by `buildpacks`.
 
 ### Changed
 
