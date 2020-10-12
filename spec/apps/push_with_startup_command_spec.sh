@@ -41,12 +41,4 @@ Describe 'apps'
     The output should json '.version | keys == ["timestamp"]'
     Assert [ "$startup_command" != "$(cf::get_app_startup_command "$app_name")" ]
   End
-
-  It 'can delete an app'
-    When call delete_app "$org" "$space" "$app_name"
-    The status should be success
-    The error should end with "OK"
-    The output should json '.version | keys == ["timestamp"]'
-    Assert not cf::app_exists "$app_name"
-  End
 End
