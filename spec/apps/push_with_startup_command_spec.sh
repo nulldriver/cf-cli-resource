@@ -34,6 +34,14 @@ Describe 'apps'
     Assert [ "$startup_command" == "$(cf::get_app_startup_command "$app_name")" ]
   End
 
+  It 'can push an app reset to default startup command'
+    When call push_app "$org" "$space" "$app_name" "$(jq -n --arg startup_command "null" '{startup_command: $startup_command}')"
+    The status should be success
+    The error should include "#0   running"
+    The output should json '.version | keys == ["timestamp"]'
+    Assert [ "$startup_command" != "$(cf::get_app_startup_command "$app_name")" ]
+  End
+
   It 'can delete an app'
     When call delete_app "$org" "$space" "$app_name"
     The status should be success
