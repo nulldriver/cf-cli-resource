@@ -4,7 +4,6 @@ set -euo pipefail
 
 Describe 'orgs and spaces'
   Include resource/lib/cf-functions.sh
-  Include spec/orgs/orgs_helper.sh
 
   setup() {
     org=$(generate_test_name_with_spaces)
@@ -16,7 +15,15 @@ Describe 'orgs and spaces'
   BeforeAll 'setup'
 
   It 'can create an org'
-    When call create_org "$org"
+    create_org() {
+      local params=$(
+        %text:expand
+        #|command: create-org
+        #|org: $org
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call create_org
     The status should be success
     The error should end with "TIP: Use 'cf target -o \"$org\"' to target new org"
     The output should json '.version | keys == ["timestamp"]'
@@ -24,7 +31,16 @@ Describe 'orgs and spaces'
   End
 
   It 'can create a space'
-    When call create_space "$org" "$space"
+    create_space() {
+      local params=$(
+        %text:expand
+        #|command: create-space
+        #|org: $org
+        #|space: $space
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call create_space
     The status should be success
     The error should end with "TIP: Use 'cf target -o \"$org\" -s \"$space\"' to target new space"
     The output should json '.version | keys == ["timestamp"]'
@@ -32,7 +48,16 @@ Describe 'orgs and spaces'
   End
 
   It 'can delete a space'
-    When call delete_space "$org" "$space"
+    delete_space() {
+      local params=$(
+        %text:expand
+        #|command: delete-space
+        #|org: $org
+        #|space: $space
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call delete_space
     The status should be success
     The error should end with "OK"
     The output should json '.version | keys == ["timestamp"]'
@@ -40,7 +65,15 @@ Describe 'orgs and spaces'
   End
 
   It 'can delete an org'
-    When call delete_org "$org"
+    delete_org() {
+      local params=$(
+        %text:expand
+        #|command: delete-org
+        #|org: $org
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call delete_org
     The status should be success
     The error should end with "OK"
     The output should json '.version | keys == ["timestamp"]'
