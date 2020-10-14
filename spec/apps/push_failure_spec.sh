@@ -24,7 +24,7 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can show logs on a failed push'
-    push_app() {
+    push_app_with_insufficient_disk_quota() {
       local params=$(
         %text:expand
         #|command: push
@@ -32,12 +32,13 @@ Describe 'apps'
         #|space: $space
         #|app_name: $app_name
         #|path: $FIXTURE/static-app/dist
+        #|memory: 64M
         #|disk_quota: 1M
         #|show_app_log: true
       )
       put_with_params "$(yaml_to_json "$params")"
     }
-    When call push_app
+    When call push_app_with_insufficient_disk_quota
     The status should eq $E_PUSH_FAILED_WITH_APP_LOGS_SHOWN
     The error should include "Retrieving logs for app $app_name in org $org / space $space as $(echo $CCR_SOURCE | jq -r .source.username)..."
     The output should json '.version | keys == ["timestamp"]'

@@ -34,6 +34,8 @@ Describe 'apps'
         #|space: $space
         #|app_name: $app_name
         #|path: $FIXTURE/static-app/dist
+        #|memory: 64M
+        #|disk_quota: 64M
         #|strategy: rolling
         #|instances: 2
       )

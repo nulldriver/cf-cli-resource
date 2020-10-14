@@ -32,6 +32,8 @@ Describe 'apps'
         #|space: $space
         #|app_name: $app_name
         #|path: $FIXTURE/static-app/dist
+        #|memory: 64M
+        #|disk_quota: 64M
       )
       put_with_params "$(yaml_to_json "$params")"
     }
@@ -51,6 +53,8 @@ Describe 'apps'
         #|space: $space
         #|app_name: $app_name
         #|delete_mapped_routes: true
+        #|memory: 64M
+        #|disk_quota: 64M
       )
       put_with_params "$(yaml_to_json "$params")"
     }
