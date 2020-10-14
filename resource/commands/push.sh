@@ -80,7 +80,7 @@ cf::target "$org" "$space"
 [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
 set +e
-cf::cf push "${args[@]}"
+cf::cf push "${args[@]:-}"
 status=$?
 set -e
 
