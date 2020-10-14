@@ -4,7 +4,6 @@ set -euo pipefail
 
 Describe 'apps'
   Include resource/lib/cf-functions.sh
-  Include spec/apps/apps_helper.sh
 
   setup() {
     org=$(generate_test_name_with_spaces)
@@ -27,7 +26,19 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can push an app with custom startup command'
-    When call push_app "$org" "$space" "$app_name" "$(jq -n --arg startup_command "$startup_command" '{startup_command: $startup_command}')"
+    push_app() {
+      local params=$(
+        %text:expand
+        #|command: push
+        #|org: $org
+        #|space: $space
+        #|app_name: $app_name
+        #|path: $FIXTURE/static-app/dist
+        #|startup_command: $startup_command
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call push_app
     The status should be success
     The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
@@ -35,7 +46,19 @@ Describe 'apps'
   End
 
   It 'can push an app reset to default startup command'
-    When call push_app "$org" "$space" "$app_name" "$(jq -n --arg startup_command "null" '{startup_command: $startup_command}')"
+    push_app() {
+      local params=$(
+        %text:expand
+        #|command: push
+        #|org: $org
+        #|space: $space
+        #|app_name: $app_name
+        #|path: $FIXTURE/static-app/dist
+        #|startup_command: "null"
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call push_app
     The status should be success
     The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'

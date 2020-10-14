@@ -27,6 +27,11 @@ shellspec_spec_helper_configure() {
     fi
   }
 
+  yaml_to_json() {
+    local yaml=${1:?yaml null or not set}
+    echo "$yaml" | yq read - --tojson
+  }
+
   initialize_source_config() {
     : "${CCR_CF_API:?}"
     : "${CCR_CF_USERNAME:?}"

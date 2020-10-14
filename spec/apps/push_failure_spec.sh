@@ -4,7 +4,6 @@ set -euo pipefail
 
 Describe 'apps'
   Include resource/lib/cf-functions.sh
-  Include spec/apps/apps_helper.sh
 
   setup() {
     org=$(generate_test_name_with_spaces)
@@ -25,7 +24,20 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can show logs on a failed push'
-    When call push_app "$org" "$space" "$app_name" "$(jq -n --arg app_name "$app_name" '{app_name: $app_name, disk_quota: "1M", show_app_log: "true"}')"
+    push_app() {
+      local params=$(
+        %text:expand
+        #|command: push
+        #|org: $org
+        #|space: $space
+        #|app_name: $app_name
+        #|path: $FIXTURE/static-app/dist
+        #|disk_quota: 1M
+        #|show_app_log: true
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call push_app
     The status should eq $E_PUSH_FAILED_WITH_APP_LOGS_SHOWN
     The error should include "Retrieving logs for app $app_name in org $org / space $space as $(echo $CCR_SOURCE | jq -r .source.username)..."
     The output should json '.version | keys == ["timestamp"]'

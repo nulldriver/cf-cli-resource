@@ -4,7 +4,6 @@ set -euo pipefail
 
 Describe 'apps'
   Include resource/lib/cf-functions.sh
-  Include spec/apps/apps_helper.sh
 
   Skip if "not cf7" not cf::is_cf7
 
@@ -27,7 +26,20 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can push an app using rolling strategy'
-    When call push_app "$org" "$space" "$app_name" '{"strategy": "rolling", "instances": 2}'
+    push_app() {
+      local params=$(
+        %text:expand
+        #|command: push
+        #|org: $org
+        #|space: $space
+        #|app_name: $app_name
+        #|path: $FIXTURE/static-app/dist
+        #|strategy: rolling
+        #|instances: 2
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call push_app
     The status should be success
     The error should include "#0   running"
     The error should include "#1   running"
