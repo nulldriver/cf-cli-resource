@@ -17,7 +17,7 @@ shellspec_spec_helper_configure() {
   }
 
   # Executes command capturing status and all output (stdout and stderr).
-  # If command failes output is echoed and returns failure status code.
+  # If command fails then output is echoed and failure status code is returned.
   quiet() {
     local output=
     if ! output=$("$@" 2>&1); then
@@ -30,6 +30,20 @@ shellspec_spec_helper_configure() {
   yaml_to_json() {
     local yaml=${1:?yaml null or not set}
     echo "$yaml" | yq read - --tojson
+  }
+
+  load_fixture() {
+    local fixture=${1:?fixture null or not set}
+
+    if [ ! -d "$FIXTURE/$fixture" ]; then
+      echo "[ERROR] Fixture not found: $FIXTURE/$fixture" >&2
+      exit 1
+    fi
+
+    cd $(mktemp -d "$TMPDIR/$fixture.XXXXXX")
+    cp -r "$FIXTURE/$fixture/" .
+
+    pwd
   }
 
   initialize_source_config() {

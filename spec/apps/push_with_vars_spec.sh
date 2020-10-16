@@ -25,17 +25,18 @@ Describe 'apps'
 
   It 'can push an app with vars'
     push_app_with_vars() {
+      local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
         #|org: $org
         #|space: $space
-        #|manifest: $FIXTURE/static-app/manifest.yml
+        #|manifest: $fixture/manifest.yml
         #|vars:
         #|  app_name: $app_name
         #|vars_files:
-        #|  - $FIXTURE/static-app/vars-memory.yml
-        #|  - $FIXTURE/static-app/vars-disk_quota.yml
+        #|  - $fixture/vars-memory.yml
+        #|  - $fixture/vars-disk_quota.yml
       )
       put_with_params "$(yaml_to_json "$params")"
     }

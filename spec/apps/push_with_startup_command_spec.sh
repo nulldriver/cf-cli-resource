@@ -27,13 +27,14 @@ Describe 'apps'
 
   It 'can push an app with custom startup command'
     push_app() {
+      local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
         #|org: $org
         #|space: $space
         #|app_name: $app_name
-        #|path: $FIXTURE/static-app/dist
+        #|path: $fixture/dist
         #|memory: 64M
         #|disk_quota: 64M
         #|startup_command: $startup_command
@@ -49,13 +50,14 @@ Describe 'apps'
 
   It 'can push an app reset to default startup command'
     push_app() {
+      local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
         #|org: $org
         #|space: $space
         #|app_name: $app_name
-        #|path: $FIXTURE/static-app/dist
+        #|path: $fixture/dist
         #|memory: 64M
         #|disk_quota: 64M
         #|startup_command: "null"

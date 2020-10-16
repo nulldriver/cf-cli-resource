@@ -25,13 +25,14 @@ Describe 'apps'
 
   It 'can show logs on a failed push'
     push_app_with_insufficient_disk_quota() {
+      local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
         #|org: $org
         #|space: $space
         #|app_name: $app_name
-        #|path: $FIXTURE/static-app/dist
+        #|path: $fixture/dist
         #|memory: 64M
         #|disk_quota: 1M
         #|show_app_log: true
