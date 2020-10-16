@@ -817,7 +817,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `app_name`: _Required._ The name of the application (_Optional_ if using a `manifest` that specifies the application name)
 - `buildpack`: _Optional._ _Deprecated_, please use `buildpacks` instead.
-- `buildpacks`: _Optional._ List of custom buildpacks by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify 'default' or 'null'
+- `buildpacks`: _Optional._ List of custom buildpacks by name (e.g. my-buildpack) or Git URL (e.g. 'https://github.com/cloudfoundry/java-buildpack.git') or Git URL with a branch or tag (e.g. 'https://github.com/cloudfoundry/java-buildpack.git#v3.3.0' for 'v3.3.0' tag). To use built-in buildpacks only, specify `default` or `"null"` (note the use of double quotes!)
 - `disk_quota`: _Optional._ Disk limit (e.g. 256M, 1024M, 1G)
 - `docker_image`: _Optional._ Docker-image to be used (e.g. user/docker-image-name)
 - `docker_username`: _Optional._ This is used as the username to authenticate against a protected docker registry
@@ -829,7 +829,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `no_start`: _Optional._ Do not start an app after pushing. Defaults to `false`.
 - `path`: _Optional._ Path to app directory or to a zip file of the contents of the app directory
 - `stack`: _Optional._ Stack to use (a stack is a pre-built file system, including an operating system, that can run apps)
-- `startup_command`: _Optional._ Startup command, set to null to reset to default start command
+- `startup_command`: _Optional._ Startup command, set to `"null"` (note the use of double quotes!) to reset to default start command
 - `vars`: _Optional._ Map of variables to pass to manifest
 - `vars_files`: _Optional._ List of variables files to pass to manifest
 - `show_app_log`: _Optional._ Outputs the app log after a failed startup, useful to debug issues when used together with the `app_name` option.
