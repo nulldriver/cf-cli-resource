@@ -35,6 +35,9 @@ Describe 'apps'
         #|path: $fixture/dist
         #|memory: 64M
         #|disk_quota: 64M
+        #|buildpacks:
+        #|  - binary_buildpack
+        #|  - staticfile_buildpack
       )
       put_with_params "$(yaml_to_json "$params")"
     }
@@ -43,6 +46,31 @@ Describe 'apps'
     The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
     Assert cf::is_app_started "$app_name"
+    Assert [ "binary_buildpack,staticfile_buildpack" == "$(cf::get_app_buildpacks "$app_name")" ]
+  End
+
+  It 'can push an app with deprecated buildpack param'
+    push_app_with_deprecated_buildpack_param() {
+      local fixture=$(load_fixture "static-app")
+      local params=$(
+        %text:expand
+        #|command: push
+        #|org: $org
+        #|space: $space
+        #|app_name: $app_name
+        #|path: $fixture/dist
+        #|memory: 64M
+        #|disk_quota: 256M
+        #|buildpack: php_buildpack
+      )
+      put_with_params "$(yaml_to_json "$params")"
+    }
+    When call push_app_with_deprecated_buildpack_param
+    The status should be success
+    The error should include "#0   running"
+    The output should json '.version | keys == ["timestamp"]'
+    Assert cf::is_app_started "$app_name"
+    Assert [ "php_buildpack" == "$(cf::get_app_buildpacks "$app_name")" ]
   End
 
   It 'can delete an app'
