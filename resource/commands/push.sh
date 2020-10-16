@@ -33,8 +33,15 @@ staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
 if [ -n "$environment_variables" ]; then
-  if [ -z "$manifest" ]; then
-    manifest="manifest-for-environment-variables.yml"
+  if [ -n "$manifest" ]; then
+    if [ ! -f "$manifest" ]; then
+      logger::error "The specified manifest does not exist: $(logger::highlight "$manifest")"
+      exit 1
+    fi
+    cp "$manifest" "manifest-modified-with-environment-variables.yml"
+    manifest="manifest-modified-with-environment-variables.yml"
+  else
+    manifest="manifest-generated-for-environment-variables.yml"
     touch "$manifest"
     if [ -n "$app_name" ]; then
       yq new "applications[+].name" "$app_name" > "$manifest"

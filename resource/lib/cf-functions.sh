@@ -671,7 +671,7 @@ function cf::has_env() {
     exit 1
   fi
 
-  echo $output | jq -e --arg key "$env_var_name" --arg value "$env_var_value" '.environment_json[$key] == $value'
+  echo $output | jq -e --arg key "$env_var_name" --arg value "$env_var_value" '.environment_json[$key] == $value' >/dev/null
 }
 
 function cf::start() {
