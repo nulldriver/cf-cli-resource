@@ -32,21 +32,29 @@ Describe 'apps'
         #|org: $org
         #|space: $space
         #|app_name: $app_name
-        #|path: $fixture/dist
-        #|memory: 64M
-        #|disk_quota: 64M
         #|buildpacks:
         #|  - binary_buildpack
         #|  - staticfile_buildpack
+        #|disk_quota: 64M
+        #|instances: 2
+        #|memory: 64M
+        #|path: $fixture/dist
+        #|no_start: true
+        #|staging_timeout: 15
+        #|startup_timeout: 5
       )
       put_with_params "$(yaml_to_json "$params")"
     }
     When call push_app
     The status should be success
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
-    Assert cf::is_app_started "$app_name"
+    The error should include "Pushing app"
     Assert [ "binary_buildpack,staticfile_buildpack" == "$(cf::get_app_buildpacks "$app_name")" ]
+    Assert [ 64 == "$(cf::get_app_disk_quota "$app_name")" ]
+    Assert [ 2 == "$(cf::get_app_instances "$app_name")" ]
+    Assert [ 64 == "$(cf::get_app_memory "$app_name")" ]
+    Assert cf::is_app_stopped "$app_name"
+    # TODO: Are staging_timeout and startup_timeout testable?
   End
 
   It 'can push an app with deprecated buildpack param'
@@ -59,38 +67,18 @@ Describe 'apps'
         #|space: $space
         #|app_name: $app_name
         #|path: $fixture/dist
-        #|memory: 64M
+        #|no_start: true
         #|disk_quota: 256M
+        #|memory: 64M
         #|buildpack: php_buildpack
       )
       put_with_params "$(yaml_to_json "$params")"
     }
     When call push_app_with_deprecated_buildpack_param
     The status should be success
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
-    Assert cf::is_app_started "$app_name"
+    The error should include "Pushing app"
+    Assert cf::is_app_stopped "$app_name"
     Assert [ "php_buildpack" == "$(cf::get_app_buildpacks "$app_name")" ]
-  End
-
-  It 'can delete an app'
-    delete_app() {
-      local params=$(
-        %text:expand
-        #|command: delete
-        #|org: $org
-        #|space: $space
-        #|app_name: $app_name
-        #|delete_mapped_routes: true
-        #|memory: 64M
-        #|disk_quota: 64M
-      )
-      put_with_params "$(yaml_to_json "$params")"
-    }
-    When call delete_app "$org" "$space" "$app_name"
-    The status should be success
-    The error should end with "OK"
-    The output should json '.version | keys == ["timestamp"]'
-    Assert not cf::app_exists "$app_name"
   End
 End
