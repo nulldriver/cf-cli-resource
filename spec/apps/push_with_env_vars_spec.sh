@@ -24,7 +24,7 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can push an app with environment variables and without manifest'
-    push_app_with_env_vars_and_without_manifest() {
+    push_app() {
       local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
@@ -41,18 +41,17 @@ Describe 'apps'
       )
       put_with_params "$(yaml_to_json "$params")"
     }
-    When call push_app_with_env_vars_and_without_manifest
+    When call push_app
     The status should be success
-    The error should match pattern "*manifest file *manifest-generated-for-environment-variables.yml*"
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
+    The error should match pattern "*manifest file *manifest-generated-for-environment-variables.yml*"
     Assert cf::is_app_started "$app_name"
     Assert cf::has_env "$app_name" "KEY1" "value 1"
     Assert cf::has_env "$app_name" "KEY2" "another value"
   End
 
   It 'can push an app with environment variables and with manifest'
-    push_app_with_env_vars_and_with_manifest() {
+    push_app() {
       local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
@@ -72,11 +71,10 @@ Describe 'apps'
       )
       put_with_params "$(yaml_to_json "$params")"
     }
-    When call push_app_with_env_vars_and_with_manifest
+    When call push_app
     The status should be success
-    The error should match pattern "*manifest file *manifest-modified-with-environment-variables.yml*"
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
+    The error should match pattern "*manifest file *manifest-modified-with-environment-variables.yml*"
     Assert cf::is_app_started "$app_name"
     Assert cf::has_env "$app_name" "KEY1" "value 1"
     Assert cf::has_env "$app_name" "KEY2" "another value"

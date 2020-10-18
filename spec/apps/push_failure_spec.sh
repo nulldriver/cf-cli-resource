@@ -41,8 +41,8 @@ Describe 'apps'
     }
     When call push_app_with_insufficient_disk_quota
     The status should eq $E_PUSH_FAILED_WITH_APP_LOGS_SHOWN
-    The error should include "Retrieving logs for app $app_name in org $org / space $space as $(echo $CCR_SOURCE | jq -r .source.username)..."
     The output should json '.version | keys == ["timestamp"]'
+    The error should include "Retrieving logs"
     Assert not cf::is_app_started "$app_name"
   End
 End

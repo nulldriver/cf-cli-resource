@@ -43,8 +43,8 @@ Describe 'apps'
     }
     When call push_app
     The status should be success
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
+    The error should include "Pushing app"
     Assert [ "$startup_command" == "$(cf::get_app_startup_command "$app_name")" ]
   End
 
@@ -66,8 +66,8 @@ Describe 'apps'
     }
     When call push_app
     The status should be success
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
+    The error should include "Pushing app"
     Assert [ "$startup_command" != "$(cf::get_app_startup_command "$app_name")" ]
   End
 End

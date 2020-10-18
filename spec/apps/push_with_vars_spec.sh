@@ -24,13 +24,14 @@ Describe 'apps'
   AfterAll 'teardown'
 
   It 'can push an app with vars'
-    push_app_with_vars() {
+    push_app() {
       local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
         #|org: $org
         #|space: $space
+        #|path: $fixture/dist
         #|manifest: $fixture/manifest.yml
         #|vars:
         #|  app_name: $app_name
@@ -40,10 +41,10 @@ Describe 'apps'
       )
       put_with_params "$(yaml_to_json "$params")"
     }
-    When call push_app_with_vars
+    When call push_app
     The status should be success
-    The error should include "#0   running"
     The output should json '.version | keys == ["timestamp"]'
+    The error should include "Staging app"
     Assert cf::is_app_started "$app_name"
     Assert [ 96 == "$(cf::get_app_memory "$app_name")" ]
     Assert [ 100 == "$(cf::get_app_disk_quota "$app_name")" ]

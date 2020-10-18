@@ -47,8 +47,8 @@ Describe 'apps'
     }
     When call push_app_with_windows_stack
     The status should be failure
-    The error should include "Found no compatible cell"
     The output should json '.version | keys == ["timestamp"]'
+    The error should include "Found no compatible cell"
     Assert [ "windows" == "$(cf::get_app_stack "$app_name")" ]
   End
 End
