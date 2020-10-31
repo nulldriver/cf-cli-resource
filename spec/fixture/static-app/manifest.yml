@@ -3,3 +3,5 @@ applications:
   - name: ((app_name))
     memory: ((memory))
     disk_quota: ((disk_quota))
+    env:
+      EXISTING_MANIFEST_ENV_VAR: existing value

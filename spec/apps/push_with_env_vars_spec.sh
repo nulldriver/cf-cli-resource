@@ -76,6 +76,7 @@ Describe 'apps'
     The output should json '.version | keys == ["timestamp"]'
     The error should match pattern "*manifest file *manifest-modified-with-environment-variables.yml*"
     Assert cf::is_app_started "$app_name"
+    Assert cf::has_env "$app_name" "EXISTING_MANIFEST_ENV_VAR" "existing value"
     Assert cf::has_env "$app_name" "KEY1" "value 1"
     Assert cf::has_env "$app_name" "KEY2" "another value"
   End
