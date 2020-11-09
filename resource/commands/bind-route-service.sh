@@ -12,6 +12,6 @@ cf::target "$org" "$space"
 args=("$domain" "$service_instance")
 [ -n "$hostname" ] && args+=(--hostname "$hostname")
 [ -n "$path" ] && args+=(--path "$path")
-[ -n "$configuration" ] && args+=(-c "configuration")
+[ -n "$configuration" ] && args+=(-c "$configuration")
 
 cf::cf bind-route-service "${args[@]}"
