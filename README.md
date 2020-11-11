@@ -25,7 +25,7 @@ Note: you must provide either `username` and `password` or `client_id` and `clie
 ```yml
 resource_types:
   - name: cf-cli-resource
-    type: docker-image
+    type: registry-image
     source:
       repository: nulldriver/cf-cli-resource
       tag: latest
