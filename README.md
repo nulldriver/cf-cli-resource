@@ -25,7 +25,7 @@ Note: you must provide either `username` and `password` or `client_id` and `clie
 ```yml
 resource_types:
   - name: cf-cli-resource
-    type: docker-image
+    type: registry-image
     source:
       repository: nulldriver/cf-cli-resource
       tag: latest
@@ -743,6 +743,7 @@ Bind a service instance to an HTTP route
 - `service_instance`: _Required._ The service instance to bind the route to
 - `hostname`: _Optional._ Hostname used in combination with `domain` to specify the route to bind
 - `path`: _Optional._ Path used in combination with `hostname` and `domain` to specify the route to bind
+- `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 
 ```yml
 - put: cf-bind-route-service
@@ -753,6 +754,7 @@ Bind a service instance to an HTTP route
     service_instance: mylogger
     hostname: myhost
     path: foo
+    configuration: '{"permissions":"read-only"}'
 ```
 
 #### unbind-route-service
