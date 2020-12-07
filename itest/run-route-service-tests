@@ -92,7 +92,8 @@ it_can_bind_logger_route_service_to_logged_app() {
     space: $space,
     domain: $domain,
     service_instance: $service_instance,
-    hostname: $hostname
+    hostname: $hostname,
+    configuration: "{}"
   }')
 
   [ -n "$path" ] && params=$(echo $params | jq --arg value "$path" '.path = $value')
