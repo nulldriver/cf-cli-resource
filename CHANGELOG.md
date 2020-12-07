@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.XX.X - Unreleased
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.51.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
+| cf7 cli    |  [7.0.2](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
+| yq         |    [3.4.0](https://github.com/mikefarah/yq/releases/tag/3.3.2)     |
+
 ## 2.23.0 - 2020-12-06
 
 ### Added
