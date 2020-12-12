@@ -38,3 +38,5 @@ applications:
         
         
       HYPHENATED_STRING: "- strings that start with a hyphen should be quoted"
+      JSON_AS_STRING: '{ jre: { version: 11.+ }, memory_calculator: { stack_threads: 25 } }'
+      ARRAY_AS_STRING: '[ list, of, things ]'

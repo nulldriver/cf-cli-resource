@@ -660,6 +660,19 @@ function cf::is_app_bound_to_route_service() {
     '.resources[].entity | select (.service_instance.entity.name == $service_instance and .apps[].entity.name == $app_name and .path == $path) | true' >/dev/null
 }
 
+function cf::get_env() {
+  local app_name=${1:?app_name null or not set}
+  local env_var_name=${2:?env_var_name null or not set}
+
+  local output
+  if ! output=$(cf::curl "/v2/apps/$(cf::get_app_guid "$app_name")/env"); then
+    logger::error "$output"
+    exit 1
+  fi
+
+  echo $output | jq -r --arg key "$env_var_name" '.environment_json[$key] // empty'
+}
+
 function cf::has_env() {
   local app_name=${1:?app_name null or not set}
   local env_var_name=${2:?env_var_name null or not set}
