@@ -847,7 +847,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 
 _NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` params.
 
-- `strategy`: _Optional._ Deployment strategy, either rolling or empty.
+- `strategy`: _Optional._ Deployment strategy, either rolling or `"null"` (note the use of double quotes!).
 
 ```yml
 - put: cf-push
