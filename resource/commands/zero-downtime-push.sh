@@ -17,7 +17,7 @@ startup_timeout=$(get_option '.startup_timeout' 0)
 logger::info "Executing $(logger::highlight "$command")"
 
 if [ ! -f "$manifest" ]; then
-  logger::error "invalid payload (manifest is not a file: $manifest)"
+  logger::error "invalid payload (manifest is not a file: $(logger::highlight "$manifest"))"
   exit $E_MANIFEST_FILE_NOT_FOUND
 fi
 
@@ -41,6 +41,10 @@ for key in $(echo $vars | jq -r 'keys[]'); do
 done
 
 for vars_file in $(echo $vars_files | jq -r '.[]'); do
+  if [ ! -f "$vars_file" ]; then
+    logger::error "invalid payload (vars_file is not a file: $(logger::highlight "$vars_file"))"
+    exit 1
+  fi
   args+=(--vars-file "$vars_file")
 done
 
