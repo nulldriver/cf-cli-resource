@@ -117,7 +117,7 @@ fi
 if [ -n "$command_file" ]; then
   if [ -r "$command_file" ]; then
     logger::info "Populating params from file (overwriting params in pipeline definition): $command_file"
-    params=$(yq r --tojson "$command_file")
+    params=$(yq read --tojson "$command_file")
   else
     logger::error "invalid payload (can not find command_file: $command_file)"
     exit $E_COMMAND_FILE_NOT_FOUND

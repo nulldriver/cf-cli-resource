@@ -960,11 +960,11 @@ function cf::set_manifest_environment_variables() (
 
   for key in $(get_keys); do
     if has_app_name; then
-      yq w -i "$manifest" -- "applications(name==$app_name).env.$key" "$(get_value "$key")"
+      yq write -i "$manifest" -- "applications(name==$app_name).env.$key" "$(get_value "$key")"
     elif has_one_app; then
-      yq w -i "$manifest" -- "applications[0].env.$key" "$(get_value "$key")"
+      yq write -i "$manifest" -- "applications[0].env.$key" "$(get_value "$key")"
     else
-      yq w -i "$manifest" -- "env.$key" "$(get_value "$key")"
+      yq write -i "$manifest" -- "env.$key" "$(get_value "$key")"
     fi
   done
 )
