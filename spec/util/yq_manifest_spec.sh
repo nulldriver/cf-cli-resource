@@ -66,4 +66,35 @@ plus another line at the end."
     The output should equal "- strings that start with a hyphen should be quoted"
   End
 
+  It 'can read json'
+    When call yq read "$fixture/manifest.yml" 'applications[0].env.JSON'
+    The status should be success
+    The output should equal "{jre: {version: 11.+}, memory_calculator: {stack_threads: 25}}"
+  End
+
+  It 'can read json as string'
+    When call yq read "$fixture/manifest.yml" 'applications[0].env.JSON_AS_STRING'
+    The status should be success
+    The output should equal "{ jre: { version: 11.+ }, memory_calculator: { stack_threads: 25 } }"
+  End
+
+  It 'can read array'
+    When call yq read "$fixture/manifest.yml" 'applications[0].env.ARRAY'
+    The status should be success
+    The output should equal '- list
+- of
+- things'
+  End
+
+  It 'can read array in-line'
+    When call yq read "$fixture/manifest.yml" 'applications[0].env.ARRAY_IN_LINE'
+    The status should be success
+    The output should equal '[list, of, things]'
+  End
+
+  It 'can read array as string'
+    When call yq read "$fixture/manifest.yml" 'applications[0].env.ARRAY_AS_STRING'
+    The status should be success
+    The output should equal '[   list,   of,   things   ]'
+  End
 End
