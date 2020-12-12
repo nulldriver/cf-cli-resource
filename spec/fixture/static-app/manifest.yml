@@ -5,3 +5,36 @@ applications:
     disk_quota: ((disk_quota))
     env:
       EXISTING_MANIFEST_ENV_VAR: existing value
+      SINGLE_QUOTED: 'Several lines of text,
+        containing ''single quotes''. Escapes (like \n) don''t do anything.
+        
+        Newlines can be added by leaving a blank line.
+          Leading whitespace on lines is ignored.'
+      DOUBLE_QUOTED: "Several lines of text,
+        containing \"double quotes\". Escapes (like \\n) work.\nIn addition,
+        newlines can be esc\
+        aped to prevent them from being converted to a space.
+        
+        Newlines can also be added by leaving a blank line.
+          Leading whitespace on lines is ignored."
+      PLAIN: Several lines of text,
+        with some "quotes" of various 'types'.
+        Escapes (like \n) don't do anything.
+        
+        Newlines can be added by leaving a blank line.
+          Additional leading whitespace is ignored.
+      BLOCK_FOLDED: >
+        Several lines of text,
+        with some "quotes" of various 'types',
+        and also a blank line:
+        
+        plus another line at the end.
+      BLOCK_LITERAL: |
+        Several lines of text,
+        with some "quotes" of various 'types',
+        and also a blank line:
+        
+        plus another line at the end.
+        
+        
+      HYPHENATED_STRING: "- strings that start with a hyphen should be quoted"
