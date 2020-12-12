@@ -23,7 +23,7 @@ RUN mkdir -p /usr/local/bin /tmp/cf7-cli && \
   rm -rf /tmp/cf7-cli
 
 # Install yaml cli
-ADD https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 /tmp/yq_linux_amd64
+ADD https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 /tmp/yq_linux_amd64
 RUN install /tmp/yq_linux_amd64 /usr/local/bin/yq && \
   yq --version && \
   rm -f /tmp/yq_linux_amd64
