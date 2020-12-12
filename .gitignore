@@ -22,5 +22,6 @@
 /dist/
 /nbdist/
 
-# Concourse Secrets
+# Secrets
 pipeline-secrets.yml
+env.sh
