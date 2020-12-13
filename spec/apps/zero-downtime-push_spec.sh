@@ -6,14 +6,14 @@ Describe 'apps'
   Include resource/lib/cf-functions.sh
 
   setup() {
+    initialize_source_config
+
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
     app_name=$(generate_test_name_with_hyphens)
-    CCR_SOURCE=$(initialize_source_config)
 
     quiet create_org_and_space "$org" "$space"
-    login_for_test_assertions
-    quiet cf::target "$org" "$space"
+    quiet login_for_test_assertions "$org" "$space"
   }
 
   teardown() {
@@ -74,5 +74,6 @@ Describe 'apps'
     The error should include "Staging app"
     The error should include "Deleting app"
     Assert cf::is_app_started "$app_name"
+    Assert not cf::app_exists "$app_name-venerable"
   End
 End

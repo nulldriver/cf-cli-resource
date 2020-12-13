@@ -6,14 +6,14 @@ Describe 'apps'
   Include resource/lib/cf-functions.sh
 
   setup() {
+    initialize_source_config
+
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
     app_name=$(generate_test_name_with_hyphens)
-    CCR_SOURCE=$(initialize_source_config)
 
     quiet create_org_and_space "$org" "$space"
-    login_for_test_assertions
-    quiet cf::target "$org" "$space"
+    quiet login_for_test_assertions "$org" "$space"
   }
 
   teardown() {
@@ -97,6 +97,7 @@ plus another line at the end." ]
     The error should include "Staging app"
     The error should include "Deleting app"
     Assert cf::is_app_started "$app_name"
+    Assert not cf::app_exists "$app_name-venerable"
     Assert [ "$(cf::get_env "$app_name" "NEW_ENV_VAR")" == "new env var" ]
     Assert [ "$(cf::get_env "$app_name" "EXISTING_MANIFEST_ENV_VAR")" == "existing value" ]
     Assert [ "$(cf::get_env "$app_name" "SINGLE_QUOTED")" == "Several lines of text, containing 'single quotes'. Escapes (like \n) don't do anything.
