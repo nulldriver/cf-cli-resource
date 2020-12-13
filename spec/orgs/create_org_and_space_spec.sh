@@ -6,10 +6,12 @@ Describe 'orgs and spaces'
   Include resource/lib/cf-functions.sh
 
   setup() {
+    initialize_source_config
+
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
-    CCR_SOURCE=$(initialize_source_config)
-    login_for_test_assertions
+
+    quiet login_for_test_assertions
   }
 
   BeforeAll 'setup'

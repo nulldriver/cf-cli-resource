@@ -8,14 +8,14 @@ Describe 'apps'
   Skip if "not cf7" not cf::is_cf7
 
   setup() {
+    initialize_source_config
+
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
     app_name=$(generate_test_name_with_hyphens)
-    CCR_SOURCE=$(initialize_source_config)
 
     quiet create_org_and_space "$org" "$space"
-    login_for_test_assertions
-    quiet cf::target "$org" "$space"
+    quiet login_for_test_assertions "$org" "$space"
   }
 
   teardown() {

@@ -52,7 +52,7 @@ shellspec_spec_helper_configure() {
     : "${CCR_CF_PASSWORD:?}"
     : "${CCR_CF_CLI_VERSION:=6}"
 
-    jq -n \
+    CCR_SOURCE=$(jq -n \
       --arg api "$CCR_CF_API" \
       --arg username "$CCR_CF_USERNAME" \
       --arg password "$CCR_CF_PASSWORD" \
@@ -65,11 +65,19 @@ shellspec_spec_helper_configure() {
           cf_cli_version: $cf_cli_version
         }
       }'
+    )
   }
 
   login_for_test_assertions() {
-    quiet cf::api "$(echo $CCR_SOURCE | jq -re '.source.api')"
-    quiet cf::auth_user "$(echo $CCR_SOURCE | jq -re '.source.username')" "$(echo $CCR_SOURCE | jq -re '.source.password')"
+    local org=${1:-}
+    local space=${2:-}
+
+    cf::api "$(echo $CCR_SOURCE | jq -re '.source.api')"
+    cf::auth_user "$(echo $CCR_SOURCE | jq -re '.source.username')" "$(echo $CCR_SOURCE | jq -re '.source.password')"
+
+    if [ -n "$org" ] || [ -n "$space" ]; then
+      cf::target "$org" "$space"
+    fi
   }
 
   put_with_params() {
