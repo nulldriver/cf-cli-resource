@@ -46,10 +46,16 @@ shellspec_spec_helper_configure() {
     pwd
   }
 
+  error_and_exit() {
+    echo "$1" >&3
+    exit 1
+  }
+
   initialize_source_config() {
-    : "${CCR_CF_API:?}"
-    : "${CCR_CF_USERNAME:?}"
-    : "${CCR_CF_PASSWORD:?}"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
+    [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
+
     : "${CCR_CF_CLI_VERSION:=6}"
 
     CCR_SOURCE=$(jq -n \
@@ -66,6 +72,12 @@ shellspec_spec_helper_configure() {
         }
       }'
     )
+  }
+
+  initialize_docker_config() {
+    [ -z "${CCR_DOCKER_PRIVATE_IMAGE:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_IMAGE"
+    [ -z "${CCR_DOCKER_PRIVATE_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_USERNAME"
+    [ -z "${CCR_DOCKER_PRIVATE_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_PASSWORD"
   }
 
   login_for_test_assertions() {
