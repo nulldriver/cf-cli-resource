@@ -3,7 +3,7 @@
 set -euo pipefail
 
 export TMPDIR=$SHELLSPEC_TMPBASE
-export CF_HOME=$(mktemp -d "$TMPDIR/cf_home_tests.XXXXXX")
+export CF_HOME=$(mktemp -d "$TMPDIR/.cf.XXXXXX")
 
 BASE_DIR=$SHELLSPEC_PROJECT_ROOT
 FIXTURE=$SHELLSPEC_SPECDIR/fixture
@@ -74,6 +74,49 @@ shellspec_spec_helper_configure() {
     )
   }
 
+  initialize_source_config_with_uaa_origin() {
+    initialize_source_config
+
+    # Add origin to auth config
+    CCR_SOURCE=$(echo "$CCR_SOURCE" | jq '.source.origin = "uaa"')
+  }
+
+  initialize_source_config_with_client_credentials() {
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_CLIENT_ID:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_ID"
+    [ -z "${CCR_CF_CLIENT_SECRET:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_SECRET"
+
+    : "${CCR_CF_CLI_VERSION:=6}"
+
+    CCR_SOURCE=$(jq -n \
+      --arg api "$CCR_CF_API" \
+      --arg client_id "$CCR_CF_CLIENT_ID" \
+      --arg client_secret "$CCR_CF_CLIENT_SECRET" \
+      --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
+      '{
+        source: {
+          api: $api,
+          client_id: $client_id,
+          client_secret: $client_secret,
+          cf_cli_version: $cf_cli_version
+        }
+      }'
+    )
+  }
+
+  initialize_source_config_for_cf_home() {
+    : "${CCR_CF_CLI_VERSION:=6}"
+
+    CCR_SOURCE=$(jq -n \
+      --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
+      '{
+        source: {
+          cf_cli_version: $cf_cli_version
+        }
+      }'
+    )
+  }
+
   initialize_docker_config() {
     [ -z "${CCR_DOCKER_PRIVATE_IMAGE:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_IMAGE"
     [ -z "${CCR_DOCKER_PRIVATE_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_USERNAME"
@@ -84,17 +127,38 @@ shellspec_spec_helper_configure() {
     local org=${1:-}
     local space=${2:-}
 
-    cf::api "$(echo $CCR_SOURCE | jq -re '.source.api')"
-    cf::auth_user "$(echo $CCR_SOURCE | jq -re '.source.username')" "$(echo $CCR_SOURCE | jq -re '.source.password')"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
+    [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
+
+    cf::api "$CCR_CF_API"
+    cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
 
     if [ -n "$org" ] || [ -n "$space" ]; then
       cf::target "$org" "$space"
     fi
   }
 
+  logout_for_test_assertions() {
+    cf::cf logout
+  }
+
+  login_with_cf_home() {
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
+    [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
+
+    cd "$(mktemp -d "$TMPDIR/.cf_home.XXXXXX")"
+
+    CF_HOME=$PWD cf::cf api "$CCR_CF_API" >/dev/null
+    CF_HOME=$PWD cf::cf auth "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD" >/dev/null
+
+    pwd
+  }
+
   put_with_params() {
     local params=${1:?params null or not set}
-    local working_dir=${2:-$(mktemp -d $TMPDIR/put-src.XXXXXX)}
+    local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}
 
     local config=$(echo $CCR_SOURCE | jq --argjson params "$params" '.params = $params')
     echo $config | "$BASE_DIR/resource/out" "$working_dir"
