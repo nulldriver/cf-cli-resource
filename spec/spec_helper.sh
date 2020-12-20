@@ -156,6 +156,13 @@ shellspec_spec_helper_configure() {
     pwd
   }
 
+  put() {
+    local config=${1:?config null or not set}
+    local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}
+
+    yaml_to_json "$config" | "$BASE_DIR/resource/out" "$working_dir"
+  }
+
   put_with_params() {
     local params=${1:?params null or not set}
     local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}

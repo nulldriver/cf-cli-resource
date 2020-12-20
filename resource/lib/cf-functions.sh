@@ -14,16 +14,16 @@ CF_CLI=
 default_version=6
 case "${CCR_CF_CLI_VERSION:-$default_version}" in
   6)  if ! CF_CLI=$(command -v cf); then
-        logger::error "unable to locate cf cli v6 binary: $(logger::highlight "cf") "
+        logger::error "unable to locate cf cli v6 binary"
         exit $E_CF_CLI_BINARY_NOT_FOUND
       fi
       ;;
   7)  if ! CF_CLI=$(command -v cf7); then
-        logger::error "unable to locate cf cli v7 binary: $(logger::highlight "cf7") "
+        logger::error "unable to locate cf cli v7 binary"
         exit $E_CF_CLI_BINARY_NOT_FOUND
       fi
       ;;
-  *)  logger::error "unsupported cf cli version: $(logger::highlight "$CCR_CF_CLI_VERSION")"
+  *)  logger::error "unsupported cf cli version: $CCR_CF_CLI_VERSION"
       exit $E_UNSUPPORTED_CF_CLI_VERSION
       ;;
 esac
