@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-Describe 'cf-cli-resource'
+Describe 'config'
   Include resource/lib/error-codes.sh
 
   It can 'error if params not set'
