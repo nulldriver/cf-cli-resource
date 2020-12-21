@@ -52,7 +52,7 @@ shellspec_spec_helper_configure() {
   }
 
   initialize_source_config() {
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
     [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
     [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
 
@@ -82,7 +82,7 @@ shellspec_spec_helper_configure() {
   }
 
   initialize_source_config_with_client_credentials() {
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
     [ -z "${CCR_CF_CLIENT_ID:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_ID"
     [ -z "${CCR_CF_CLIENT_SECRET:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_SECRET"
 
@@ -127,7 +127,7 @@ shellspec_spec_helper_configure() {
     local org=${1:-}
     local space=${2:-}
 
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
     [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
     [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
 
@@ -144,7 +144,7 @@ shellspec_spec_helper_configure() {
   }
 
   login_with_cf_home() {
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "efnvironment variable not set: CCR_CF_API"
+    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
     [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
     [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
 
