@@ -826,7 +826,7 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `docker_password`: _Optional._ This should be the users password when authenticating against a protected docker registry
 - `environment_variables`: _Optional._ Map of environment variables to pass to application
 - `instances`: _Optional._ Number of instances
-- `manifest`: _Optional._ Path to manifest
+- `manifest`: _Optional._ Path to manifest file, _or_ valid application manifest yaml
 - `memory`: _Optional._ Memory limit (e.g. 256M, 1024M, 1G)
 - `no_start`: _Optional._ Do not start an app after pushing. Defaults to `false`.
 - `path`: _Optional._ Path to app directory or to a zip file of the contents of the app directory
@@ -867,6 +867,24 @@ _NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` 
     environment_variables:
       key: value
       key2: value2
+```
+
+Example directly specifying the manifest as yaml:
+```yml
+- put: cf-push
+  resource: cf-env
+  params:
+    command: push
+    manifest:
+      applications:
+      - name: myapp-ui
+        memory: 1G
+        path: path/to/myapp-*.jar
+        buildpacks:
+          - java_buildpack
+        env:
+          key: value
+          key2: value2
 ```
 
 #### zero-downtime-push

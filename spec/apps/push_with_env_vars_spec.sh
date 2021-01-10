@@ -51,8 +51,8 @@ Describe 'apps'
   End
 
   It 'can push an app with environment variables and with manifest'
+    fixture=$(load_fixture "static-app")
     push_app() {
-      local fixture=$(load_fixture "static-app")
       local params=$(
         %text:expand
         #|command: push
@@ -74,7 +74,8 @@ Describe 'apps'
     When call push_app
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should match pattern "*manifest file *manifest-modified-with-environment-variables.yml*"
+    The error should include "environment_variables: backing up original manifest to: $fixture/manifest.yml.bak"
+    The error should include "environment_variables: adding env to manifest: $fixture/manifest.yml"
     Assert cf::is_app_started "$app_name"
     Assert cf::has_env "$app_name" "EXISTING_MANIFEST_ENV_VAR" "existing value"
     Assert cf::has_env "$app_name" "KEY1" "value 1"

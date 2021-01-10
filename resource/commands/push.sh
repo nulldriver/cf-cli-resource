@@ -8,6 +8,16 @@ json_array_push() {
   fi
 }
 
+is_json() {
+  local json=${1:?json null or not set}
+  echo "$json" | jq . 1>/dev/null 2>&1
+}
+
+json_to_yaml() {
+  local json=${1:?json null or not set}
+  echo "$json" | yq read - --prettyPrint
+}
+
 app_name=$(get_option '.app_name')
 # backwards compatibility for deprecated 'buildpack' param (https://github.com/nulldriver/cf-cli-resource/issues/87)
 buildpacks=$(get_option '.buildpacks' "$(json_array_push '[]' "$(get_option '.buildpack')")")
@@ -32,22 +42,33 @@ strategy=$(get_option '.strategy')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
+if [ -z "${manifest// }" ]; then
+  manifest_file=
+elif [ -f "$manifest" ]; then
+  manifest_file=$manifest
+elif is_json "$manifest"; then
+  manifest_file="manifest-generated-from-pipeline.yml"
+  logger::info "generating manifest from yaml: $manifest_file"
+  echo "$(json_to_yaml "$manifest")" > "$manifest_file"
+else
+  logger::error "Invalid application manifest: must be valid file or yaml"
+  exit 1
+fi
+
 if [ -n "$environment_variables" ]; then
-  if [ -n "$manifest" ]; then
-    if [ ! -f "$manifest" ]; then
-      logger::error "The specified manifest does not exist: $(logger::highlight "$manifest")"
-      exit 1
-    fi
-    cp "$manifest" "manifest-modified-with-environment-variables.yml"
-    manifest="manifest-modified-with-environment-variables.yml"
+  if [ -n "$manifest_file" ]; then
+    logger::info "environment_variables: backing up original manifest to: $manifest_file.bak"
+    cp "$manifest_file" "$manifest_file.bak"
   else
-    manifest="manifest-generated-for-environment-variables.yml"
-    touch "$manifest"
+    manifest_file="manifest-generated-for-environment-variables.yml"
+    logger::info "environment_variables: generating manifest: $manifest_file"
+    touch "$manifest_file"
     if [ -n "$app_name" ]; then
-      yq new "applications[+].name" "$app_name" > "$manifest"
+      yq new "applications[+].name" "$app_name" > "$manifest_file"
     fi
   fi
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$app_name"
+  logger::info "environment_variables: adding env to manifest: $manifest_file"
+  cf::set_manifest_environment_variables "$manifest_file" "$environment_variables" "$app_name"
 fi
 
 args=()
@@ -56,7 +77,7 @@ args=()
 [ -n "$docker_image" ]    && args+=(--docker-image "$docker_image")
 [ -n "$docker_username" ] && args+=(--docker-username "$docker_username")
 [ -n "$docker_password" ] && export CF_DOCKER_PASSWORD="$docker_password"
-[ -n "$manifest" ]        && args+=(-f "$manifest")
+[ -n "$manifest_file" ]   && args+=(-f "$manifest_file")
 [ -n "$hostname" ]        && args+=(-n "$hostname")
 [ -n "$domain" ]          && args+=(-d "$domain")
 [ -n "$instances" ]       && args+=(-i "$instances")

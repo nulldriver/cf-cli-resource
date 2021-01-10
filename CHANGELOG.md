@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.24.0 - Unreleased
 
+### Added
+
+- `push` command now supports directly passing application manifest yaml to the `manifest` param (see updated example in [README](README.md#push)).  The resource will intelligently figure out if you specified a file (original behavior) or yaml and will act accordingly.
+
 ### Changed
 
 - Updated to [cf cli v6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0)
