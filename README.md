@@ -875,11 +875,11 @@ Example directly specifying the manifest as yaml:
   resource: cf-env
   params:
     command: push
+    path: path/to/myapp-*.jar
     manifest:
       applications:
       - name: myapp-ui
         memory: 1G
-        path: path/to/myapp-*.jar
         buildpacks:
           - java_buildpack
         env:
