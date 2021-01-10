@@ -37,7 +37,7 @@ Describe 'apps'
     When call disable_docker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Feature diego_docker Disabled"
+    The error should include "OK"
     Assert cf::is_feature_flag_disabled "diego_docker"
   End
 
@@ -53,7 +53,7 @@ Describe 'apps'
     When call enable_docker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Feature diego_docker Enabled"
+    The error should include "OK"
     Assert cf::is_feature_flag_enabled "diego_docker"
   End
 

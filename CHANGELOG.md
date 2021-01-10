@@ -5,14 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.XX.X - Unreleased
+## 2.24.0 - Unreleased
+
+### Changed
+
+- Updated to [cf cli v6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0)
+- Updated to [cf7 cli v7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.2.0)
 
 ### Packaged Dependencies
 
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
-| cf cli     | [6.51.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
-| cf7 cli    |  [7.0.2](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
+| cf7 cli    |  [7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
 | yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
 
 ## 2.23.0 - 2020-12-06
