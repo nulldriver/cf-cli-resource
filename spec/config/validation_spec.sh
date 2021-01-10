@@ -124,7 +124,7 @@ Describe 'config'
     }
     When call put_without_default_cf_binary_found
     The status should eq $E_CF_CLI_BINARY_NOT_FOUND
-    The error should end with "unable to locate cf cli v6 binary"
+    The error should match pattern "*unable to locate cf cli v* binary"
   End
 
   It can 'error if v6 cf cli binary not found'
@@ -189,6 +189,9 @@ Describe 'config'
 
   Context 'using mock cf'
     Mock cf
+      exit 0
+    End
+    Mock cf7
       exit 0
     End
 
