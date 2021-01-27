@@ -234,3 +234,67 @@ shellspec_spec_helper_configure() {
     put_with_params "$params"
   }
 }
+
+test::login() {
+  quiet cf::api "$CCR_CF_API"
+  quiet cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
+}
+
+test::logout() {
+  quiet cf::cf logout
+}
+
+test::untarget() {
+  echo "$(jq '.OrganizationFields = {"GUID":"", "Name":""} | .SpaceFields = {"GUID":"", "Name":"", "AllowSSH":false}' "$CF_HOME/.cf/config.json")" > "$CF_HOME/.cf/config.json"
+}
+
+test::create_org() {
+  local org=${1:?org null or not set}
+  quiet cf::create_org "$org"
+}
+
+test::delete_org() {
+  local org=${1:?org null or not set}
+  quiet cf::delete_org "$org"
+}
+
+test::create_space() {
+  local org=${1:?org null or not set}
+  local space=${2:?space null or not set}
+  quiet cf::create_space "$org" "$space"
+}
+
+test::is_app_started() {
+  local app_name=${1:?app_name null or not set}
+  local org=${2:?org null or not set}
+  local space=${3:?space null or not set}
+
+  quiet cf::target "$org" "$space"
+
+  set +e
+  cf::is_app_started "$app_name"
+  status=$?
+  set -e
+
+  test::untarget
+
+  return $status
+}
+
+test::is_app_mapped_to_route() {
+  local app_name=${1:?app_name null or not set}
+  local domain=${2:?domain null or not set}
+  local org=${3:?org null or not set}
+  local space=${4:?space null or not set}
+
+  quiet cf::target "$org" "$space"
+
+  set +e
+  cf::is_app_mapped_to_route "$app_name" "$domain"
+  status=$?
+  set -e
+
+  test::untarget
+
+  return $status
+}
