@@ -54,7 +54,7 @@ cleanup_buildpacks() {
 }
 
 cleanup_task() {
-  echo "Cleaning up failed tests"
+  echo "Cleaning up failed tests..."
 
   export CF_HOME=$(mktemp -d "$TMPDIR/cf_home_tests.XXXXXX")
 
