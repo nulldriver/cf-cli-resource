@@ -11,6 +11,17 @@ FIXTURE=$SHELLSPEC_SPECDIR/fixture
 shellspec_spec_helper_configure() {
   shellspec_import 'support/json_matcher'
 
+  error_and_exit() {
+    echo "$1" >&3
+    exit 1
+  }
+
+  # Dependency checks
+  (( "${BASH_VERSINFO[0]}" >= 4 )) || error_and_exit "[ERROR] bash v4 or higher is required (found version $BASH_VERSION)"
+  command -v jq >/dev/null || error_and_exit "[ERROR] unable to locate jq binary (https://stedolan.github.io/jq/)"
+  command -v yq >/dev/null || error_and_exit "[ERROR] unable to locate yq binary (https://github.com/mikefarah/yq)"
+  [[ "$(yq --version)" != "yq version 3"* ]] && error_and_exit "[ERROR] yq v3 is required (found $(yq --version))"
+
   # Negation helper function
   not() {
     ! "$@"
@@ -44,11 +55,6 @@ shellspec_spec_helper_configure() {
     cp -r "$FIXTURE/$fixture/" .
 
     pwd
-  }
-
-  error_and_exit() {
-    echo "$1" >&3
-    exit 1
   }
 
   initialize_source_config() {
