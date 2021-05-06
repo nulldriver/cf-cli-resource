@@ -54,7 +54,7 @@ shellspec_spec_helper_configure() {
     fi
 
     cd $(mktemp -d "$TMPDIR/$fixture.XXXXXX")
-    cp -r "$FIXTURE/$fixture/" .
+    cp -r "$FIXTURE/$fixture/." .
 
     pwd
   }
