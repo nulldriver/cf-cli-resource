@@ -8,6 +8,8 @@ export CF_HOME=$(mktemp -d "$TMPDIR/.cf.XXXXXX")
 BASE_DIR=$SHELLSPEC_PROJECT_ROOT
 FIXTURE=$SHELLSPEC_SPECDIR/fixture
 
+DEFAULT_CF_CLI_VERSION=6
+
 shellspec_spec_helper_configure() {
   shellspec_import 'support/json_matcher'
 
@@ -62,7 +64,7 @@ shellspec_spec_helper_configure() {
     [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
     [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
 
-    : "${CCR_CF_CLI_VERSION:=6}"
+    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
 
     CCR_SOURCE=$(jq -n \
       --arg api "$CCR_CF_API" \
@@ -92,7 +94,7 @@ shellspec_spec_helper_configure() {
     [ -z "${CCR_CF_CLIENT_ID:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_ID"
     [ -z "${CCR_CF_CLIENT_SECRET:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_SECRET"
 
-    : "${CCR_CF_CLI_VERSION:=6}"
+    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
 
     CCR_SOURCE=$(jq -n \
       --arg api "$CCR_CF_API" \
@@ -111,7 +113,7 @@ shellspec_spec_helper_configure() {
   }
 
   initialize_source_config_for_cf_home() {
-    : "${CCR_CF_CLI_VERSION:=6}"
+    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
 
     CCR_SOURCE=$(jq -n \
       --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
