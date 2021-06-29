@@ -826,6 +826,7 @@ resources:
     repository: docker.nulldriver.com/test-app
     username: ((docker-private.username))
     password: ((docker-private.password))
+    tag: latest
 
 - name: notify
   type: slack-notifier
