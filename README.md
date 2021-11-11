@@ -1209,3 +1209,28 @@ Change or view the instance count, disk space limit, and memory limit for an app
     disk_quota: 1G
     memory: 2G
 ```
+#### allow-space-ssh
+
+Allow space ssh in the targeted space
+- `space`: _Optional._ The targeted space (required if not set in the source config)
+
+```yml
+- put: cf-allow-space-ssh
+  resource: cf-env
+  params:
+    command: allow-space-ssh
+    space: myspace
+```
+
+#### disallow-space-ssh
+
+Disallow space ssh in the targeted space
+- `space`: _Optional._ The targeted space (required if not set in the source config)
+
+```yml
+- put: cf-disallow-space-ssh
+  resource: cf-env
+  params:
+    command: disallow-space-ssh
+    space: myspace
+```
