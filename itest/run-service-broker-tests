@@ -27,8 +27,9 @@ it_can_push_the_service_broker_app() {
     space: $space,
     app_name: $app_name,
     path: $path,
-    buildpacks:
-    - https://github.com/cloudfoundry/nodejs-buildpack#v1.7.52
+    buildpacks: [
+      "https://github.com/cloudfoundry/nodejs-buildpack#v1.7.52"
+    ]
   }')
   # Pin to nodejs-buildpack#v1.7.52 for node v10.x
 
