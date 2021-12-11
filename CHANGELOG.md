@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Updated to [cf cli v6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0)
-- Updated to [cf7 cli v7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.2.0)
+- Updated to [cf7 cli v7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)
 
 ### Packaged Dependencies
 

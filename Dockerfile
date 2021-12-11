@@ -22,7 +22,7 @@ RUN mkdir -p /opt/cf-cli-${CF_CLI_6_VERSION} \
     && ln -s /opt/cf-cli-${CF_CLI_6_VERSION}/cf /usr/local/bin
 
 # Install Cloud Foundry cli v7
-ARG CF_CLI_7_VERSION=7.2.0
+ARG CF_CLI_7_VERSION=7.4.0
 RUN mkdir -p /opt/cf-cli-${CF_CLI_7_VERSION} \
     && curl -SL "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_7_VERSION}" \
       | tar -zxC /opt/cf-cli-${CF_CLI_7_VERSION} \
