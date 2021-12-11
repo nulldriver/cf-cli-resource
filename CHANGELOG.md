@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
 | cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
-| cf7 cli    |  [7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
 | yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
 
 ## 2.23.0 - 2020-12-06
