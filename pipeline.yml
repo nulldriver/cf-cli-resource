@@ -764,6 +764,7 @@ resources:
     branch: {{git-branch}}
     private_key: ((git_key.private_key))
     ignore_paths:
+    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - pipeline.yml
