@@ -717,7 +717,8 @@ jobs:
     inputs: [cf-cli-resource-image-rc, version]
     params:
       image: cf-cli-resource-image-rc/image.tar
-      additional_tags: version/version
+      version: ((.:version-number))
+      bump_aliases: true
   - put: notify
     params:
       message: |
