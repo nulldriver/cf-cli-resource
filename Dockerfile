@@ -28,3 +28,9 @@ RUN mkdir -p /opt/cf-cli-${CF_CLI_7_VERSION} \
       | tar -zxC /opt/cf-cli-${CF_CLI_7_VERSION} \
     && ln -s /opt/cf-cli-${CF_CLI_7_VERSION}/cf7 /usr/local/bin
 
+# Install test dependencies
+ARG SHELLSPEC_VERSION=0.28.1
+RUN mkdir -p /opt \
+  && curl -SL "https://github.com/shellspec/shellspec/archive/${SHELLSPEC_VERSION}.tar.gz" \
+    | tar -zxC /opt \
+  && ln -s /opt/shellspec-${SHELLSPEC_VERSION}/shellspec /usr/local/bin/shellspec
