@@ -772,6 +772,7 @@ resources:
     - README.md
     - examples
     - spec
+    - .shellspec
 
 - name: version
   type: semver
