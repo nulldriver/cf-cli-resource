@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Introduced [Visual Studio Code Remote - Containers](https://code.visualstudio.com/docs/remote/containers) support for developing `cf-cli-resource`.  The `.devcontainer` folder contains a `Dockerfile` tailored for this project with all the development tools needed to develop this resource.  The goal is to provide a consistent developer experience with less dependencies on your local setup (all you need now is Docker and VS Code on your system!).
 
+### Changed
+
+- Improved cf cli version detection and error handling
+
 ### Packaged Dependencies
 
 | Dependency |                              Version                               |
