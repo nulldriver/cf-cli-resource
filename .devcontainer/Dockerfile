@@ -6,9 +6,15 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 
 #
 # Test dependencies
+# 
+# lastpass-cli - currently using as a centralized credential store for locally executing integration tests
+# tar - Update to GNU tar to support fly execute (with BusyBox fly execute complains with "/bin/tar: unrecognized option: null")
+# shellspec - shell testing framework used to execute tests in the spec folder
+# fly - Concourse cli for managing pipelines
+# credhub - Credential manager used to set pipeline secrets
 #
 RUN apk update \
-    && apk add --no-cache lastpass-cli
+    && apk add --no-cache lastpass-cli tar
 
 ARG SHELLSPEC_VERSION=0.28.1
 RUN mkdir -p /opt \
@@ -17,7 +23,7 @@ RUN mkdir -p /opt \
   && ln -s /opt/shellspec-${SHELLSPEC_VERSION}/shellspec /usr/local/bin/shellspec
 
 ARG CONCOURSE_VERSION=7.6.0
-RUN mkdir -p /opt/concourse-$CONCOURSE_VERSION \
+RUN mkdir -p /opt/concourse-${CONCOURSE_VERSION} \
   && curl -SL "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly-${CONCOURSE_VERSION}-linux-amd64.tgz" \
     | tar -zxC /opt/concourse-${CONCOURSE_VERSION} \
   && install /opt/concourse-${CONCOURSE_VERSION}/fly /usr/local/bin/fly
@@ -25,6 +31,7 @@ RUN mkdir -p /opt/concourse-$CONCOURSE_VERSION \
 #
 # Resource dependencies
 #
+# util-linux - provides uuidgen
 RUN apk update \
     && apk add --no-cache util-linux
 
