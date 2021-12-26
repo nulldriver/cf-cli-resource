@@ -1,0 +1,19 @@
+---
+platform: linux
+
+params:
+  CCR_CF_CLI_VERSION: ((ccr-cf-cli-version))
+  CCR_CF_API: ((ccr-cf-api))
+  CCR_CF_USERNAME: ((cf.username))
+  CCR_CF_PASSWORD: ((cf.password))
+
+inputs:
+- name: cf-cli-resource
+  path: .
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    shellspec --task cleanup --env CCR_CF_CLI_VERSION=${CCR_CF_CLI_VERSION:-}
