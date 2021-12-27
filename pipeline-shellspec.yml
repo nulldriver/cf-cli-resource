@@ -51,6 +51,21 @@ jobs:
       ccr-test-jobs: 4
       ccr-cf-cli-version: 7
 
+- name: cleanup-failed-tests
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+    - get: resource-image-dev
+      passed: [build]
+  - task: cleanup
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
+    vars:
+      ccr-cf-cli-version: 7
+
 resources:
 - name: cf-cli-resource
   type: git
