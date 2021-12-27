@@ -765,14 +765,17 @@ resources:
     branch: main
     private_key: ((git_key.private_key))
     ignore_paths:
+    - .devcontainer
+    - .gitignore
+    - .shellspec
     - CHANGELOG.md
     - LICENSE
     - NOTICE.md
-    - pipeline.yml
     - README.md
     - examples
+    - pipeline-shellspec.yml
+    - pipeline.yml
     - spec
-    - .shellspec
 
 - name: version
   type: semver
