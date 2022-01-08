@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Upgraded to Alpine 3.14 for resource image
 - Improved cf cli version detection and error handling
 
 ### Packaged Dependencies
