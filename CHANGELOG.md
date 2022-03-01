@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.25.0 - Unreleased
+## 2.24.1 - 2022-03-01
 
 ### Added
 
@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Upgraded to Alpine 3.14 for resource image
 - Improved cf cli version detection and error handling
+
+### Fixed
+
+- Fixed `shipit` pipeline job to properly publish `latest` image tag
 
 ### Packaged Dependencies
 
