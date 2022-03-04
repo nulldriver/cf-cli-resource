@@ -768,7 +768,6 @@ resources:
     - .devcontainer
     - .gitignore
     - .shellspec
-    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - README.md
