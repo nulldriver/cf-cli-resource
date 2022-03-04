@@ -4,13 +4,14 @@ set -euo pipefail
 
 task "cleanup" "Cleanup Failed Tests"
 
+: ${TMPDIR:=/tmp}
+
 TEST_PREFIX="cfclitest"
 
 login() {
   : "${CCR_CF_API:?}"
   : "${CCR_CF_USERNAME:?}"
   : "${CCR_CF_PASSWORD:?}"
-  : "${CCR_CF_CLI_VERSION:=6}"
 
   cf::api "$CCR_CF_API"
   cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"

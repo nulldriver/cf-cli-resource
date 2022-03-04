@@ -1,0 +1,25 @@
+---
+platform: linux
+
+params:
+  CCR_TEST_JOBS: ((ccr-test-jobs))
+  CCR_CF_CLI_VERSION: ((ccr-cf-cli-version))
+  CCR_CF_API: ((ccr-cf-api))
+  CCR_CF_USERNAME: ((cf.username))
+  CCR_CF_PASSWORD: ((cf.password))
+  CCR_DOCKER_PRIVATE_IMAGE: ((ccr-docker-domain))/test-app
+  CCR_DOCKER_PRIVATE_USERNAME: ((docker-private.username))
+  CCR_DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
+  CCR_CF_CLIENT_ID: ((cf_client_id))
+  CCR_CF_CLIENT_SECRET: ((cf_client_secret))
+
+inputs:
+- name: cf-cli-resource
+  path: .
+
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    shellspec -j ${CCR_TEST_JOBS:-0} --env CCR_CF_CLI_VERSION=${CCR_CF_CLI_VERSION:-}

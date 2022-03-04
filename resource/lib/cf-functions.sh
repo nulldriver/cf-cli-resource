@@ -10,30 +10,30 @@ base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 source "$base_dir/resource/lib/logger.sh"
 source "$base_dir/resource/lib/error-codes.sh"
 
-CF_CLI=
-default_version=6
-case "${CCR_CF_CLI_VERSION:-$default_version}" in
-  6)  if ! CF_CLI=$(command -v cf); then
-        logger::error "unable to locate cf cli v6 binary"
-        exit $E_CF_CLI_BINARY_NOT_FOUND
-      fi
-      ;;
-  7)  if ! CF_CLI=$(command -v cf7); then
-        logger::error "unable to locate cf cli v7 binary"
-        exit $E_CF_CLI_BINARY_NOT_FOUND
-      fi
-      ;;
-  *)  logger::error "unsupported cf cli version: $CCR_CF_CLI_VERSION"
-      exit $E_UNSUPPORTED_CF_CLI_VERSION
-      ;;
-esac
+# Default to v6
+: ${CCR_CF_CLI_VERSION:=6}
 
-function cf::is_cf7() {
-  [ -n "${CCR_CF_CLI_VERSION:-}" ] && (( CCR_CF_CLI_VERSION == 7 ))
-}
+CF_CLI=
+if [ "${CCR_CF_CLI_VERSION}" = "6" ]; then
+  CF_CLI=cf
+elif [ "${CCR_CF_CLI_VERSION}" = "7" ]; then
+  CF_CLI=cf7
+else
+  logger::error "unsupported cf cli version: $CCR_CF_CLI_VERSION"
+  exit $E_UNSUPPORTED_CF_CLI_VERSION
+fi
+
+if ! command -v "$CF_CLI" >/dev/null; then
+  logger::error "cf cli v$CCR_CF_CLI_VERSION not found: Please ensure the v$CCR_CF_CLI_VERSION executable is named '$CF_CLI' and is available on the PATH"
+  exit $E_CF_CLI_BINARY_NOT_FOUND
+fi
 
 function cf::cf() {
   "$CF_CLI" "$@"
+}
+
+function cf::is_cf7() {
+  [[ "$(cf::cf version)" = "$CF_CLI version 7"* ]]
 }
 
 function cf::curl() {

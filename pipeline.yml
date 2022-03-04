@@ -453,7 +453,7 @@ jobs:
       params:
         <<: *test-params
         TEST_SCRIPT: run-route-service-tests
-    - task: run-route-service-tests
+    - task: run-route-tests
       file: project/ci/task.yml
       image: cf-cli-resource-image-rc
       params:
@@ -477,7 +477,7 @@ jobs:
       params:
         <<: *test-params-cf7
         TEST_SCRIPT: run-route-service-tests
-    - task: run-route-service-tests
+    - task: run-route-tests
       file: project/ci/task.yml
       image: cf-cli-resource-image-rc
       params:
@@ -717,7 +717,8 @@ jobs:
     inputs: [cf-cli-resource-image-rc, version]
     params:
       image: cf-cli-resource-image-rc/image.tar
-      additional_tags: version/version
+      version: ((.:version-number))
+      bump_aliases: true
   - put: notify
     params:
       message: |
@@ -760,15 +761,20 @@ resources:
   type: git
   icon: github
   source:
-    uri: {{git-uri}}
-    branch: {{git-branch}}
+    uri: git@github.com:nulldriver/cf-cli-resource.git
+    branch: main
     private_key: ((git_key.private_key))
     ignore_paths:
+    - .devcontainer
+    - .gitignore
+    - .shellspec
+    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
-    - pipeline.yml
     - README.md
     - examples
+    - pipeline-shellspec.yml
+    - pipeline.yml
     - spec
 
 - name: version
@@ -777,7 +783,7 @@ resources:
   source:
     driver: git
     initial_version: 1.0.0-rc.0
-    uri: {{git-uri-semver}}
+    uri: git@github.com:nulldriver/cf-cli-resource.git
     branch: version
     file: version
     private_key: ((git_key.private_key))
@@ -786,7 +792,7 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: {{docker-repository-rc}}
+    repository: nulldriver/cf-cli-resource-rc
     username: ((docker.username))
     password: ((docker.password))
 
@@ -794,7 +800,7 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: {{docker-repository-final}}
+    repository: nulldriver/cf-cli-resource
     username: ((docker.username))
     password: ((docker.password))
 
@@ -802,14 +808,13 @@ resources:
   type: git
   icon: github
   source:
-    uri: {{pipeline-tasks-git-uri}}
-    branch: {{pipeline-tasks-git-branch}}
+    uri: https://github.com/Pivotal-Field-Engineering/pipeline-tasks.git
 
 - name: github-release
   type: github-release
   icon: package-variant-closed
   source:
-    owner: {{github-release-user}}
+    owner: nulldriver
     repository: cf-cli-resource
     access_token: ((github_access_token))
 
@@ -826,12 +831,13 @@ resources:
     repository: docker.nulldriver.com/test-app
     username: ((docker-private.username))
     password: ((docker-private.password))
+    tag: latest
 
 - name: notify
   type: slack-notifier
   icon: slack
   source:
-    url: {{slack-webhook-url}}
+    url: ((slack-webhook-url))
 
 resource_types:
 - name: slack-notifier

@@ -17,7 +17,7 @@ Describe 'routes'
       #|  api: $CCR_CF_API
       #|  username: $CCR_CF_USERNAME
       #|  password: $CCR_CF_PASSWORD
-      #|  cf_cli_version: $CCR_CF_CLI_VERSION
+      #|  cf_cli_version: ${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
     )
 
     test::login

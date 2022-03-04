@@ -1,0 +1,156 @@
+---
+jobs:
+- name: build
+  serial: true
+  public: true
+  plan:
+  - get: cf-cli-resource
+    trigger: true
+  - task: build
+    privileged: true
+    file: cf-cli-resource/ci/tasks/build-image.yml
+  - put: resource-image-dev
+    params:
+      image: image/image.tar
+    get_params:
+      skip_download: true
+
+- name: test-cf-cli-v6
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+      trigger: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 4
+      ccr-cf-cli-version: 6
+
+- name: test-cf-cli-v7
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+      trigger: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 4
+      ccr-cf-cli-version: 7
+
+- name: scan-image
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [test-cf-cli-v6, test-cf-cli-v7]
+    - get: resource-image-dev
+      resource: resource-image-dev
+      passed: [test-cf-cli-v6, test-cf-cli-v7]
+      params:
+        format: oci
+      trigger: true
+    - get: trivy
+      trigger: true
+    - get: trivy-db
+      trigger: true
+      params:
+        globs:
+        - trivy-offline.db.tgz
+  - task: scan
+    image: trivy
+    config:
+      platform: linux
+      inputs:
+      - name: cf-cli-resource
+      - name: resource-image-dev
+        path: image
+      - name: trivy-db
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          mkdir db
+          tar -xzf trivy-db/trivy-offline.db.tgz -C ./db
+
+          trivy \
+            --cache-dir $(pwd) \
+            image \
+            --severity "HIGH,CRITICAL" \
+            --ignore-unfixed \
+            --exit-code 1 \
+            --input image/image.tar \
+            --skip-files opt/cf-cli-7.4.0/cf7
+
+- name: cleanup-failed-tests
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+    - get: resource-image-dev
+      passed: [build]
+  - task: cleanup
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
+    vars:
+      ccr-cf-cli-version: 7
+
+resources:
+- name: cf-cli-resource
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:nulldriver/cf-cli-resource.git
+    private_key: ((git_key.private_key))
+    ignore_paths:
+    - .devcontainer
+    - .gitignore
+    - .shellspec
+    - CHANGELOG.md
+    - LICENSE
+    - NOTICE.md
+    - README.md
+    - examples
+    - itest
+    - pipeline-shellspec.yml
+    - pipeline.yml
+
+- name: resource-image-dev
+  type: registry-image
+  icon: docker
+  source:
+    repository: nulldriver/cf-cli-resource-dev
+    tag: dev
+    username: ((docker.username))
+    password: ((docker.password))
+
+- name: trivy
+  type: registry-image
+  icon: docker
+  source:
+    repository: aquasec/trivy
+    username: ((docker.username))
+    password: ((docker.password))
+
+- name: trivy-db
+  type: github-release
+  icon: database
+  source:
+    owner: aquasecurity
+    repository: trivy-db
+    access_token: ((github_access_token))

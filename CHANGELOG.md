@@ -5,7 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.24.0 - Unreleased
+## 2.24.1 - 2022-03-01
+
+### Added
+
+- Introduced [Visual Studio Code Remote - Containers](https://code.visualstudio.com/docs/remote/containers) support for developing `cf-cli-resource`.  The `.devcontainer` folder contains a `Dockerfile` tailored for this project with all the development tools needed to develop this resource.  The goal is to provide a consistent developer experience with less dependencies on your local setup (all you need now is Docker and VS Code on your system!).
+
+### Changed
+
+- Upgraded to Alpine 3.14 for resource image
+- Improved cf cli version detection and error handling
+
+### Fixed
+
+- Fixed `shipit` pipeline job to properly publish `latest` image tag
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
+
+## 2.24.0 - 2021-12-11
 
 ### Added
 
@@ -14,14 +37,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Updated to [cf cli v6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0)
-- Updated to [cf7 cli v7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.2.0)
+- Updated to [cf7 cli v7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)
 
 ### Packaged Dependencies
 
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
-| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.51.0) |
-| cf7 cli    |  [7.2.0](https://github.com/cloudfoundry/cli/releases/tag/v7.0.2)  |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
 | yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
 
 ## 2.23.0 - 2020-12-06
