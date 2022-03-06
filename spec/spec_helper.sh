@@ -192,6 +192,10 @@ shellspec_spec_helper_configure() {
     echo "cfclitest-$(generate_unique_id)"
   }
 
+  app_to_hostname() {
+    echo "${1// /-}" | awk '{print tolower($0)}'
+  }
+
   create_org_and_space() {
     local org=${1:?org null or not set}
     local space=${2:?space null or not set}
@@ -299,6 +303,42 @@ test::is_app_mapped_to_route() {
 
   set +e
   cf::is_app_mapped_to_route "$app_name" "$domain"
+  status=$?
+  set -e
+
+  test::untarget
+
+  return $status
+}
+
+test::service_exists() {
+  local service_instance=${1:?service_instance null or not set}
+  local org=${2:?org null or not set}
+  local space=${3:?space null or not set}
+
+  quiet cf::target "$org" "$space"
+
+  set +e
+  cf::service_exists "$service_instance"
+  status=$?
+  set -e
+
+  test::untarget
+
+  return $status
+}
+
+test::is_app_bound_to_route_service() {
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
+  local org=${3:?org null or not set}
+  local space=${4:?space null or not set}
+  local path=${5:-}
+
+  quiet cf::target "$org" "$space"
+
+  set +e
+  cf::is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space" "$path"
   status=$?
   set -e
 
