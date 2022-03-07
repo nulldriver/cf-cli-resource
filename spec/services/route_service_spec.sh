@@ -19,6 +19,8 @@ Describe 'routes'
       #|  api: $CCR_CF_API
       #|  username: $CCR_CF_USERNAME
       #|  password: $CCR_CF_PASSWORD
+      #|  org: $org
+      #|  space: $space
       #|  cf_cli_version: ${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
     )
 
@@ -33,7 +35,7 @@ Describe 'routes'
   }
 
   BeforeAll 'setup'
-#   AfterAll 'teardown'
+  AfterAll 'teardown'
 
   It 'can push a route service app'
     push_app() {
@@ -43,8 +45,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $route_service_app_name
         #|  path: $fixture
         #|  manifest: $fixture/manifest.yml
@@ -56,7 +56,7 @@ Describe 'routes'
     When call push_app
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should match pattern "*manifest file *manifest.yml*"
+    The error should include "Pushing"
     Assert test::is_app_started "$route_service_app_name" "$org" "$space"
   End
 
@@ -67,8 +67,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: create-user-provided-service
-        #|  org: $org
-        #|  space: $space
         #|  service_instance: my_route_service
         #|  route_service_url: "https://$route_service_app_hostname.$domain"
       )
@@ -78,7 +76,7 @@ Describe 'routes'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating user provided service"
-    Assert test::service_exists "my_route_service"  "$org" "$space"
+    Assert test::service_exists "my_route_service" "$org" "$space"
   End
 
   It 'can push an app for route service tests'
@@ -89,8 +87,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  memory: 64M
@@ -106,7 +102,7 @@ Describe 'routes'
     When call push_app
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Pushing app"
+    The error should include "Pushing"
     Assert test::is_app_started "$app_name" "$org" "$space"
   End
 
@@ -117,8 +113,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: bind-route-service
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  service_instance: my_route_service
         #|  hostname: $app_hostname
@@ -141,8 +135,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: unbind-route-service
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  service_instance: my_route_service
         #|  hostname: $app_hostname
