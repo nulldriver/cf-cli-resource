@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.25.0 - Unreleased
+
+### Changed
+
+- Improved test isolation by removing dependency on `$CCR_SOURCE` global variable and using new `test::*` methods for test authentication and commands dependent on targeting an org and space.
+
 ## 2.24.1 - 2022-03-01
 
 ### Added

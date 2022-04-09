@@ -6,24 +6,30 @@ Describe 'orgs and spaces'
   Include resource/lib/cf-functions.sh
 
   setup() {
-    initialize_source_config
-
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
 
-    quiet login_for_test_assertions
+    source=$(get_source_config "$org" "$space") || error_and_exit "[ERROR] error loading source json config"
+
+    test::login
+  }
+
+  teardown() {
+    test::logout
   }
 
   BeforeAll 'setup'
 
   It 'can create an org'
     create_org() {
-      local params=$(
+      local config=$(
         %text:expand
-        #|command: create-org
-        #|org: $org
+        #|$source
+        #|params:
+        #|  command: create-org
+        #|  org: $org
       )
-      put_with_params "$(yaml_to_json "$params")"
+      put "$config"
     }
     When call create_org
     The status should be success
@@ -34,13 +40,15 @@ Describe 'orgs and spaces'
 
   It 'can create a space'
     create_space() {
-      local params=$(
+      local config=$(
         %text:expand
-        #|command: create-space
-        #|org: $org
-        #|space: $space
+        #|$source
+        #|params:
+        #|  command: create-space
+        #|  org: $org
+        #|  space: $space
       )
-      put_with_params "$(yaml_to_json "$params")"
+      put "$config"
     }
     When call create_space
     The status should be success
@@ -51,13 +59,15 @@ Describe 'orgs and spaces'
 
   It 'can delete a space'
     delete_space() {
-      local params=$(
+      local config=$(
         %text:expand
-        #|command: delete-space
-        #|org: $org
-        #|space: $space
+        #|$source
+        #|params:
+        #|  command: delete-space
+        #|  org: $org
+        #|  space: $space
       )
-      put_with_params "$(yaml_to_json "$params")"
+      put "$config"
     }
     When call delete_space
     The status should be success
@@ -68,12 +78,14 @@ Describe 'orgs and spaces'
 
   It 'can delete an org'
     delete_org() {
-      local params=$(
+      local config=$(
         %text:expand
-        #|command: delete-org
-        #|org: $org
+        #|$source
+        #|params:
+        #|  command: delete-org
+        #|  org: $org
       )
-      put_with_params "$(yaml_to_json "$params")"
+      put "$config"
     }
     When call delete_org
     The status should be success

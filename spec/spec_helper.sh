@@ -40,11 +40,6 @@ shellspec_spec_helper_configure() {
     fi
   }
 
-  yaml_to_json() {
-    local yaml=${1:?yaml null or not set}
-    echo "$yaml" | yq read - --tojson
-  }
-
   load_fixture() {
     local fixture=${1:?fixture null or not set}
 
@@ -59,96 +54,82 @@ shellspec_spec_helper_configure() {
     pwd
   }
 
-  initialize_source_config() {
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
-    [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
-    [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
-
-    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
-
-    CCR_SOURCE=$(jq -n \
-      --arg api "$CCR_CF_API" \
-      --arg username "$CCR_CF_USERNAME" \
-      --arg password "$CCR_CF_PASSWORD" \
-      --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
-      '{
-        source: {
-          api: $api,
-          username: $username,
-          password: $password,
-          cf_cli_version: $cf_cli_version
-        }
-      }'
-    )
-  }
-
-  initialize_source_config_with_uaa_origin() {
-    initialize_source_config
-
-    # Add origin to auth config
-    CCR_SOURCE=$(echo "$CCR_SOURCE" | jq '.source.origin = "uaa"')
-  }
-
-  initialize_source_config_with_client_credentials() {
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
-    [ -z "${CCR_CF_CLIENT_ID:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_ID"
-    [ -z "${CCR_CF_CLIENT_SECRET:-}" ] && error_and_exit "environment variable not set: CCR_CF_CLIENT_SECRET"
-
-    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
-
-    CCR_SOURCE=$(jq -n \
-      --arg api "$CCR_CF_API" \
-      --arg client_id "$CCR_CF_CLIENT_ID" \
-      --arg client_secret "$CCR_CF_CLIENT_SECRET" \
-      --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
-      '{
-        source: {
-          api: $api,
-          client_id: $client_id,
-          client_secret: $client_secret,
-          cf_cli_version: $cf_cli_version
-        }
-      }'
-    )
-  }
-
-  initialize_source_config_for_cf_home() {
-    : "${CCR_CF_CLI_VERSION:=$DEFAULT_CF_CLI_VERSION}"
-
-    CCR_SOURCE=$(jq -n \
-      --arg cf_cli_version "$CCR_CF_CLI_VERSION" \
-      '{
-        source: {
-          cf_cli_version: $cf_cli_version
-        }
-      }'
-    )
-  }
-
-  initialize_docker_config() {
-    [ -z "${CCR_DOCKER_PRIVATE_IMAGE:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_IMAGE"
-    [ -z "${CCR_DOCKER_PRIVATE_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_USERNAME"
-    [ -z "${CCR_DOCKER_PRIVATE_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_DOCKER_PRIVATE_PASSWORD"
-  }
-
-  login_for_test_assertions() {
-    local org=${1:-}
-    local space=${2:-}
-
-    [ -z "${CCR_CF_API:-}" ] && error_and_exit "environment variable not set: CCR_CF_API"
-    [ -z "${CCR_CF_USERNAME:-}" ] && error_and_exit "environment variable not set: CCR_CF_USERNAME"
-    [ -z "${CCR_CF_PASSWORD:-}" ] && error_and_exit "environment variable not set: CCR_CF_PASSWORD"
-
-    cf::api "$CCR_CF_API"
-    cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-
-    if [ -n "$org" ] || [ -n "$space" ]; then
-      cf::target "$org" "$space"
+  get_env_var() {
+    local name=${1:?environment variable name null or not set}
+    local default_value=${2:-}
+    if [ -z "${!name:-}" ]; then
+      if [ -n "$default_value" ]; then
+        echo "$default_value"
+      else
+        exit 1
+      fi
+    else
+      echo "${!name}"
     fi
   }
 
-  logout_for_test_assertions() {
-    cf::cf logout
+  # need to validate the ${1:?...} error checking
+  get_source_config() {
+    local org=${1:?org null or not set}
+    local space=${2:?space null or not set}
+
+    local cf_api cf_username cf_password cf_cli_version
+    cf_api=$(get_env_var "CCR_CF_API") || error_and_exit "[ERROR] required env var not set: CCR_CF_API"
+    cf_username=$(get_env_var "CCR_CF_USERNAME") || error_and_exit "[ERROR] required env var not set: CCR_CF_USERNAME"
+    cf_password=$(get_env_var "CCR_CF_PASSWORD") || error_and_exit "[ERROR] required env var not set: CCR_CF_PASSWORD"
+    cf_cli_version=$(get_env_var "CCR_CF_CLI_VERSION" "$DEFAULT_CF_CLI_VERSION")
+
+    cat << EOF
+source:
+  api: $cf_api
+  username: $cf_username
+  password: $cf_password
+  org: $org
+  space: $space
+  cf_cli_version: $cf_cli_version
+EOF
+  }
+
+  get_source_config_with_client_credentials() {
+    local cf_api client_id client_secret cf_cli_version
+    cf_api=$(get_env_var "CCR_CF_API") || error_and_exit "[ERROR] required env var not set: CCR_CF_API"
+    client_id=$(get_env_var "CCR_CF_CLIENT_ID") || error_and_exit "[ERROR] required env var not set: CCR_CF_CLIENT_ID"
+    client_secret=$(get_env_var "CCR_CF_CLIENT_SECRET") || error_and_exit "[ERROR] required env var not set: CCR_CF_CLIENT_SECRET"
+    cf_cli_version=$(get_env_var "CCR_CF_CLI_VERSION" "$DEFAULT_CF_CLI_VERSION")
+
+    cat << EOF
+source:
+  api: $cf_api
+  client_id: $client_id
+  client_secret: $client_secret
+  cf_cli_version: $cf_cli_version
+EOF
+  }
+
+  get_source_config_for_cf_home() {
+    local cf_cli_version=${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
+
+    cat << EOF
+source:
+  cf_cli_version: $cf_cli_version
+EOF
+  }
+
+  get_source_config_with_uaa_origin() {
+    local cf_api cf_username cf_password cf_cli_version
+    cf_api=$(get_env_var "CCR_CF_API") || error_and_exit "[ERROR] required env var not set: CCR_CF_API"
+    cf_username=$(get_env_var "CCR_CF_USERNAME") || error_and_exit "[ERROR] required env var not set: CCR_CF_USERNAME"
+    cf_password=$(get_env_var "CCR_CF_PASSWORD") || error_and_exit "[ERROR] required env var not set: CCR_CF_PASSWORD"
+    cf_cli_version=$(get_env_var "CCR_CF_CLI_VERSION" "$DEFAULT_CF_CLI_VERSION")
+
+    cat << EOF
+source:
+  api: $cf_api
+  username: $cf_username
+  password: $cf_password
+  origin: uaa
+  cf_cli_version: $cf_cli_version
+EOF
   }
 
   login_with_cf_home() {
@@ -164,19 +145,16 @@ shellspec_spec_helper_configure() {
     pwd
   }
 
+  yaml_to_json() {
+    local yaml=${1:?yaml null or not set}
+    echo "$yaml" | yq read - --tojson
+  }
+
   put() {
     local config=${1:?config null or not set}
     local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}
 
     yaml_to_json "$config" | "$BASE_DIR/resource/out" "$working_dir"
-  }
-
-  put_with_params() {
-    local params=${1:?params null or not set}
-    local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}
-
-    local config=$(echo $CCR_SOURCE | jq --argjson params "$params" '.params = $params')
-    echo $config | "$BASE_DIR/resource/out" "$working_dir"
   }
 
   generate_unique_id() {
@@ -196,153 +174,348 @@ shellspec_spec_helper_configure() {
     echo "${1// /-}" | awk '{print tolower($0)}'
   }
 
-  create_org_and_space() {
-    local org=${1:?org null or not set}
-    local space=${2:?space null or not set}
+  test::login() {
+    local cf_api cf_username cf_password
+    cf_api=$(get_env_var "CCR_CF_API") || error_and_exit "${FUNCNAME[0]} - required env var not set: CCR_CF_API"
+    cf_username=$(get_env_var "CCR_CF_USERNAME") || error_and_exit "${FUNCNAME[0]} - required env var not set: CCR_CF_USERNAME"
+    cf_password=$(get_env_var "CCR_CF_PASSWORD") || error_and_exit "${FUNCNAME[0]} - required env var not set: CCR_CF_PASSWORD"
 
-    local params=$(jq -n \
-      --arg org "$org" \
-      --arg space "$space" \
-      '{
-        commands: [
-          {
-            command: "create-org",
-            org: $org
-          },
-          {
-            command: "create-space",
-            org: $org,
-            space: $space
-          }
-        ]
-      }'
-    )
-
-    put_with_params "$params"
+    quiet cf::api "$cf_api"
+    quiet cf::auth_user "$cf_username" "$cf_password"
   }
 
-  delete_org_and_space() {
-    local org=${1:?org null or not set}
-    local space=${2:?space null or not set}
-
-    local params=$(jq -n \
-      --arg org "$org" \
-      --arg space "$space" \
-      '{
-        commands: [
-          {
-            command: "delete-space",
-            org: $org,
-            space: $space
-          },
-          {
-            command: "delete-org",
-            org: $org,
-          }
-        ]
-      }'
-    )
-
-    put_with_params "$params"
+  test::logout() {
+    quiet cf::cf logout
   }
-}
 
-test::login() {
-  quiet cf::api "$CCR_CF_API"
-  quiet cf::auth_user "$CCR_CF_USERNAME" "$CCR_CF_PASSWORD"
-}
+  test::untarget() {
+    echo "$(jq '.OrganizationFields = {"GUID":"", "Name":""} | .SpaceFields = {"GUID":"", "Name":"", "AllowSSH":false}' "$CF_HOME/.cf/config.json")" > "$CF_HOME/.cf/config.json"
+  }
 
-test::logout() {
-  quiet cf::cf logout
-}
+  test::create_org_and_space() {
+    local org=${1:-}
+    local space=${2:-}
 
-test::untarget() {
-  echo "$(jq '.OrganizationFields = {"GUID":"", "Name":""} | .SpaceFields = {"GUID":"", "Name":"", "AllowSSH":false}' "$CF_HOME/.cf/config.json")" > "$CF_HOME/.cf/config.json"
-}
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-test::create_org() {
-  local org=${1:?org null or not set}
-  quiet cf::create_org "$org"
-}
+    quiet cf::create_org "$org"
+    quiet cf::create_space "$org" "$space"
+  }
 
-test::delete_org() {
-  local org=${1:?org null or not set}
-  quiet cf::delete_org "$org"
-}
+  test::delete_org_and_space() {
+    local org=${1:-}
+    local space=${2:-}
 
-test::create_space() {
-  local org=${1:?org null or not set}
-  local space=${2:?space null or not set}
-  quiet cf::create_space "$org" "$space"
-}
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-test::is_app_started() {
-  local app_name=${1:?app_name null or not set}
-  local org=${2:?org null or not set}
-  local space=${3:?space null or not set}
+    quiet cf::delete_space "$org" "$space"
+    quiet cf::delete_org "$org"
+  }
 
-  quiet cf::target "$org" "$space"
+  test::is_app_started() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
 
-  set +e
-  cf::is_app_started "$app_name"
-  status=$?
-  set -e
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-  test::untarget
+    quiet cf::target "$org" "$space"
 
-  return $status
-}
+    set +e
+    cf::is_app_started "$app_name"
+    status=$?
+    set -e
 
-test::is_app_mapped_to_route() {
-  local app_name=${1:?app_name null or not set}
-  local domain=${2:?domain null or not set}
-  local org=${3:?org null or not set}
-  local space=${4:?space null or not set}
+    test::untarget
 
-  quiet cf::target "$org" "$space"
+    return $status
+  }
 
-  set +e
-  cf::is_app_mapped_to_route "$app_name" "$domain"
-  status=$?
-  set -e
+  test::is_app_stopped() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
 
-  test::untarget
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-  return $status
-}
+    quiet cf::target "$org" "$space"
 
-test::service_exists() {
-  local service_instance=${1:?service_instance null or not set}
-  local org=${2:?org null or not set}
-  local space=${3:?space null or not set}
+    set +e
+    cf::is_app_stopped "$app_name"
+    status=$?
+    set -e
 
-  quiet cf::target "$org" "$space"
+    test::untarget
 
-  set +e
-  cf::service_exists "$service_instance"
-  status=$?
-  set -e
+    return $status
+  }
 
-  test::untarget
+  test::app_exists() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
 
-  return $status
-}
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-test::is_app_bound_to_route_service() {
-  local app_name=${1:?app_name null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  local org=${3:?org null or not set}
-  local space=${4:?space null or not set}
-  local path=${5:-}
+    quiet cf::target "$org" "$space"
 
-  quiet cf::target "$org" "$space"
+    set +e
+    cf::app_exists "$app_name"
+    status=$?
+    set -e
 
-  set +e
-  cf::is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space" "$path"
-  status=$?
-  set -e
+    test::untarget
 
-  test::untarget
+    return $status
+  }
 
-  return $status
+  test::is_app_mapped_to_route() {
+    local app_name=${1:-}
+    local domain=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${domain}" ] && error_and_exit "${FUNCNAME[0]} - domain null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::is_app_mapped_to_route "$app_name" "$domain"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::service_exists() {
+    local service_instance=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::service_exists "$service_instance"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::is_app_bound_to_route_service() {
+    local app_name=${1:-}
+    local service_instance=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+    local path=${5:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space" "$path"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_stack() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_stack "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::has_env() {
+    local app_name=${1:-}
+    local env_var_name=${2:-}
+    local env_var_value=${3:-}
+    local org=${4:-}
+    local space=${5:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${env_var_name}" ] && error_and_exit "${FUNCNAME[0]} - env_var_name null or not set"
+    [ -z "${env_var_value}" ] && error_and_exit "${FUNCNAME[0]} - env_var_value null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::has_env "$app_name" "$env_var_name" "$env_var_value"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_env() {
+    local app_name=${1:-}
+    local env_var_name=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${env_var_name}" ] && error_and_exit "${FUNCNAME[0]} - env_var_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_env "$app_name" "$env_var_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_buildpacks() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_buildpacks "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_disk_quota() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_disk_quota "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_instances() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_instances "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_memory() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_memory "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_app_startup_command() {
+    local app_name=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_app_startup_command "$app_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }

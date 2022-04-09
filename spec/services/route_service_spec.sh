@@ -8,29 +8,20 @@ Describe 'routes'
   setup() {
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
-    domain=$CCR_CF_APPS_DOMAIN
     route_service_app_name=$(generate_test_name_with_hyphens)
     route_service_app_hostname=$(app_to_hostname "$route_service_app_name")
     app_name=$(generate_test_name_with_hyphens)
     app_hostname=$(app_to_hostname "$app_name")
-    source=$(
-      %text:expand
-      #|source:
-      #|  api: $CCR_CF_API
-      #|  username: $CCR_CF_USERNAME
-      #|  password: $CCR_CF_PASSWORD
-      #|  org: $org
-      #|  space: $space
-      #|  cf_cli_version: ${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
-    )
+    domain=$(get_env_var "CCR_CF_APPS_DOMAIN") || error_and_exit "[ERROR] required env var not set: CCR_CF_APPS_DOMAIN"
+
+    source=$(get_source_config "$org" "$space") || error_and_exit "[ERROR] error loading source json config"
 
     test::login
-    test::create_org "$org"
-    test::create_space "$org" "$space"
+    test::create_org_and_space "$org" "$space"
   }
 
   teardown() {
-    test::delete_org "$org"
+    test::delete_org_and_space "$org" "$space"
     test::logout
   }
 

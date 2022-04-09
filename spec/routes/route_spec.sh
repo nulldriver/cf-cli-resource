@@ -11,22 +11,15 @@ Describe 'routes'
     domain="$(generate_test_name_with_hyphens).com"
     hostname=$(generate_test_name_with_hyphens)
     app_name=$(generate_test_name_with_hyphens)
-    source=$(
-      %text:expand
-      #|source:
-      #|  api: $CCR_CF_API
-      #|  username: $CCR_CF_USERNAME
-      #|  password: $CCR_CF_PASSWORD
-      #|  cf_cli_version: ${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
-    )
+
+    source=$(get_source_config "$org" "$space") || error_and_exit "[ERROR] error loading source json config"
 
     test::login
-    test::create_org "$org"
-    test::create_space "$org" "$space"
+    test::create_org_and_space "$org" "$space"
   }
 
   teardown() {
-    test::delete_org "$org"
+    test::delete_org_and_space "$org" "$space"
     test::logout
   }
 
@@ -40,7 +33,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: create-domain
-        #|  org: $org
         #|  domain: $domain
       )
       put "$config"
@@ -60,8 +52,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: create-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
       )
       put "$config"
@@ -81,8 +71,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: create-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  hostname: $hostname
       )
@@ -103,8 +91,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: create-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  hostname: $hostname
         #|  path: foo
@@ -127,8 +113,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  memory: 64M
@@ -150,8 +134,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: map-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
       )
@@ -171,8 +153,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: map-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
         #|  hostname: $hostname
@@ -193,8 +173,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: map-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
         #|  hostname: $hostname
@@ -216,8 +194,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: unmap-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
         #|  hostname: $hostname
@@ -239,8 +215,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: unmap-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
         #|  hostname: $hostname
@@ -261,8 +235,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: unmap-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  app_name: $app_name
       )
@@ -282,8 +254,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: delete-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  hostname: $hostname
         #|  path: foo
@@ -304,8 +274,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: delete-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
         #|  hostname: $hostname
       )
@@ -325,8 +293,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: delete-route
-        #|  org: $org
-        #|  space: $space
         #|  domain: $domain
       )
       put "$config"
@@ -345,7 +311,6 @@ Describe 'routes'
         #|$source
         #|params:
         #|  command: delete-domain
-        #|  org: $org
         #|  domain: $domain
       )
       put "$config"
