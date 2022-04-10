@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  buildpacks:
         #|    - binary_buildpack
@@ -68,8 +66,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  no_start: true

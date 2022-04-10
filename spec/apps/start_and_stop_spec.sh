@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  disk_quota: 64M
@@ -56,8 +54,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: start
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
       )
       put "$config"
@@ -76,8 +72,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: stop
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
       )
       put "$config"

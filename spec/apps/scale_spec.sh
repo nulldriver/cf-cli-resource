@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  instances: 1
@@ -56,8 +54,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: scale
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  disk_quota: 100M
       )
@@ -77,8 +73,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: scale
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  memory: 96M
       )
@@ -98,8 +92,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: scale
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  instances: 2
       )

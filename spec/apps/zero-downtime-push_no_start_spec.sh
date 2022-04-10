@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: zero-downtime-push
-        #|  org: $org
-        #|  space: $space
         #|  manifest: $fixture/manifest.yml
         #|  path: $fixture/dist
         #|  vars:
@@ -60,8 +58,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: zero-downtime-push
-        #|  org: $org
-        #|  space: $space
         #|  current_app_name: $app_name
         #|  manifest: $fixture/manifest.yml
         #|  path: $fixture/dist

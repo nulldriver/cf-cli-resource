@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  path: $fixture/dist
         #|  manifest: $fixture/manifest.yml
         #|  vars:

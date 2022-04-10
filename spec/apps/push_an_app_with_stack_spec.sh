@@ -38,8 +38,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  memory: 64M

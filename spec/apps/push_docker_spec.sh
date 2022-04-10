@@ -71,8 +71,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  memory: 64M
         #|  disk_quota: 64M

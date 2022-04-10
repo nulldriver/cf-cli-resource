@@ -33,8 +33,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  memory: 64M
@@ -56,8 +54,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: rename
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  new_app_name: $new_app_name
       )

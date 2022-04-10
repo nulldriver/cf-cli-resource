@@ -32,8 +32,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: push
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  path: $fixture/dist
         #|  memory: 64M
@@ -55,8 +53,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: set-env
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  environment_variables:
         #|    KEY1: some value
@@ -79,8 +75,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: set-env
-        #|  org: $org
-        #|  space: $space
         #|  app_name: $app_name
         #|  env_var_name: KEY3
         #|  env_var_value: yet another value

@@ -36,8 +36,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: zero-downtime-push
-        #|  org: $org
-        #|  space: $space
         #|  manifest: $fixture/manifest.yml
         #|  docker_image: $docker_image
         #|  docker_username: $docker_username
@@ -65,8 +63,6 @@ Describe 'apps'
         #|$source
         #|params:
         #|  command: zero-downtime-push
-        #|  org: $org
-        #|  space: $space
         #|  current_app_name: $app_name
         #|  manifest: $fixture/manifest.yml
         #|  docker_image: $docker_image
