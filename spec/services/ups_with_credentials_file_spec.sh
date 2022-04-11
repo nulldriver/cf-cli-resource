@@ -8,7 +8,7 @@ Describe 'services'
   setup() {
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
-    app_name=$(generate_test_name_with_spaces)
+    app_name=$(generate_test_name_with_hyphens)
     service_instance=$(generate_test_name_with_spaces)
     fixture=$(load_fixture "user-provided-service")
 
