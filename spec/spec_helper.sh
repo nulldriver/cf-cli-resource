@@ -518,4 +518,48 @@ EOF
 
     return $status
   }
+
+  test::service_exists() {
+    local service_instance=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::service_exists "$service_instance"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::get_user_provided_vcap_service() {
+    local app_name=${1:-}
+    local service_instance=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::get_user_provided_vcap_service "$app_name" "$service_instance"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }

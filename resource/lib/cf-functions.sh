@@ -353,6 +353,13 @@ function cf::service_exists() {
   [ -n "$service_instance_guid" ]
 }
 
+function cf::get_user_provided_vcap_service() {
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
+
+  cf::curl "/v2/apps/$(cf::get_app_guid "$app_name")/env" | jq --arg service_instance "$service_instance" '.system_env_json.VCAP_SERVICES."user-provided"[] | select(.name == $service_instance)'
+}
+
 function cf::create_or_update_user_provided_service_credentials() {
   local service_instance=${1:?service_instance null or not set}
   local credentials=${2:?credentials json null or not set}
