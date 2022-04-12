@@ -58,7 +58,7 @@ Describe 'apps'
       )
       put "$config"
     }
-    When call delete_app "$org" "$space" "$app_name"
+    When call delete_app
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting app"
