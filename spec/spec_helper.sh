@@ -562,4 +562,23 @@ EOF
 
     return $status
   }
+
+  test::was_task_run() {
+    local app_name=${1:-}
+    local task_name=${2:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${task_name}" ] && error_and_exit "${FUNCNAME[0]} - task_name null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::was_task_run "$app_name" "$task_name"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }
