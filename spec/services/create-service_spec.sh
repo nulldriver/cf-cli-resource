@@ -22,7 +22,7 @@ Describe 'services'
   }
 
   BeforeAll 'setup'
-  # AfterAll 'teardown'
+  AfterAll 'teardown'
 
   It 'can create a service'
     create_service() {
