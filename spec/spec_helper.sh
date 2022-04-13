@@ -581,4 +581,27 @@ EOF
 
     return $status
   }
+
+  test::is_app_bound_to_service() {
+    local app_name=${1:-}
+    local service_instance=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+
+    [ -z "${app_name}" ] && error_and_exit "${FUNCNAME[0]} - app_name null or not set"
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::is_app_bound_to_service "$app_name" "$service_instance"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }

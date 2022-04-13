@@ -46,7 +46,7 @@ Describe 'services'
     Assert test::service_exists "$service_instance" "$org" "$space"
   End
 
-  It 'can push an app with bound service'
+  It 'can push an app for syslog tests'
     push_app() {
         local fixture=$(load_fixture "static-app")
         local config=$(
@@ -61,8 +61,6 @@ Describe 'services'
             #|    - name: $app_name
             #|      memory: 64M
             #|      disk_quota: 64M
-            #|      services:
-            #|      - $service_instance
         )
         put "$config"
     }
@@ -70,6 +68,26 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Pushing"
+    Assert test::app_exists "$app_name" "$org" "$space"
+  End
+
+  It 'can bind a service to an app'
+    bind_service() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: bind-service
+        #|  app_name: $app_name
+        #|  service_instance: $service_instance
+      )
+      put "$config"
+    }
+    When call bind_service
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Binding service $service_instance"
+    Assert test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
     Assert [ "$syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$service_instance" "$org" "$space" | jq -r .syslog_drain_url)" ]
   End
 
@@ -91,5 +109,24 @@ Describe 'services'
     The error should include "Updating user provided service"
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "$updated_syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$service_instance" "$org" "$space" | jq -r .syslog_drain_url)" ]
+  End
+
+  It 'can unbind a service to an app'
+    unbind_service() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: unbind-service
+        #|  app_name: $app_name
+        #|  service_instance: $service_instance
+      )
+      put "$config"
+    }
+    When call unbind_service
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Unbinding app $app_name from service $service_instance"
+    Assert not test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
   End
 End
