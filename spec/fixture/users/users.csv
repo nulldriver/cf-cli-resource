@@ -1,0 +1,4 @@
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+cfclitest-bulkload-user1,wasabi,$org,$space,x,x,x,x,x,x
+cfclitest-bulkload-user2,wasabi,$org,$space,,x,x,,x,x
+cfclitest-bulkload-user3,ldap,$org,$space,,,x,,x,
