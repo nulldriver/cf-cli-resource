@@ -646,4 +646,27 @@ EOF
 
     return $status
   }
+
+  test::service_key_exists() {
+    local service_instance=${1:-}
+    local service_key=${2:-}
+    local org=${3:-}
+    local space=${4:-}
+
+    [ -z "${service_instance}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${service_key}" ] && error_and_exit "${FUNCNAME[0]} - service_key null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::service_key_exists "$service_instance" "$service_key"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }
