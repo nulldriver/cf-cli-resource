@@ -68,10 +68,9 @@ shellspec_spec_helper_configure() {
     fi
   }
 
-  # need to validate the ${1:?...} error checking
   get_source_config() {
-    local org=${1:?org null or not set}
-    local space=${2:?space null or not set}
+    local org=${1:-}
+    local space=${2:-}
 
     local cf_api cf_username cf_password cf_cli_version
     cf_api=$(get_env_var "CCR_CF_API") || error_and_exit "[ERROR] required env var not set: CCR_CF_API"
@@ -79,15 +78,16 @@ shellspec_spec_helper_configure() {
     cf_password=$(get_env_var "CCR_CF_PASSWORD") || error_and_exit "[ERROR] required env var not set: CCR_CF_PASSWORD"
     cf_cli_version=$(get_env_var "CCR_CF_CLI_VERSION" "$DEFAULT_CF_CLI_VERSION")
 
-    cat << EOF
-source:
-  api: $cf_api
-  username: $cf_username
-  password: $cf_password
-  org: $org
-  space: $space
-  cf_cli_version: $cf_cli_version
-EOF
+    local source="source:\n"
+    source+="  api: $cf_api\n"
+    source+="  username: $cf_username\n"
+    source+="  password: $cf_password\n"
+    source+="  cf_cli_version: $cf_cli_version\n"
+
+    [ -n "$org" ] &&   source+="  org: $org\n"
+    [ -n "$space" ] && source+="  space: $space\n"
+
+    echo -e "$source"
   }
 
   get_source_config_with_client_credentials() {
