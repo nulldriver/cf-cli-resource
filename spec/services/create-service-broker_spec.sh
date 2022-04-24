@@ -68,7 +68,7 @@ Describe 'services'
     When call create_service_broker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating service broker $service_broker"
+    The error should include "Creating service broker"
     Assert test::service_broker_exists "$service_broker" "$org" "$space"
   End
 
@@ -89,7 +89,7 @@ Describe 'services'
     When call update_service_broker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Updating service broker $service_broker"
+    The error should include "Updating service broker"
     Assert test::service_broker_exists "$service_broker" "$org" "$space"
   End
   
@@ -111,7 +111,7 @@ Describe 'services'
     When call enable_service_access
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Enabling access to plan small of service overview-service from broker $service_broker for org $access_org"
+    The error should include "Enabling access"
     Assert test::is_marketplace_service_available "overview-service" "small" "$access_org" "$org" "$space"
   End
 
@@ -133,7 +133,7 @@ Describe 'services'
     When call disable_service_access
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Disabling access to plan small of service overview-service from broker $service_broker for org $access_org"
+    The error should include "Disabling access"
     Assert not test::is_marketplace_service_available "overview-service" "small" "$access_org" "$org" "$space"
   End
 
@@ -155,7 +155,7 @@ Describe 'services'
     When call enable_service_access_deprecated
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Enabling access to plan small of service overview-service from broker $service_broker for org $access_org"
+    The error should include "Enabling access"
     Assert test::is_marketplace_service_available "overview-service" "small" "$access_org" "$org" "$space"
   End
 
@@ -177,7 +177,7 @@ Describe 'services'
     When call disable_service_access_deprecated
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Disabling access to plan small of service overview-service from broker $service_broker for org $access_org"
+    The error should include "Disabling access"
     Assert not test::is_marketplace_service_available "overview-service" "small" "$access_org" "$org" "$space"
   End
 
@@ -195,7 +195,7 @@ Describe 'services'
     When call delete_service_broker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting service broker $service_broker"
+    The error should include "Deleting service broker"
     Assert not test::service_broker_exists "$service_broker" "$org" "$space"
   End
 End

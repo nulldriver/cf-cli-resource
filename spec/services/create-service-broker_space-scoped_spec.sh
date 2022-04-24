@@ -69,10 +69,9 @@ Describe 'services'
     When call create_service_broker_space_scoped
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating service broker $service_broker"
+    The error should include "Creating service broker"
     Assert test::service_broker_exists "$service_broker" "$org" "$space"
   End
-  Dump
 
   It 'can update a service broker space scoped'
     update_service_broker_space_scoped() {
@@ -92,7 +91,7 @@ Describe 'services'
     When call update_service_broker_space_scoped
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Updating service broker $service_broker"
+    The error should include "Updating service broker"
     Assert test::service_broker_exists "$service_broker" "$org" "$space"
   End
 
@@ -110,7 +109,7 @@ Describe 'services'
     When call delete_service_broker
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting service broker $service_broker"
+    The error should include "Deleting service broker"
     Assert not test::service_broker_exists "$service_broker" "$org" "$space"
   End
 End
