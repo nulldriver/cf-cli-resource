@@ -603,7 +603,7 @@ function cf::service_key_exists() {
   [ -n "$(cf::get_service_key_guid "$service_instance" "$service_key")" ]
 }
 
-function cf::create_service_broker() {
+function cf::create_or_update_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   local username=${2:?username null or not set}
   local password=${3:?password null or not set}

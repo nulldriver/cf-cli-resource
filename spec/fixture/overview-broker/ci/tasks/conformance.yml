@@ -1,0 +1,15 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: ismteam/osb-checker-kotlin
+    tag: 'latest'
+
+inputs:
+- name: osb-checker-kotlin
+- name: overview-broker
+
+run:
+  path: overview-broker/ci/scripts/conformance.sh

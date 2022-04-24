@@ -1,0 +1,8 @@
+applications:
+- name: the-best-broker
+  buildpacks:
+    - https://github.com/cloudfoundry/nodejs-buildpack
+  instances: 1
+  memory: 256M
+  disk_quota: 256M
+  random-route: false

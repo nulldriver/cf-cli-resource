@@ -669,4 +669,50 @@ EOF
 
     return $status
   }
+
+  test::service_broker_exists() {
+    local service_broker=${1:-}
+    local org=${2:-}
+    local space=${3:-}
+
+    [ -z "${service_broker}" ] && error_and_exit "${FUNCNAME[0]} - service_instance null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::service_broker_exists "$service_broker"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
+
+  test::is_marketplace_service_available() {
+    local service=${1:-}
+    local plan=${2:-}
+    local access_org=${3:-}
+    local org=${4:-}
+    local space=${5:-}
+
+    [ -z "${service}" ] && error_and_exit "${FUNCNAME[0]} - service null or not set"
+    [ -z "${plan}" ] && error_and_exit "${FUNCNAME[0]} - plan null or not set"
+    [ -z "${access_org}" ] && error_and_exit "${FUNCNAME[0]} - access_org null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::is_marketplace_service_available "$service" "$plan" "$access_org"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }

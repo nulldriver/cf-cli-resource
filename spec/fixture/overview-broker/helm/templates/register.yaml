@@ -1,0 +1,13 @@
+{{- if .Values.register -}}
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ClusterServiceBroker
+metadata:
+  name: overview-broker
+spec:
+  url: http://{{ include "overview-broker.fullname" . }}.{{ .Release.Namespace }}
+  authInfo:
+    basic:
+      secretRef:
+        name: overview-broker-secret
+        namespace: {{ .Release.Namespace }}
+{{- end }}

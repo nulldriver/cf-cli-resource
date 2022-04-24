@@ -11,4 +11,4 @@ if [ "true" = "$is_space_scoped" ]; then
   cf::target "$org" "$space"
 fi
 
-cf::create_service_broker "$service_broker" "$username" "$password" "$url" "$is_space_scoped"
+cf::create_or_update_service_broker "$service_broker" "$username" "$password" "$url" "$is_space_scoped"

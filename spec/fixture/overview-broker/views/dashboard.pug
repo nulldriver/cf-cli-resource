@@ -1,0 +1,149 @@
+html
+  head
+    title= title
+    link(rel='icon', href='/images/openservicebrokerapi-logo.png')
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css')
+    link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css')
+    style
+      include style.css
+  body
+    -
+      function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+          json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+          var cls = 'number';
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = 'key';
+            } else {
+              cls = 'string';
+            }
+          } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+          } else if (/null/.test(match)) {
+            cls = 'null';
+          }
+          return '<span class="' + cls + '">' + match + '</span>';
+        });
+      }
+    .container
+      .header.clearfix(style={'margin-top': '15px'})
+        div.col-12
+          img.spin(src='../images/openservicebrokerapi-logo.png', alt='Open Service Broker API Logo')
+          img(src='../images/openservicebrokerapi-text.png', alt='Open Service Broker API')
+      div.row.mb-2
+        div.col-12
+          span.float-right
+            button.btn.btn-info(style={'margin-right': '5px'}, onclick='help()') What is this?
+            button.btn.btn-danger(style={'margin-right': '5px'}, onclick='cleanData()') Clean
+            button.btn.btn-secondary(onclick='refreshPage()') Refresh
+      div.row.mb-2
+        div.col-12
+          div.card
+            h6.card-header
+              a.text-primary(data-toggle='collapse', href='#settings') Settings
+            div#settings.card-body.collapse
+              div.form-group
+                label Started:
+                pre(style={'background': '#eee', 'border-radius': '4px'})
+                  span #{started}
+              div.form-group
+                label Environmental variables:
+                pre(style={'background': '#eee', 'border-radius': '4px'})
+                  span !{syntaxHighlight(env)}
+              div.form-group
+                label(for='errorModeSelect') Error mode:
+                select.form-control(id='errorModeSelect', onchange='errorModeChanged(this)')
+                  option(code='', selected=(errorMode == '')) Disabled
+                  option(code='servererror', selected=(errorMode == 'servererror')) Respond with HTTP 500
+                  option(code='badrequest', selected=(errorMode == 'badrequest')) Respond with HTTP 400
+                  option(code='notfound', selected=(errorMode == 'notfound')) Respond with HTTP 404
+                  option(code='gone', selected=(errorMode == 'gone')) Respond with HTTP 410
+                  option(code='unprocessable', selected=(errorMode == 'unprocessable')) Respond with HTTP 422
+                  option(code='concurrencyerror', selected=(errorMode == 'concurrencyerror')) Respond with HTTP 422 with ConcurencyError code
+                  option(code='maintenanceinfoconflict', selected=(errorMode == 'maintenanceinfoconflict')) Respond with HTTP 422 with MaintenanceInfoConflict code
+                  option(code='timeout', selected=(errorMode == 'timeout')) Do not respond (timeout)
+                  option(code='200invalidjson', selected=(errorMode == '200invalidjson')) Respond with 200 OK invalid JSON
+                  option(code='201invalidjson', selected=(errorMode == '201invalidjson')) Respond with 201 OK invalid JSON
+                  option(code='invalidsuccesscode', selected=(errorMode == 'invalidsuccesscode')) Respond with 204 No Contect invalid success
+                  option(code='failasync', selected=(errorMode == 'failasync')) Fail asynchronous operations (after they have started)
+                  option(code='neverfinishasync', selected=(errorMode == 'neverfinishasync')) Never finish asynchronous operations
+              div.form-group
+                label(for='responseModeSelect') Response mode:
+                select.form-control(id='responseModeSelect', onchange='responseModeChanged(this)')
+                  option(code='default', selected=(responseMode == 'default')) Asynchronous responses where possible
+                  option(code='sync', selected=(responseMode == 'sync')) Synchronous responses always
+                  option(code='async', selected=(responseMode == 'async')) Asynchronous responses always
+              div.form-group
+                button.btn.btn-primary(onclick="editCatalog(\'" + JSON.stringify(catalog) + "\', true)") Edit the catalog
+      div.row.mb-2
+        div.col-12.col-sm-6
+          div.card
+            h6.card-header
+              a.text-info(data-toggle='collapse', href='#request') Recent Requests
+            div#request.card-body.collapse.show(style={'padding': '0px'})
+              pre(style={'background': 'none', 'border': 'none', 'height': '300px'})
+                each request, index in latestRequests
+                  p [#{index+1}] #{request.timestamp}
+                  p !{syntaxHighlight(request.data)}
+        div.col-12.col-sm-6
+          div.card
+            h6.card-header
+              a.text-info(data-toggle='collapse', href='#response') Recent Responses
+            div#response.card-body.collapse.show(style={'padding': '0px'})
+              pre(style={'background': 'none', 'border': 'none', 'height': '300px'})
+                each response, index in latestResponses
+                  p [#{index+1}] #{response.timestamp}
+                  p !{syntaxHighlight(response.data)}
+      - var numServices = Object.keys(serviceInstances).length
+      if numServices > 0
+        div.row.mb-2
+            - var a = 0
+            each serviceData, serviceKey in serviceInstances
+              -
+                var serviceDataToDisplay = JSON.parse(JSON.stringify(serviceData))
+                JSON.stringify(serviceDataToDisplay)
+                delete serviceDataToDisplay['created']
+                delete serviceDataToDisplay['last_updated']
+                delete serviceDataToDisplay['data']
+              div.col-12.col-md-6.mb-2
+                div.card.instance
+                  div.card-header(class=`${serviceData.parameters.rainbow ? "rainbow" : ""}`)
+                    h6
+                      if serviceDataToDisplay.context.instance_name != null
+                        span !{serviceDataToDisplay.context.instance_name}
+                      else
+                        span Service Instance
+                      if serviceDataToDisplay.context.platform == 'cloudfoundry' && serviceDataToDisplay.context.organization_name != null && serviceDataToDisplay.context.space_name != null
+                        span  (org: #{serviceDataToDisplay.context.organization_name}, space: #{serviceDataToDisplay.context.space_name})
+                      if serviceDataToDisplay.context.platform == 'kubernetes' && serviceDataToDisplay.context.namespace != null
+                          span  (namespace: #{serviceDataToDisplay.context.namespace})
+                  div.card-body
+                    div.float-right
+                      if serviceDataToDisplay.context != null && serviceDataToDisplay.context.platform == 'kubernetes'
+                        img(src='../images/kubernetes.png', alt='Kubernetes', style={'height': '40px', 'width': 'auto', 'margin-top': '-10px'})
+                      else
+                        img(src='../images/cloudfoundry.png', alt='Cloud Foundry', style={'height': '40px', 'width': 'auto', 'margin-top': '-10px'})
+                    p.text-muted ID: #{serviceKey}
+                    p.text-muted Created: #{serviceData.created}
+                    if serviceData.last_update
+                      p.text-muted Last Update: #{serviceData.last_update}
+                    pre(style={'background': 'none', 'border': 'none'}) !{syntaxHighlight(serviceDataToDisplay)}
+                - a+=1
+              if (a % 2) == 0
+                div.clearfix
+      else
+        div.col-12(style={'margin-top': '50px', 'text-align': 'center'})
+          p No service instances have been provisioned
+
+    include githubcorners.html
+
+    script(src='https://code.jquery.com/jquery-3.2.1.min.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js')
+    script(src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js')
+    script(src='https://cdn.jsdelivr.net/npm/sweetalert@2.1.0/dist/sweetalert.min.js')
+    script
+      include helpers.js

@@ -1,0 +1,16 @@
+openapi: 3.0.0
+info:
+  title: Resource Info
+  description: Fetch resource information about a service instance
+  version: 0.1.0
+paths:
+  /info:
+    get:
+      summary: Returns resource information regarding the service instance
+      responses:
+        '200':
+          description: Resource information
+          content:
+            application/json:
+              schema:
+                type: object

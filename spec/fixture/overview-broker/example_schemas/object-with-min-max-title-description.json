@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "This is my  title",
+  "description": "This is my description",
+  "properties": {
+    "foo": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "title": "foop",
+      "description": "this is one hot property"
+    }
+  }
+}

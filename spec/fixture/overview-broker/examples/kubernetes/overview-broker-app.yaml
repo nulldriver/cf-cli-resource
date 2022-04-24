@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overview-broker-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: overview-broker-app
+  template:
+    metadata:
+      labels:
+        app: overview-broker-app
+    spec:
+      containers:
+      - name: overview-broker-app
+        image: ismteam/overview-broker
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+

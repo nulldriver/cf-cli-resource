@@ -1,0 +1,46 @@
+---
+jobs:
+- name: absolute-unit
+  plan:
+    - get: overview-broker
+      trigger: true
+    - task: unit
+      file: overview-broker/ci/tasks/unit.yml
+
+- name: conformance
+  plan:
+    - get: overview-broker
+      passed: [absolute-unit]
+      trigger: true
+    - get: osb-checker-kotlin
+    - task: conformance
+      file: overview-broker/ci/tasks/conformance.yml
+
+- name: push-to-dockerhub
+  plan:
+  - get: overview-broker
+    passed: [conformance]
+    trigger: true
+  - put: dockerhub
+    params:
+      build: overview-broker
+
+resources:
+- name: overview-broker
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/overview-broker
+    branch: master
+
+- name: osb-checker-kotlin
+  type: git
+  source:
+    uri: https://github.com/evoila/osb-checker-kotlin.git
+    branch: master
+
+- name: dockerhub
+  type: docker-image
+  source:
+    repository: ismteam/overview-broker
+    username: ((DOCKERHUB_USERNAME))
+    password: ((DOCKERHUB_PASSWORD))
