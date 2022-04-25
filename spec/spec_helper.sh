@@ -715,4 +715,31 @@ EOF
 
     return $status
   }
+
+  test::network_policy_exists() {
+    local source_app_name=${1:-}
+    local destination_app_name=${2:-}
+    local protocol=${3:-}
+    local port=${4:-}
+    local org=${5:-}
+    local space=${6:-}
+
+    [ -z "${source_app_name}" ] && error_and_exit "${FUNCNAME[0]} - source_app_name null or not set"
+    [ -z "${destination_app_name}" ] && error_and_exit "${FUNCNAME[0]} - destination_app_name null or not set"
+    [ -z "${protocol}" ] && error_and_exit "${FUNCNAME[0]} - protocol null or not set"
+    [ -z "${port}" ] && error_and_exit "${FUNCNAME[0]} - port null or not set"
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    set +e
+    cf::network_policy_exists "$source_app_name" "$destination_app_name" "$protocol" "$port"
+    status=$?
+    set -e
+
+    test::untarget
+
+    return $status
+  }
 }
