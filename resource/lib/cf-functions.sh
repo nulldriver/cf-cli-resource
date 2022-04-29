@@ -924,17 +924,17 @@ function cf::is_feature_flag_disabled() {
 
 function cf::has_buildpack() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf::is_buildpack_enabled() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true' >/dev/null
 }
 
 function cf::is_buildpack_locked() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true' >/dev/null
 }
 
 function cf::get_buildpack_stack() {
