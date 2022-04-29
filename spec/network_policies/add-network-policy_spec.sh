@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-Describe 'services'
+Describe 'network policies'
   Include resource/lib/cf-functions.sh
 
   setup() {
