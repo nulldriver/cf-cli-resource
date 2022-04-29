@@ -140,7 +140,10 @@ logger::info "$(cf::cf version)"
 get_option() {
   local key=${1:?config key null or not set}
   local default=${2:-}
-  echo "$OPTIONS" | jq -r --arg default "$default" "$key // \$default"
+  echo "$OPTIONS" | jq -r \
+    --arg key "${key:1}" \
+    --arg default "$default" \
+    'if has($key) and (.[$key] != null) then .[$key] else $default end'
 }
 
 echo "$params" | jq -c '.commands[]' | while read -r OPTIONS; do

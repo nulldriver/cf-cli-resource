@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Improved test isolation by removing dependency on `$CCR_SOURCE` global variable and using new `test::*` methods for test authentication and commands dependent on targeting an org and space.
 
+### Fixed
+
+- Fixed an issue where setting `locked: false` or `enabled: false` on `create-buildpack` and `update-buildpack` would only work if you quoted the `false` boolean value (ex: `enabled: "false"`).  This has been fixed so either style (quoted or un-quoted) will work.
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
+
 ## 2.24.1 - 2022-03-01
 
 ### Added
