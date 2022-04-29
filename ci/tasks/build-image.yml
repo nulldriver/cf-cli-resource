@@ -7,7 +7,7 @@ image_resource:
     repository: concourse/oci-build-task
 
 inputs:
-- name: cf-cli-resource
+- name: project
   path: .
 
 outputs:

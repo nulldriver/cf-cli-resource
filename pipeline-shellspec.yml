@@ -9,6 +9,8 @@ jobs:
   - task: build
     privileged: true
     file: cf-cli-resource/ci/tasks/build-image.yml
+    input_mapping:
+      project: cf-cli-resource
   - put: resource-image-dev
     params:
       image: image/image.tar
