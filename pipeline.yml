@@ -270,12 +270,11 @@ resources:
     - .devcontainer
     - .gitignore
     - .shellspec
+    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - README.md
     - examples
-    - itest
-    - pipeline-shellspec.yml
     - pipeline.yml
 
 - name: version
