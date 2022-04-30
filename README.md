@@ -1,7 +1,12 @@
 # cf cli Concourse Resource
 
-[![CI Builds](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/build/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nulldriver/cf-cli-resource.svg)](https://hub.docker.com/r/nulldriver/cf-cli-resource/)
+
+[![v6 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/builds/latest)
+ v6 tests
+
+[![v7 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v7/builds/latest)
+ v7 tests
 
 An output only resource capable of running lots of Cloud Foundry cli commands.
 
