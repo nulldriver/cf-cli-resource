@@ -1,4 +1,28 @@
 ---
+groups:
+- name: main
+  jobs:
+  - build
+  - test-cf-cli-v6
+  - test-cf-cli-v7
+  - scan-image
+  - shipit
+  - bump-patch
+- name: manage
+  jobs:
+  - bump-*
+  - setup
+  - cleanup-failed-tests
+- name: all
+  jobs:
+  - build
+  - test-*
+  - scan-image
+  - shipit
+  - bump-*
+  - setup
+  - cleanup-failed-tests
+
 jobs:
 - name: build
   serial: true
@@ -14,8 +38,7 @@ jobs:
   - put: resource-image-dev
     params:
       image: image/image.tar
-    get_params:
-      skip_download: true
+    get_params: {skip_download: true}
 
 - name: test-cf-cli-v6
   serial: true
@@ -61,8 +84,7 @@ jobs:
     - get: resource-image-dev
       resource: resource-image-dev
       passed: [test-cf-cli-v6, test-cf-cli-v7]
-      params:
-        format: oci
+      params: {format: oci}
       trigger: true
     - get: trivy
       trigger: true
@@ -97,20 +119,72 @@ jobs:
             --input image/image.tar \
             --skip-files opt/cf-cli-7.4.0/cf7
 
-- name: cleanup-failed-tests
-  serial: true
+- name: shipit
   public: true
+  serial_groups: [version]
   plan:
   - in_parallel:
     - get: cf-cli-resource
-      passed: [build]
+      passed: [scan-image]
     - get: resource-image-dev
-      passed: [build]
-  - task: cleanup
-    image: resource-image-dev
-    file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
-    vars:
-      ccr-cf-cli-version: 7
+      passed: [scan-image]
+      params: {format: oci}
+    - get: version
+      params: {bump: final}
+  - load_var: version-number
+    file: version/version
+  - task: prepare-github-release
+    file: cf-cli-resource/ci/tasks/prepare-github-release.yml
+  - put: github-release
+    params:
+      name: release-output/release-name
+      tag: release-output/release-tag
+      commitish: release-output/commitish
+      body: release-output/RELEASE_NOTES.md
+  - put: version
+    params: {file: version/version}
+  - put: resource-image-final
+    inputs: [resource-image-dev, version]
+    params:
+      image: resource-image-dev/image.tar
+      version: ((.:version-number))
+      bump_aliases: true
+  - put: notify
+    params:
+      message: |
+        New release announcement!
+        https://github.com/nulldriver/cf-cli-resource/releases/tag/v((.:version-number))
+      mode: concise
+      alert_type: success
+
+- name: bump-major
+  public: true
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major, pre: rc}
+  - put: version
+    params: {file: version/version}
+
+- name: bump-minor
+  public: true
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor, pre: rc}
+  - put: version
+    params: {file: version/version}
+
+- name: bump-patch
+  public: true
+  serial_groups: [version]
+  plan:
+  - get: version
+    passed: [shipit]
+    params: {bump: patch, pre: rc}
+    trigger: true
+  - put: version
+    params: {file: version/version}
 
 - name: setup
   serial: true
@@ -171,6 +245,20 @@ jobs:
         - command: enable-service-access
           service_broker: bookstore-async
 
+- name: cleanup-failed-tests
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+    - get: resource-image-dev
+      passed: [build]
+  - task: cleanup
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
+    vars:
+      ccr-cf-cli-version: 7
+
 resources:
 - name: cf-cli-resource
   type: git
@@ -182,7 +270,6 @@ resources:
     - .devcontainer
     - .gitignore
     - .shellspec
-    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - README.md
@@ -190,6 +277,17 @@ resources:
     - itest
     - pipeline-shellspec.yml
     - pipeline.yml
+
+- name: version
+  type: semver
+  icon: tag
+  source:
+    driver: git
+    initial_version: 1.0.0-rc.0
+    uri: git@github.com:nulldriver/cf-cli-resource.git
+    branch: version
+    file: version
+    private_key: ((git_key.private_key))
 
 - name: resource-image-dev
   type: registry-image
@@ -199,6 +297,44 @@ resources:
     tag: dev
     username: ((docker.username))
     password: ((docker.password))
+
+- name: resource-image-final
+  type: registry-image
+  icon: docker
+  source:
+    repository: nulldriver/cf-cli-resource
+    username: ((docker.username))
+    password: ((docker.password))
+
+- name: trivy
+  type: registry-image
+  icon: docker
+  source:
+    repository: aquasec/trivy
+    username: ((docker.username))
+    password: ((docker.password))
+
+- name: trivy-db
+  type: github-release
+  icon: database
+  source:
+    owner: aquasecurity
+    repository: trivy-db
+    access_token: ((github_access_token))
+
+- name: github-release
+  type: github-release
+  icon: package-variant-closed
+  source:
+    owner: nulldriver
+    repository: cf-cli-resource
+    access_token: ((github_access_token))
+
+- name: notify
+  type: slack-notifier
+  icon: slack
+  source:
+    url: ((slack-webhook-url))
 
 - name: test-app-image
   type: registry-image
@@ -225,25 +361,13 @@ resources:
     org: service-brokers
     space: bookstore
 
-- name: trivy
-  type: registry-image
-  icon: docker
-  source:
-    repository: aquasec/trivy
-    username: ((docker.username))
-    password: ((docker.password))
-
-- name: trivy-db
-  type: github-release
-  icon: database
-  source:
-    owner: aquasecurity
-    repository: trivy-db
-    access_token: ((github_access_token))
-
 resource_types:
-  - name: cf-cli-resource
-    type: registry-image
-    source:
-      repository: nulldriver/cf-cli-resource
-      tag: latest
+- name: cf-cli-resource
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource
+
+- name: slack-notifier
+  type: registry-image
+  source:
+    repository: mockersf/concourse-slack-notifier
