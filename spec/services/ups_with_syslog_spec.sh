@@ -10,6 +10,7 @@ Describe 'services'
     space=$(generate_test_name_with_spaces)
     app_name=$(generate_test_name_with_hyphens)
     service_instance=$(generate_test_name_with_spaces)
+    binding_name=$(generate_test_name_with_hyphens)
     syslog_drain_url="syslog://example.com"
     updated_syslog_drain_url="syslog://illustration.com"
 
@@ -80,6 +81,7 @@ Describe 'services'
         #|  command: bind-service
         #|  app_name: $app_name
         #|  service_instance: $service_instance
+        #|  binding_name: $binding_name
       )
       put "$config"
     }
@@ -88,7 +90,7 @@ Describe 'services'
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Binding service $service_instance"
     Assert test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
-    Assert [ "$syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$service_instance" "$org" "$space" | jq -r .syslog_drain_url)" ]
+    Assert [ "$syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$binding_name" "$org" "$space" | jq -r .syslog_drain_url)" ]
   End
 
   It 'can update ups with syslog'
@@ -108,7 +110,7 @@ Describe 'services'
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Updating user provided service"
     Assert test::service_exists "$service_instance" "$org" "$space"
-    Assert [ "$updated_syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$service_instance" "$org" "$space" | jq -r .syslog_drain_url)" ]
+    Assert [ "$updated_syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$binding_name" "$org" "$space" | jq -r .syslog_drain_url)" ]
   End
 
   It 'can unbind a service to an app'

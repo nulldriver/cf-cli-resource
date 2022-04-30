@@ -631,9 +631,11 @@ function cf::bind_service() {
   local app_name=${1:?app_name null or not set}
   local service_instance=${2:?service_instance null or not set}
   local configuration=${3:-}
+  local binding_name=${4:-}
 
   local args=("$app_name" "$service_instance")
   [ -n "$configuration" ] && args+=(-c "$configuration")
+  [ -n "$binding_name" ] && args+=(--binding-name "$binding_name")
 
   cf::cf bind-service "${args[@]}"
 }

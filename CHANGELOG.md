@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.25.0 - Unreleased
 
+### Added
+
+- `bind-service` command now supports the `binding_name` param for specifying the name to expose the service instance to the app.
+
 ### Packaged Dependencies
 
 | Dependency |                              Version                               |
