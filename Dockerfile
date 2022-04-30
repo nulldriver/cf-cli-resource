@@ -1,7 +1,6 @@
 FROM alpine:3.14
 
 ADD resource/ /opt/resource/
-ADD itest/ /opt/itest/
 
 # Install dependencies (util-linux provides uuidgen)
 RUN apk add --no-cache --update-cache ca-certificates \
