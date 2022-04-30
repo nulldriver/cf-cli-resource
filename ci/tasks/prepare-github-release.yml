@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: concourse/git-resource
+
+inputs:
+- name: cf-cli-resource
+- name: version
+
+outputs:
+- name: release-output
+
+run:
+  path: cf-cli-resource/ci/tasks/prepare-github-release
