@@ -112,6 +112,65 @@ jobs:
     vars:
       ccr-cf-cli-version: 7
 
+- name: setup
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+    - get: bookstore-service-broker
+  - task: build-test-app-image
+    privileged: true
+    file: cf-cli-resource/ci/tasks/build-image.yml
+    input_mapping:
+      project: cf-cli-resource
+    params:
+      CONTEXT: spec/fixture/static-app
+  - in_parallel:
+    - put: test-app-image
+      params:
+        image: image/image.tar
+      get_params: {skip_download: true}
+    - put: prepare-cloud-foundry
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: create-org
+        - command: create-space
+      get_params: {skip_download: true}
+  - in_parallel:
+    - put: sync-service-broker
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: push
+          app_name: bookstore-service-broker
+          path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+          manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+        - command: create-service-broker
+          service_broker: bookstore
+          username: admin
+          password: supersecret
+          url: https://bookstore-service-broker.((ccr-cf-apps-domain))
+        - command: enable-service-access
+          service_broker: bookstore
+    - put: async-service-broker
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: push
+          app_name: bookstore-service-broker-async
+          path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+          manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+        - command: create-service-broker
+          service_broker: bookstore-async
+          username: admin
+          password: supersecret
+          url: https://bookstore-service-broker-async.((ccr-cf-apps-domain))
+        - command: enable-service-access
+          service_broker: bookstore-async
+
 resources:
 - name: cf-cli-resource
   type: git
@@ -141,6 +200,31 @@ resources:
     username: ((docker.username))
     password: ((docker.password))
 
+- name: test-app-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: docker.nulldriver.com/test-app
+    tag: latest
+    username: ((docker-private.username))
+    password: ((docker-private.password))
+
+- name: bookstore-service-broker
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:nulldriver/bookstore-service-broker.git
+    private_key: ((git_key.private_key))
+
+- name: cloud-foundry
+  type: cf-cli-resource
+  source:
+    api: ((ccr-cf-api))
+    username: ((cf.username))
+    password: ((cf.password))
+    org: service-brokers
+    space: bookstore
+
 - name: trivy
   type: registry-image
   icon: docker
@@ -156,3 +240,10 @@ resources:
     owner: aquasecurity
     repository: trivy-db
     access_token: ((github_access_token))
+
+resource_types:
+  - name: cf-cli-resource
+    type: registry-image
+    source:
+      repository: nulldriver/cf-cli-resource
+      tag: latest
