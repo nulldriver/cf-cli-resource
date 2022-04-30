@@ -8,6 +8,7 @@ Describe 'apps'
   setup() {
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
+    uuid=$(generate_unique_id)
 
     source=$(get_source_config "$org" "$space") || error_and_exit "[ERROR] error loading source json config"
 
@@ -26,6 +27,7 @@ Describe 'apps'
   It 'can create users from file'
     create_users() {
       local fixture=$(load_fixture "users")
+      uuid=$uuid org=$org space=$space envsubst < $fixture/users-template.csv > $fixture/users.csv
       local config=$(
         %text:expand
         #|$source
@@ -38,18 +40,18 @@ Describe 'apps'
     When call create_users
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating user cfclitest-bulkload-user1"
-    The error should include "Creating user cfclitest-bulkload-user2"
-    The error should include "Creating user cfclitest-bulkload-user3"
-    Assert cf::user_exists "cfclitest-bulkload-user1"
-    Assert cf::user_exists "cfclitest-bulkload-user2"
-    Assert cf::user_exists "cfclitest-bulkload-user3"
+    The error should include "Creating user cfclitest-$uuid-1"
+    The error should include "Creating user cfclitest-$uuid-2"
+    The error should include "Creating user cfclitest-$uuid-3"
+    Assert cf::user_exists "cfclitest-$uuid-1"
+    Assert cf::user_exists "cfclitest-$uuid-2"
+    Assert cf::user_exists "cfclitest-$uuid-3"
   End
 
   Parameters
-    cfclitest-bulkload-user1
-    cfclitest-bulkload-user2
-    cfclitest-bulkload-user3
+    cfclitest-$uuid-1
+    cfclitest-$uuid-2
+    cfclitest-$uuid-3
   End
   It "can delete user $1"
     local username=$1

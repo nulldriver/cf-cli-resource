@@ -2,10 +2,11 @@ FROM alpine:3.14
 
 ADD resource/ /opt/resource/
 
-# Install dependencies (util-linux provides uuidgen)
+# Install dependencies (gettext provides envsubst; util-linux provides uuidgen)
 RUN apk add --no-cache --update-cache ca-certificates \
   bash \
   curl \
+  gettext \
   jq \
   util-linux
 

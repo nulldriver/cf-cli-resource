@@ -7,6 +7,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 #
 # Test dependencies
 # 
+# gettext - provides the envsubst command used within create-user_from_file_spec.sh
 # lastpass-cli - currently using as a centralized credential store for locally executing integration tests
 # tar - Update to GNU tar to support fly execute (with BusyBox fly execute complains with "/bin/tar: unrecognized option: null")
 # shellspec - shell testing framework used to execute tests in the spec folder
@@ -14,7 +15,7 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 # credhub - Credential manager used to set pipeline secrets
 #
 RUN apk update \
-    && apk add --no-cache lastpass-cli tar
+    && apk add --no-cache gettext lastpass-cli tar
 
 ARG SHELLSPEC_VERSION=0.28.1
 RUN mkdir -p /opt \
