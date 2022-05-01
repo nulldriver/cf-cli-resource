@@ -32,6 +32,10 @@ function cf::cf() {
   "$CF_CLI" "$@"
 }
 
+function cf::is_cf6() {
+  [[ "$(cf::cf version)" = "$CF_CLI version 6"* ]]
+}
+
 function cf::is_cf7() {
   [[ "$(cf::cf version)" = "$CF_CLI version 7"* ]]
 }
@@ -725,20 +729,6 @@ function cf::restart() {
   [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
 
   cf::cf restart "$app_name"
-
-  unset CF_STAGING_TIMEOUT
-  unset CF_STARTUP_TIMEOUT
-}
-
-function cf::restage() {
-  local app_name=${1:?app_name null or not set}
-  local staging_timeout=${2:-0}
-  local startup_timeout=${3:-0}
-
-  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
-  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
-
-  cf::cf restage "$app_name"
 
   unset CF_STAGING_TIMEOUT
   unset CF_STARTUP_TIMEOUT

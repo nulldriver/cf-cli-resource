@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - `bind-service` command now supports the `binding_name` param for specifying the name to expose the service instance to the app.
+- `restage` command now supports `strategy: rolling` and `no_wait: true` params when using `cf_cli_version: 7`
 
 ### Packaged Dependencies
 

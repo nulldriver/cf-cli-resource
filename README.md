@@ -1021,6 +1021,13 @@ Recreate the app's executable artifact using the latest pushed app files and the
 - `staging_timeout`: _Optional._ Max wait time for buildpack staging, in minutes
 - `startup_timeout`: _Optional._ Max wait time for app instance startup, in minutes
 
+##### cf cli `v7` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` params.
+
+- `strategy`: _Optional._ Deployment strategy, either rolling or null
+- `no_wait`: _Optional._ Exit when the first instance of the web process is healthy
+
 ```yml
 - put: cf-restage
   resource: cf-env

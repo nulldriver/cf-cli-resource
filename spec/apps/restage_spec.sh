@@ -63,4 +63,25 @@ Describe 'apps'
     The error should include "Restaging app"
     Assert test::is_app_started "$app_name" "$org" "$space"
   End
+
+  It 'can restage an app using rolling strategy'
+    Skip if 'using cf cli v6' cf::is_cf6
+    restage_app() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: restage
+        #|  app_name: $app_name
+        #|  strategy: rolling
+        #|  no_wait: true
+      )
+      put "$config"
+    }
+    When call restage_app
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Restaging app"
+    Assert test::is_app_started "$app_name" "$org" "$space"
+  End
 End
