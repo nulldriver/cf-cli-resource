@@ -709,6 +709,7 @@ Bind a service instance to an app
 - `app_name`: _Required._ The application to bind to the service
 - `service_instance`: _Required._ The service instance to bind to the application
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
+- `binding_name`: _Optional._ Name to expose service instance to app process with
 
 ```yml
 - put: cf-bind-service
