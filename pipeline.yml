@@ -5,6 +5,7 @@ groups:
   - build
   - test-cf-cli-v6
   - test-cf-cli-v7
+  - test-cf-cli-v8
   - scan-image
   - shipit
   - bump-patch
@@ -55,7 +56,7 @@ jobs:
     image: resource-image-dev
     file: cf-cli-resource/ci/tasks/run-shellspec.yml
     vars:
-      ccr-test-jobs: 4
+      ccr-test-jobs: 5
       ccr-cf-cli-version: 6
 
 - name: test-cf-cli-v7
@@ -73,17 +74,35 @@ jobs:
     image: resource-image-dev
     file: cf-cli-resource/ci/tasks/run-shellspec.yml
     vars:
-      ccr-test-jobs: 4
+      ccr-test-jobs: 5
       ccr-cf-cli-version: 7
+
+- name: test-cf-cli-v8
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+      trigger: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 5
+      ccr-cf-cli-version: 8
 
 - name: scan-image
   plan:
   - in_parallel:
     - get: cf-cli-resource
-      passed: [test-cf-cli-v6, test-cf-cli-v7]
+      passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
     - get: resource-image-dev
       resource: resource-image-dev
-      passed: [test-cf-cli-v6, test-cf-cli-v7]
+      passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
       params: {format: oci}
       trigger: true
     - get: trivy

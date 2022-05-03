@@ -12,10 +12,10 @@ cf::target "$org" "$space"
 
 args=("$source_app")
 
-if cf::is_cf7; then
-  args+=("$destination_app")
-else
+if cf::is_cf6; then
   args+=(--destination-app "$destination_app")
+else
+  args+=("$destination_app")
 fi
 
 [ -n "$destination_org" ] && args+=(-o "$destination_org")

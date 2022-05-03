@@ -5,7 +5,7 @@ set -euo pipefail
 Describe 'apps'
   Include resource/lib/cf-functions.sh
 
-  Skip if "not cf7" not cf::is_cf7
+  Skip if 'using cf cli v6' cf::is_cf6
 
   setup() {
     org=$(generate_test_name_with_spaces)

@@ -28,6 +28,13 @@ RUN mkdir -p /opt/cf-cli-${CF_CLI_7_VERSION} \
       | tar -zxC /opt/cf-cli-${CF_CLI_7_VERSION} \
     && ln -s /opt/cf-cli-${CF_CLI_7_VERSION}/cf7 /usr/local/bin
 
+# Install Cloud Foundry cli v8
+ARG CF_CLI_8_VERSION=8.3.0
+RUN mkdir -p /opt/cf-cli-${CF_CLI_8_VERSION} \
+    && curl -SL "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_8_VERSION}" \
+      | tar -zxC /opt/cf-cli-${CF_CLI_8_VERSION} \
+    && ln -s /opt/cf-cli-${CF_CLI_8_VERSION}/cf8 /usr/local/bin
+
 # Install test dependencies
 ARG SHELLSPEC_VERSION=0.28.1
 RUN mkdir -p /opt \

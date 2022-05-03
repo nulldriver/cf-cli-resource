@@ -18,6 +18,8 @@ if [ "${CCR_CF_CLI_VERSION}" = "6" ]; then
   CF_CLI=cf
 elif [ "${CCR_CF_CLI_VERSION}" = "7" ]; then
   CF_CLI=cf7
+elif [ "${CCR_CF_CLI_VERSION}" = "8" ]; then
+  CF_CLI=cf8
 else
   logger::error "unsupported cf cli version: $CCR_CF_CLI_VERSION"
   exit $E_UNSUPPORTED_CF_CLI_VERSION
@@ -34,10 +36,6 @@ function cf::cf() {
 
 function cf::is_cf6() {
   [[ "$(cf::cf version)" = "$CF_CLI version 6"* ]]
-}
-
-function cf::is_cf7() {
-  [[ "$(cf::cf version)" = "$CF_CLI version 7"* ]]
 }
 
 function cf::curl() {
@@ -261,7 +259,7 @@ function cf::check_route() {
   [ -n "$host" ] && url+="/host/$host"
   [ -n "$path" ] && url+="?path=%2F$path"
 
-  grep -q '204 No Content' <(cf::curl "$url" -i)
+  grep -q '204 No Content' <(cf::curl "$url" -i 2>&1)
 }
 
 cf::is_app_mapped_to_route() {

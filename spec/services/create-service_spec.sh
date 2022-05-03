@@ -89,7 +89,7 @@ Describe 'services'
     When call delete_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting service $service_instance"
+    The error should include "Deleting service"
     Assert not test::service_exists "$service_instance" "$org" "$space"
   End
 End

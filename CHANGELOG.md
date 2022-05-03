@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.26.0 - Unreleased
+
+### Added
+
+- Introduced support for `cf8` cli! This is enabled by configuring `cf_cli_version: 8` globally on the resource source configuration.
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| cf8 cli    |  [8.3.0](https://github.com/cloudfoundry/cli/releases/tag/v8.3.0)  |
+
 ## 2.25.0 - 2022-05-02
 
 ### Added

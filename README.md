@@ -4,7 +4,8 @@
 | ---------- | ------ |
 | build      | [![build](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/build/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/build/builds/latest) |
 | v6 tests   | [![v6 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/builds/latest) |
-| v7 tests   | [![v7 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v6/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v7/builds/latest) |
+| v7 tests   | [![v7 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v7/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v7/builds/latest) |
+| v8 tests   | [![v8 tests](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v8/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/test-cf-cli-v8/builds/latest) |
 | image scan | [![image scan](https://ci.nulldriver.com/api/v1/teams/resources/pipelines/cf-cli-resource/jobs/scan-image/badge)](https://ci.nulldriver.com/teams/resources/pipelines/cf-cli-resource/jobs/scan-image/builds/latest) |
 | docker     | [![Docker Pulls](https://img.shields.io/docker/pulls/nulldriver/cf-cli-resource.svg)](https://hub.docker.com/r/nulldriver/cf-cli-resource/) |
 
@@ -849,9 +850,9 @@ _NOTE_: A manifest can be used to specify values for required parameters. Any pa
 - `domain`: _Optional._ Domain to use instead of the default (e.g. apps.internal, subdomain.example.com)
 - `hostname`: _Optional._ Hostname (e.g. my-subdomain)
 
-##### cf cli `v7` specific params
+##### cf cli `v7` and `v8` specific params
 
-_NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` params.
+_NOTE_: Enable these by specifying `cf_cli_version: 7` or `cf_cli_version: 8` in the resource `source` params.
 
 - `strategy`: _Optional._ Deployment strategy, either rolling or `"null"` (note the use of double quotes!).
 
@@ -1021,9 +1022,9 @@ Recreate the app's executable artifact using the latest pushed app files and the
 - `staging_timeout`: _Optional._ Max wait time for buildpack staging, in minutes
 - `startup_timeout`: _Optional._ Max wait time for app instance startup, in minutes
 
-##### cf cli `v7` specific params
+##### cf cli `v7` and `v8` specific params
 
-_NOTE_: Enable these by specifying `cf_cli_version: 7` in the resource `source` params.
+_NOTE_: Enable these by specifying `cf_cli_version: 7` or `cf_cli_version: 8` in the resource `source` params.
 
 - `strategy`: _Optional._ Deployment strategy, either rolling or null
 - `no_wait`: _Optional._ Exit when the first instance of the web process is healthy

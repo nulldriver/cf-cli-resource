@@ -108,7 +108,6 @@ Describe 'routes'
         #|  service_instance: my_route_service
         #|  hostname: $app_hostname
         #|  path: foo
-        #|  configuration: {}
       )
       put "$config"
     }

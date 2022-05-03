@@ -11,10 +11,10 @@ cf::target "$org" "$space"
 
 args=("$app_name")
 
-if cf::is_cf7 && [ -n "$task_command" ]; then
-  args+=(--command "$task_command")
-else
+if cf::is_cf6; then
   args+=("$task_command")
+elif [ -n "$task_command" ]; then
+  args+=(--command "$task_command")
 fi
 
 [ -n "$task_name" ] && args+=(--name "$task_name")

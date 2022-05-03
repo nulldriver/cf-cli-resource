@@ -88,7 +88,7 @@ Describe 'services'
     When call bind_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Binding service $service_instance"
+    The error should include "Binding service"
     Assert test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
     Assert [ "$syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$binding_name" "$org" "$space" | jq -r .syslog_drain_url)" ]
   End
