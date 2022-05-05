@@ -83,12 +83,22 @@ Describe 'services'
         #|  service_instance: $service_instance
         #|  binding_name: $binding_name
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call bind_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Binding service"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
     Assert [ "$syslog_drain_url" == "$(test::get_user_provided_vcap_service "$app_name" "$binding_name" "$org" "$space" | jq -r .syslog_drain_url)" ]
   End
@@ -123,12 +133,22 @@ Describe 'services'
         #|  app_name: $app_name
         #|  service_instance: $service_instance
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call unbind_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Unbinding app $app_name from service $service_instance"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert not test::is_app_bound_to_service "$app_name" "$service_instance" "$org" "$space"
   End
 End

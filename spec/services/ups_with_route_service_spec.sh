@@ -109,12 +109,22 @@ Describe 'routes'
         #|  hostname: $app_hostname
         #|  path: foo
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call bind_route_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Binding route"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert test::is_app_bound_to_route_service "$app_name" "my_route_service" "$org" "$space" "/foo"
   End
 
@@ -130,12 +140,22 @@ Describe 'routes'
         #|  hostname: $app_hostname
         #|  path: foo
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call unbind_route_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Unbinding route"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert not test::is_app_bound_to_route_service "$app_name" "my_route_service" "$org" "$space" "/foo"
   End
 

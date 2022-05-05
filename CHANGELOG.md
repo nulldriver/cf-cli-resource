@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Introduced support for `cf8` cli! This is enabled by configuring `cf_cli_version: 8` globally on the resource source configuration.
+- These commands now support the `wait: true` param when used with `cf_cli_version: 8`:
+  - `bind-route-service`
+  - `bind-service`
+  - `create-service-key`
+  - `delete-service-key`
+  - `unbind-route-service`
+  - `unbind-service`
+
+### Changed
+
+- The `wait_for_service: true` param has been deprecated in favor of `wait: true` for commands: `create-service`, `update-service`, and `delete-service` for consistency with the new `v8` cli param.
 
 ### Packaged Dependencies
 

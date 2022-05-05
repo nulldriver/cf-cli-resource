@@ -55,12 +55,22 @@ Describe 'services'
         #|  service_instance: $service_instance
         #|  service_key: $service_key
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call create_service_key
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating service key $service_key for service instance $service_instance"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert test::service_key_exists "$service_instance" "$service_key" "$org" "$space"
   End
 
@@ -74,16 +84,26 @@ Describe 'services'
         #|  service_instance: $service_instance
         #|  service_key: $service_key
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  wait: true
+        )
+      fi
       put "$config"
     }
     When call delete_service_key
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting key $service_key for service instance $service_instance"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+    fi
     Assert not test::service_key_exists "$service_instance" "$service_key" "$org" "$space"
   End
-
-  It 'can delete a service'
+  
+    It 'can delete a service'
     delete_service() {
       local config=$(
         %text:expand

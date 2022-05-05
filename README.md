@@ -466,7 +466,7 @@ Create a service instance
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 - `tags`: _Optional._ User provided tags
 - `timeout`: _Optional._ Max wait time for service creation, in seconds. Defaults to `600` (10 minutes)
-- `wait_for_service`: _Optional._ Wait for the asynchronous service to start. Defaults to `false`.
+- `wait`: _Optional._ Wait for the operation to complete
 - `update_service`: _Optional._ Update service instance if it already exists. Defaults to `false`.
 
 ```yml
@@ -480,7 +480,7 @@ Create a service instance
     configuration: '{"count":1}'
     tags: "list, of, tags"
     timeout: 300
-    wait_for_service: true
+    wait: true
 ```
 
 #### update-service
@@ -494,7 +494,8 @@ Update a service instance
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 - `tags`: _Optional._ User provided tags
 - `timeout`: _Optional._ Max wait time for service update, in seconds. Defaults to `600` (10 minutes)
-- `wait_for_service`: _Optional._ Wait for the asynchronous service to update. Defaults to `false`.
+- `wait`: _Optional._ Wait for the operation to complete
+
 
 ```yml
 - put: cf-update-service
@@ -507,7 +508,7 @@ Update a service instance
     configuration: '{"count":2}'
     tags: "list, of, tags"
     timeout: 300
-    wait_for_service: true
+    wait: true
 ```
 
 #### delete-service
@@ -517,7 +518,7 @@ Delete a service instance
 - `org`: _Optional._ The organization to target (required if not set in the source config)
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `service_instance`: _Required._ The service instance to delete
-- `wait_for_service`: _Optional._ Wait for the service to delete. Defaults to `false`.
+- `wait`: _Optional._ Wait for the operation to complete
 
 ```yml
 - put: cf-delete-service
@@ -525,7 +526,7 @@ Delete a service instance
   params:
     command: delete-service
     service_instance: my-config-server
-    wait_for_service: true
+    wait: true
 ```
 
 #### share-service
@@ -578,6 +579,12 @@ Create a service key
 - `service_key`: _Required._ The name to give the service key
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
+
 ```yml
 - put: cf-create-service-key
   resource: cf-env
@@ -595,6 +602,12 @@ Delete a service key
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `service_instance`: _Required._ The service instance that has the service key
 - `service_key`: _Required._ The service key to delete
+
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
 
 ```yml
 - put: cf-delete-service-key
@@ -712,6 +725,12 @@ Bind a service instance to an app
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
 - `binding_name`: _Optional._ Name to expose service instance to app process with
 
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
+
 ```yml
 - put: cf-bind-service
   resource: cf-env
@@ -730,6 +749,12 @@ Unbind a service instance from an app
 - `space`: _Optional._ The space to target (required if not set in the source config)
 - `app_name`: _Required._ The application to unbind from the service instance
 - `service_instance`: _Required._ The service instance to unbind from the application
+
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
 
 ```yml
 - put: cf-unbind-service
@@ -751,6 +776,12 @@ Bind a service instance to an HTTP route
 - `hostname`: _Optional._ Hostname used in combination with `domain` to specify the route to bind
 - `path`: _Optional._ Path used in combination with `hostname` and `domain` to specify the route to bind
 - `configuration`: _Optional._ Valid JSON object containing service-specific configuration parameters, provided either in-line or in a file. For a list of supported configuration parameters, see documentation for the particular service offering.
+
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
 
 ```yml
 - put: cf-bind-route-service
@@ -774,6 +805,12 @@ Unbind a service instance from an HTTP route
 - `service_instance`: _Required._ The service instance to unbind the route from
 - `hostname`: _Optional._ Hostname used in combination with DOMAIN to specify the route to unbind
 - `path`: _Optional._ Path used in combination with HOSTNAME and DOMAIN to specify the route to unbind
+
+##### cf cli `v8` specific params
+
+_NOTE_: Enable these by specifying `cf_cli_version: 8` in the resource `source` params.
+
+- `wait`: _Optional._ Wait for the operation to complete
 
 ```yml
 - put: cf-unbind-route-service

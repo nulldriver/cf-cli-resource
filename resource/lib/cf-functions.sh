@@ -38,6 +38,10 @@ function cf::is_cf6() {
   [[ "$(cf::cf version)" = "$CF_CLI version 6"* ]]
 }
 
+function cf::is_cf8() {
+  [[ "$(cf::cf version)" = "$CF_CLI version 8"* ]]
+}
+
 function cf::curl() {
   CF_TRACE=false cf::cf curl --fail "$@"
 }
@@ -436,49 +440,23 @@ function cf::get_service_instance_plan() {
   echo $output | jq -r '.entity.name'
 }
 
-function cf::create_service() {
-  local service=${1:?service null or not set}
-  local plan=${2:?plan null or not set}
-  local service_instance=${3:?service_instance null or not set}
-  local broker=${4:-}
-  local configuration=${5:-}
-  local tags=${6:-}
-
-  local args=("$service" "$plan" "$service_instance")
-  [ -n "$broker" ]        && args+=(-b "$broker")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-  [ -n "$tags" ]          && args+=(-t "$tags")
-
-  cf::cf create-service "${args[@]}"
-}
-
 function cf::update_service() {
   local service_instance=${1:?service_instance null or not set}
   local plan=${2:-}
   local configuration=${3:-}
   local tags=${4:-}
+  local wait=${5:-}
 
   local args=("$service_instance")
   [ -n "$plan" ]          && args+=(-p "$plan")
   [ -n "$configuration" ] && args+=(-c "$configuration")
   [ -n "$tags" ]          && args+=(-t "$tags")
 
-  cf::cf update-service "${args[@]}"
-}
-
-function cf::create_or_update_service() {
-  local service=${1:?service null or not set}
-  local plan=${2:?plan null or not set}
-  local service_instance=${3:?service_instance null or not set}
-  local broker=${4:-}
-  local configuration=${5:-}
-  local tags=${6:-}
-
-  if cf::service_exists "$service_instance"; then
-    cf::update_service "$service_instance" "$plan" "$configuration" "$tags"
-  else
-    cf::create_service "$service" "$plan" "$service_instance" "$broker" "$configuration" "$tags"
+  if cf::is_cf8 && [ "true" = "$wait" ]; then
+    args+=(--wait)
   fi
+
+  cf::cf update-service "${args[@]}"
 }
 
 function cf::share_service() {
@@ -501,11 +479,6 @@ function cf::unshare_service() {
   [ -n "$other_org" ] && args+=(-o "$other_org")
 
   cf::cf unshare-service -f "${args[@]}"
-}
-
-function cf::delete_service() {
-  local service_instance=${1:?service_instance null or not set}
-  cf::cf delete-service "$service_instance" -f
 }
 
 function cf::wait_for_service_instance() {
@@ -567,23 +540,6 @@ function cf::wait_for_delete_service_instance() {
   done
 }
 
-function cf::create_service_key() {
-  local service_instance=${1:?service_instance null or not set}
-  local service_key=${2:?service_key null or not set}
-  local configuration=${3:-}
-
-  local args=("$service_instance" "$service_key")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-
-  cf::cf create-service-key "${args[@]}"
-}
-
-function cf::delete_service_key() {
-  local service_instance=${1:?service_instance null or not set}
-  local service_key=${2:?service_key null or not set}
-  cf::cf delete-service-key "$service_instance" "$service_key" -f
-}
-
 function cf::get_service_key_guid() {
   local service_instance=${1:?service_instance null or not set}
   local service_key=${2:?service_key null or not set}
@@ -627,25 +583,6 @@ function cf::create_or_update_service_broker() {
 function cf::delete_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   cf::cf delete-service-broker "$service_broker" -f
-}
-
-function cf::bind_service() {
-  local app_name=${1:?app_name null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  local configuration=${3:-}
-  local binding_name=${4:-}
-
-  local args=("$app_name" "$service_instance")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-  [ -n "$binding_name" ] && args+=(--binding-name "$binding_name")
-
-  cf::cf bind-service "${args[@]}"
-}
-
-function cf::unbind_service() {
-  local app_name=${1:?app_name null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  cf::cf unbind-service "$app_name" "$service_instance"
 }
 
 function cf::is_app_bound_to_service() {

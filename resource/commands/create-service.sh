@@ -6,19 +6,32 @@ broker=$(get_option '.broker')
 configuration=$(get_option '.configuration')
 tags=$(get_option '.tags')
 timeout=$(get_option '.timeout')
-wait=$(get_option '.wait_for_service' 'false')
-update_service=$(get_option '.update_service' 'false')
+wait_for_service=$(get_option '.wait_for_service')
+wait=$(get_option '.wait')
+update_service=$(get_option '.update_service')
+
+# backwards compatibility for deprecated 'wait_for_service' param
+wait=${wait:-$wait_for_service}
 
 logger::info "Executing $(logger::highlight "$command"): $service_instance"
 
 cf::target "$org" "$space"
 
-if [ "true" = "$update_service" ]; then
-  cf::create_or_update_service "$service" "$plan" "$service_instance" "$broker" "$configuration" "$tags"
+if [ "true" = "$update_service" ] && cf::service_exists "$service_instance"; then
+  cf::update_service "$service_instance" "$plan" "$configuration" "$tags" "$wait"
 else
-  cf::create_service "$service" "$plan" "$service_instance" "$broker" "$configuration" "$tags"
+  args=("$service" "$plan" "$service_instance")
+  [ -n "$broker" ]        && args+=(-b "$broker")
+  [ -n "$configuration" ] && args+=(-c "$configuration")
+  [ -n "$tags" ]          && args+=(-t "$tags")
+
+  if cf::is_cf8 && [ "true" = "$wait" ]; then
+    args+=(--wait)
+  fi
+
+  cf::cf create-service "${args[@]}"
 fi
 
-if [ "true" = "$wait" ]; then
+if ! cf::is_cf8 && [ "true" = "$wait" ]; then
   cf::wait_for_service_instance "$service_instance" "$timeout"
 fi

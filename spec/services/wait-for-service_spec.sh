@@ -24,7 +24,7 @@ Describe 'services'
   BeforeAll 'setup'
   AfterAll 'teardown'
 
-  It 'can create an asynchronous service without waiting'
+  It 'can create an asynchronous service and wait'
     create_service() {
       local config=$(
         %text:expand
@@ -37,6 +37,7 @@ Describe 'services'
         #|  broker: bookstore-async
         #|  configuration: '{"ram_gb":4}'
         #|  tags: list, of, tags
+        #|  wait: true
       )
       put "$config"
     }
@@ -44,12 +45,19 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating service instance $service_instance"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+      The error should include "Service instance $service_instance created."
+    else
+      The error should match pattern "*Waiting for service: *$service_instance*"
+      The error should match pattern "*Service is ready: *$service_instance*"
+    fi
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "standard" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
     Assert [ "list, of, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
   End
 
-  It 'can wait for asynchronous service'
+  It 'can independently wait for asynchronous service'
     wait_for_service() {
       local config=$(
         %text:expand
@@ -68,7 +76,7 @@ Describe 'services'
     Assert test::service_exists "$service_instance" "$org" "$space"
   End
 
-  It 'can update an asynchronous service and wait'
+  It 'can create or update an asynchronous service and wait'
     create_service() {
       local config=$(
         %text:expand
@@ -81,8 +89,8 @@ Describe 'services'
         #|  broker: bookstore-async
         #|  configuration: '{"ram_gb":8}'
         #|  tags: some, other, tags
+        #|  wait: true
         #|  update_service: true
-        #|  wait_for_service: true
       )
       put "$config"
     }
@@ -90,8 +98,45 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Updating service instance $service_instance"
-    The error should match pattern "*Waiting for service: *$service_instance*"
-    The error should match pattern "*Service is ready: *$service_instance*"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+      The error should include "Update of service instance $service_instance complete."
+    else
+      The error should match pattern "*Waiting for service: *$service_instance*"
+      The error should match pattern "*Service is ready: *$service_instance*"
+    fi
+    Assert test::service_exists "$service_instance" "$org" "$space"
+    Assert [ "pro" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
+    Assert [ "some, other, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
+  End
+
+  It 'can update an asynchronous service and wait'
+    create_service() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: update-service
+        #|  service: bookstore-async
+        #|  plan: pro
+        #|  service_instance: $service_instance
+        #|  configuration: '{"ram_gb":8}'
+        #|  tags: some, other, tags
+        #|  wait: true
+      )
+      put "$config"
+    }
+    When call create_service
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Updating service instance $service_instance"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+      The error should include "Update of service instance $service_instance complete."
+    else
+      The error should match pattern "*Waiting for service: *$service_instance*"
+      The error should match pattern "*Service is ready: *$service_instance*"
+    fi
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "pro" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
     Assert [ "some, other, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
@@ -105,7 +150,7 @@ Describe 'services'
         #|params:
         #|  command: delete-service
         #|  service_instance: $service_instance
-        #|  wait_for_service: true
+        #|  wait: true
       )
       put "$config"
     }
@@ -113,6 +158,13 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting service"
+    if cf::is_cf8; then
+      The error should include 'Waiting for the operation to complete'
+      The error should include "Service instance $service_instance deleted."
+    else
+      The error should match pattern "*Waiting for service deletion: *$service_instance*"
+      The error should match pattern "*Service deleted: *$service_instance*"
+    fi
     Assert not test::service_exists "$service_instance" "$org" "$space"
   End
 End
