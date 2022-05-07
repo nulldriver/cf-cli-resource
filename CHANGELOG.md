@@ -17,10 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `delete-service-key`
   - `unbind-route-service`
   - `unbind-service`
+- Added `create-private-domain` command (see notes in Changed section regarding deprecation of `create-domain` command)
 
 ### Changed
 
 - The `wait_for_service: true` param has been deprecated in favor of `wait: true` for commands: `create-service`, `update-service`, and `delete-service` for consistency with the new `v8` cli param.
+- The `create-domain` command has been deprecated in favor of the new `create-private-domain` command. Backstory: The cf cli `v6` provides the `create-domain` and `create-shared-domain` commands.  Starting with cf cli `v7`, the `create-domain` command became an alias for the more descriptive `create-private-domain` command. Note that when using cf cli `v6` we still use `cf create-domain ...` under the covers.
 
 ### Packaged Dependencies
 

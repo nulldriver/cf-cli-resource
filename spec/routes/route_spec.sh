@@ -27,7 +27,25 @@ Describe 'routes'
   AfterAll 'teardown'
 
   It 'can create private domain'
-    create_domain() {      
+    create_domain() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: create-private-domain
+        #|  domain: $domain
+      )
+      put "$config"
+    }
+    When call create_domain
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Creating"
+    Assert cf::has_private_domain "$org" "$domain"
+  End
+
+  It 'can create private domain again using deprecated command'
+    create_domain() {
       local config=$(
         %text:expand
         #|$source
@@ -40,8 +58,7 @@ Describe 'routes'
     When call create_domain
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating"
-    The error should include "OK"
+    The error should include "Domain $domain already exists"
     Assert cf::has_private_domain "$org" "$domain"
   End
 
