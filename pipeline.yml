@@ -289,7 +289,6 @@ resources:
     ignore_paths:
     - .devcontainer
     - .gitignore
-    - .shellspec
     - CHANGELOG.md
     - LICENSE
     - NOTICE.md
