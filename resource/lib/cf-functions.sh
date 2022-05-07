@@ -287,11 +287,6 @@ cf::has_private_domain() {
   cf::curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
 }
 
-function cf::delete_domain() {
-  local domain=${1:?domain null or not set}
-  cf::cf delete-domain -f "$domain"
-}
-
 function cf::delete_route() {
   local domain=${1:?domain null or not set}
   local hostname=${2:-}
