@@ -61,6 +61,30 @@ Describe 'apps'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Restarting app"
+    The error should include "Stopping app"
+    Assert test::is_app_started "$app_name" "$org" "$space"
+  End
+
+  It 'can restart an app using rolling strategy'
+    Skip if 'using cf cli v6' cf::is_cf6
+    restart_app() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: restart
+        #|  app_name: $app_name
+        #|  strategy: rolling
+        #|  no_wait: true
+      )
+      put "$config"
+    }
+    When call restart_app
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "Restarting app"
+    The error should include "Waiting for app to deploy"
+    The error should not include "Stopping app"
     Assert test::is_app_started "$app_name" "$org" "$space"
   End
 End

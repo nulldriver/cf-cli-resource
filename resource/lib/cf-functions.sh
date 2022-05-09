@@ -644,20 +644,6 @@ function cf::stop() {
   cf::cf stop "$app_name"
 }
 
-function cf::restart() {
-  local app_name=${1:?app_name null or not set}
-  local staging_timeout=${2:-0}
-  local startup_timeout=${3:-0}
-
-  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
-  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
-
-  cf::cf restart "$app_name"
-
-  unset CF_STAGING_TIMEOUT
-  unset CF_STARTUP_TIMEOUT
-}
-
 function cf::delete() {
   local app_name=${1:?app_name null or not set}
   local delete_mapped_routes=${2:-}

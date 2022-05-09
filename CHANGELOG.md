@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `unbind-service`
 - Added `create-private-domain` command (see notes in Changed section regarding deprecation of `create-domain` command)
 - Added `delete-private-domain` command (see notes in Changed section regarding deprecation of `delete-domain` command)
+- `restart` command now supports `strategy: rolling` and `no_wait: true` params when using `cf_cli_version: 7` or `cf_cli_version: 8`
 
 ### Changed
 
