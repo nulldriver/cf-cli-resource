@@ -51,6 +51,7 @@ Describe 'apps'
         #|params:
         #|  command: delete-user
         #|  username: $username
+        #|  origin: sso
       )
       put "$config"
     }

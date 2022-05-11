@@ -425,6 +425,7 @@ Delete a user
 | Params             | Usage      | CLI Version | Description
 | ---                | ---        | ---         | ---
 | `username`         | *Required* | All         | The user to delete
+| `origin`           | *Optional* | 7, 8        | Origin for mapping a user account to a user in an external identity provider
 
 ```yaml
 - put: cloud-foundry

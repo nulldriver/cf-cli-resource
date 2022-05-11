@@ -203,7 +203,14 @@ function cf::create_users_from_file() {
 
 function cf::delete_user() {
   local username=${1:?username null or not set}
-  cf::cf delete-user -f "$username"
+  local origin=${2:-}
+
+  local args=(-f "$username")
+  if ! cf::is_cf6 && [ -n "$origin" ]; then
+    args+=(--origin "$origin")
+  fi
+
+  cf::cf delete-user "${args[@]}"
 }
 
 function cf::get_private_domain_guid() {
