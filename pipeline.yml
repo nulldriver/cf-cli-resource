@@ -277,7 +277,7 @@ jobs:
     image: resource-image-dev
     file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
     vars:
-      ccr-cf-cli-version: 7
+      ccr-cf-cli-version: 8
 
 resources:
 - name: cf-cli-resource
