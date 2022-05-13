@@ -1,6 +1,7 @@
 --require spec_helper
 --shell bash
 --fail-fast
+--random specfiles
 
 ## Default kcov (coverage) options
 # --kcov-options "--include-path=. --path-strip-level=1"
