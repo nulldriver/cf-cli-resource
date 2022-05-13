@@ -26,8 +26,8 @@ Describe 'routes'
   BeforeAll 'setup'
   AfterAll 'teardown'
 
-  It 'can create private domain'
-    create_domain() {
+  It 'can create a private domain'
+    create_private_domain() {
       local config=$(
         %text:expand
         #|$source
@@ -37,7 +37,7 @@ Describe 'routes'
       )
       put "$config"
     }
-    When call create_domain
+    When call create_private_domain
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating"
@@ -62,47 +62,8 @@ Describe 'routes'
     Assert cf::has_private_domain "$org" "$domain"
   End
 
-  It 'can create a route'
-    create_route() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: create-route
-        #|  domain: $domain
-      )
-      put "$config"
-    }
-    When call create_route
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating route $domain"
-    The error should include "Route $domain has been created."
-    Assert cf::check_route "$org" "$domain"
-  End
-
-  It 'can create a route with hostname'
-    create_route_with_hostname() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: create-route
-        #|  domain: $domain
-        #|  hostname: $hostname
-      )
-      put "$config"
-    }
-    When call create_route_with_hostname
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Creating route $hostname.$domain"
-    The error should include "Route $hostname.$domain has been created."
-    Assert cf::check_route "$org" "$domain" "$hostname"
-  End
-
-  It 'can create a route with hostname and path'
-    create_route_with_hostname_and_path() {
+  It 'can create a http route'
+    create_http_route() {
       local config=$(
         %text:expand
         #|$source
@@ -114,7 +75,7 @@ Describe 'routes'
       )
       put "$config"
     }
-    When call create_route_with_hostname_and_path
+    When call create_http_route
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating route $hostname.$domain/foo"
@@ -144,47 +105,8 @@ Describe 'routes'
     Assert test::is_app_started "$app_name" "$org" "$space"
   End
 
-  It 'can map a route'
-    map_route() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: map-route
-        #|  domain: $domain
-        #|  app_name: $app_name
-      )
-      put "$config"
-    }
-    When call map_route
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "route $domain to app $app_name"
-    Assert test::is_app_mapped_to_route "$app_name" "$domain" "$org" "$space"
-  End
-
-  It 'can map a route with hostname'
-    map_route_with_hostname() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: map-route
-        #|  domain: $domain
-        #|  app_name: $app_name
-        #|  hostname: $hostname
-      )
-      put "$config"
-    }
-    When call map_route_with_hostname
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "route $hostname.$domain to app $app_name"
-    Assert test::is_app_mapped_to_route "$app_name" "$hostname.$domain" "$org" "$space"
-  End
-
-  It 'can map a route with hostname and path'
-    map_route_with_hostname_and_path() {
+  It 'can map a http route'
+    map_http_route() {
       local config=$(
         %text:expand
         #|$source
@@ -195,17 +117,27 @@ Describe 'routes'
         #|  hostname: $hostname
         #|  path: foo
       )
+      if cf::is_cf8; then
+        config=$(
+          %text:expand
+          #|$config
+          #|  app_protocol: http2
+        )
+      fi
       put "$config"
     }
-    When call map_route_with_hostname_and_path
+    When call map_http_route
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "route $hostname.$domain/foo to app $app_name"
+    if cf::is_cf8; then
+      The error should include "with protocol http2"
+    fi
     Assert test::is_app_mapped_to_route "$app_name" "$hostname.$domain/foo" "$org" "$space"
   End
 
-  It 'can unmap a route with hostname and path'
-    unmap_route_with_hostname_and_path() {
+  It 'can unmap a http route'
+    unmap_http_route() {
       local config=$(
         %text:expand
         #|$source
@@ -218,54 +150,15 @@ Describe 'routes'
       )
       put "$config"
     }
-    When call unmap_route_with_hostname_and_path
+    When call unmap_http_route
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Removing route $hostname.$domain/foo from app $app_name"
     Assert not test::is_app_mapped_to_route "$app_name" "$hostname.$domain/foo" "$org" "$space"
   End
 
-  It 'can unmap a route with hostname'
-    unmap_route_with_hostname() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: unmap-route
-        #|  domain: $domain
-        #|  app_name: $app_name
-        #|  hostname: $hostname
-      )
-      put "$config"
-    }
-    When call unmap_route_with_hostname
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Removing route $hostname.$domain from app $app_name"
-    Assert not test::is_app_mapped_to_route "$app_name" "$hostname.$domain" "$org" "$space"
-  End
-
-  It 'can unmap a route'
-    unmap_route() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: unmap-route
-        #|  domain: $domain
-        #|  app_name: $app_name
-      )
-      put "$config"
-    }
-    When call unmap_route
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Removing route $domain from app $app_name"
-    Assert not test::is_app_mapped_to_route "$app_name" "$domain" "$org" "$space"
-  End
-
-  It 'can delete a route with hostname and path'
-    delete_route_with_hostname_and_path() {
+  It 'can delete a http route'
+    delete_http_route() {
       local config=$(
         %text:expand
         #|$source
@@ -277,51 +170,33 @@ Describe 'routes'
       )
       put "$config"
     }
-    When call delete_route_with_hostname_and_path
+    When call delete_http_route
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting route $hostname.$domain/foo"
     Assert not cf::check_route "$org" "$domain" "$hostname" "foo"
   End
 
-  It 'can delete a route with hostname'
-    delete_route_with_hostname() {
+  It 'can delete a private domain'
+    delete_private_domain() {
       local config=$(
         %text:expand
         #|$source
         #|params:
-        #|  command: delete-route
-        #|  domain: $domain
-        #|  hostname: $hostname
-      )
-      put "$config"
-    }
-    When call delete_route_with_hostname
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting route $hostname.$domain"
-    Assert not cf::check_route "$org" "$domain" "$hostname"
-  End
-
-  It 'can delete a route'
-    delete_route() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: delete-route
+        #|  command: delete-private-domain
         #|  domain: $domain
       )
       put "$config"
     }
-    When call delete_route
+    When call delete_private_domain
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting route $domain"
-    Assert not cf::check_route "$org" "$domain"
+    The error should include "Deleting"
+    The error should include "OK"
+    Assert not cf::has_private_domain "$org" "$domain"
   End
 
-  It 'can delete private domain'
+  It 'can delete a private domain using deprecated command'
     delete_domain() {
       local config=$(
         %text:expand
@@ -335,8 +210,11 @@ Describe 'routes'
     When call delete_domain
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Deleting"
-    The error should include "OK"
+    if cf::is_cf6; then
+      The error should include "Domain $domain not found"
+    else
+      The error should include "Domain '$domain' does not exist."
+    fi
     Assert not cf::has_private_domain "$org" "$domain"
   End
 End

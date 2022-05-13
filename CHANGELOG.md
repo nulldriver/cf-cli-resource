@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `delete-private-domain` command (see notes in Changed section regarding deprecation of `delete-domain` command)
 - `restart` command now supports `strategy: rolling` and `no_wait: true` params when using `cf_cli_version` version `7` or `8`
 - `delete-user` command now supports the `origin` param for specifying an external identity provider when using `cf_cli_version` version `7` or `8`
+- `map-route` command now supports the `app_protocol` param for specifying the protocol for the route destination (only applied to HTTP routes)
 
 ### Changed
 

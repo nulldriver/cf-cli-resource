@@ -301,6 +301,7 @@ Map a route to an app
 | `domain`           | *Required* | All         | The domain to map to the application
 | `hostname`         | *Optional* | All         | Hostname for the HTTP route (required for shared domains)
 | `path`             | *Optional* | All         | Path for the HTTP route
+| `app_protocol`     | *Optional* | 8           | [Beta flag, subject to change] Protocol for the route destination (default: http1). Only applied to HTTP routes
 
 ```yaml
 - put: cloud-foundry

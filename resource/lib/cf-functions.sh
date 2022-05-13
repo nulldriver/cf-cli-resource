@@ -306,19 +306,6 @@ function cf::delete_route() {
   cf::cf delete-route -f "${args[@]}"
 }
 
-function cf::map_route() {
-  local app_name=${1:?app_name null or not set}
-  local domain=${2:?domain null or not set}
-  local hostname=${3:-}
-  local path=${4:-}
-
-  local args=("$app_name" "$domain")
-  [ -n "$hostname" ] && args+=(--hostname "$hostname")
-  [ -n "$path" ]     && args+=(--path "$path")
-
-  cf::cf map-route "${args[@]}"
-}
-
 function cf::unmap_route() {
   local app_name=${1:?app_name null or not set}
   local domain=${2:?domain null or not set}
