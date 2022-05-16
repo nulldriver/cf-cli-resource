@@ -10,8 +10,11 @@ FIXTURE=$SHELLSPEC_SPECDIR/fixture
 
 DEFAULT_CF_CLI_VERSION=6
 
-shellspec_spec_helper_configure() {
-  shellspec_import 'support/json_matcher'
+spec_helper_configure() {
+  import 'support/json_matcher'
+
+  source 'resource/lib/cf-functions.sh'
+  source 'resource/lib/util.sh'
 
   error_and_exit() {
     echo "$1" >&3
@@ -22,7 +25,7 @@ shellspec_spec_helper_configure() {
   (( "${BASH_VERSINFO[0]}" >= 4 )) || error_and_exit "[ERROR] bash v4 or higher is required (found version $BASH_VERSION)"
   command -v jq >/dev/null || error_and_exit "[ERROR] unable to locate jq binary (https://stedolan.github.io/jq/)"
   command -v yq >/dev/null || error_and_exit "[ERROR] unable to locate yq binary (https://github.com/mikefarah/yq)"
-  [[ "$(yq --version)" != "yq version 3"* ]] && error_and_exit "[ERROR] yq v3 is required (found $(yq --version))"
+  [[ "$(yq --version)" != *"version 4"* ]] && error_and_exit "[ERROR] yq v4 is required (found $(yq --version))"
 
   # Negation helper function
   not() {
@@ -145,16 +148,11 @@ EOF
     pwd
   }
 
-  yaml_to_json() {
-    local yaml=${1:?yaml null or not set}
-    echo "$yaml" | yq read - --tojson
-  }
-
   put() {
     local config=${1:?config null or not set}
     local working_dir=${2:-$(mktemp -d "$TMPDIR/put-src.XXXXXX")}
 
-    yaml_to_json "$config" | "$BASE_DIR/resource/out" "$working_dir"
+    util::yaml_to_json "$config" | "$BASE_DIR/resource/out" "$working_dir"
   }
 
   generate_unique_id() {

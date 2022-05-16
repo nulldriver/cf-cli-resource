@@ -3,7 +3,6 @@
 set -euo pipefail
 
 Describe 'auth'
-  Include resource/lib/cf-functions.sh
 
   setup() {
     cf_home=$(login_with_cf_home)

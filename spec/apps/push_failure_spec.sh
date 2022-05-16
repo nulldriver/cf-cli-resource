@@ -3,7 +3,7 @@
 set -euo pipefail
 
 Describe 'apps'
-  Include resource/lib/cf-functions.sh
+  Include resource/lib/error-codes.sh
 
   setup() {
     org=$(generate_test_name_with_spaces)

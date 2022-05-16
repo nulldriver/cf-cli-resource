@@ -851,36 +851,3 @@ function cf::get_buildpack_position() {
 function cf::get_buildpack_max_position() {
   cf::curl "/v2/buildpacks" | jq -r '[.resources[].entity.position] | max'
 }
-
-function cf::set_manifest_environment_variables() (
-  local manifest=${1:?manifest null or not set}
-  local environment_variables=${2:?environment_variables null or not set}
-  local app_name=${3:-}
-
-  get_keys() {
-    echo "$environment_variables" | jq -r 'keys[]'
-  }
-
-  get_value() {
-    local key=${1:?key null or not set}
-    echo "$environment_variables" | jq -r --arg key "$key" '.[$key]'
-  }
-
-  has_app_name() {
-    [ -n "$app_name" ] && [ -n "$(yq read "$manifest" "applications.name==$app_name")" ]
-  }
-
-  has_one_app() {
-    [ "1" == "$(yq read "$manifest" "applications" -l)" ]
-  }
-
-  for key in $(get_keys); do
-    if has_app_name; then
-      yq write -i "$manifest" -- "applications(name==$app_name).env.$key" "$(get_value "$key")"
-    elif has_one_app; then
-      yq write -i "$manifest" -- "applications[0].env.$key" "$(get_value "$key")"
-    else
-      yq write -i "$manifest" -- "env.$key" "$(get_value "$key")"
-    fi
-  done
-)

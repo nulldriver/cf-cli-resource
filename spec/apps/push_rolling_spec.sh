@@ -3,7 +3,6 @@
 set -euo pipefail
 
 Describe 'apps'
-  Include resource/lib/cf-functions.sh
 
   Skip if 'using cf cli v6' cf::is_cf6
 

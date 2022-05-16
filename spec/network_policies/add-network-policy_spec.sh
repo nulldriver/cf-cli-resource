@@ -3,7 +3,6 @@
 set -euo pipefail
 
 Describe 'network policies'
-  Include resource/lib/cf-functions.sh
 
   setup() {
     source_org=$(generate_test_name_with_spaces)

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.26.1 - Unreleased
+
+### Changed
+
+- Updated `yq` cli to version `v4.25.1`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| cf8 cli    |  [8.3.0](https://github.com/cloudfoundry/cli/releases/tag/v8.3.0)  |
+
 ## 2.26.0 - 2022-05-12
 
 ### Added
