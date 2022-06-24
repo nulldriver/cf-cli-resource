@@ -136,8 +136,8 @@ jobs:
             --ignore-unfixed \
             --exit-code 1 \
             --input image/image.tar \
-            --skip-files opt/cf-cli-7.4.0/cf7 \
-            --skip-files opt/cf-cli-8.3.0/cf8
+            --skip-files opt/cf-cli-7.5.0/cf7 \
+            --skip-files opt/cf-cli-8.4.0/cf8
 
 - name: shipit
   public: true

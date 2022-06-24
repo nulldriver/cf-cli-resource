@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Updated to [cf7 cli v7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)
+- Updated to [cf7 cli v8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)
 - Updated `yq` cli to version `v4.25.1`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
 
 ### Packaged Dependencies
@@ -16,8 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
 | cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
-| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
-| cf8 cli    |  [8.3.0](https://github.com/cloudfoundry/cli/releases/tag/v8.3.0)  |
+| cf7 cli    |  [7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)  |
+| cf8 cli    |  [8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)  |
 
 ## 2.26.0 - 2022-05-12
 
