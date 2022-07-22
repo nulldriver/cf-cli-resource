@@ -1,12 +1,12 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.202.5/containers/alpine/.devcontainer/base.Dockerfile
+# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.241.1/containers/alpine/.devcontainer/base.Dockerfile
 
-# [Choice] Alpine version: 3.14, 3.13, 3.12, 3.11
-ARG VARIANT="3.14"
+# [Choice] Alpine version: 3.15, 3.14, 3.13
+ARG VARIANT="3.15"
 FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 
 #
 # Test dependencies
-# 
+#
 # gettext - provides the envsubst command used within create-user_from_file_spec.sh
 # lastpass-cli - currently using as a centralized credential store for locally executing integration tests
 # tar - Update to GNU tar to support fly execute (with BusyBox fly execute complains with "/bin/tar: unrecognized option: null")
