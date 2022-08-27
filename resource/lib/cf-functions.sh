@@ -294,6 +294,16 @@ cf::has_private_domain() {
   cf::curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
 }
 
+cf::has_shared_domain() {
+  local domain=${1:?domain null or not set}
+  local output
+  if ! output=$(cf::curl "/v2/shared_domains?q=name:$domain"); then
+    echo "$output" && exit 1
+  fi
+
+  echo $output | jq -e '.total_results == 1' >/dev/null
+}
+
 function cf::delete_route() {
   local domain=${1:?domain null or not set}
   local hostname=${2:-}

@@ -190,14 +190,29 @@ EOF
     echo "$(jq '.OrganizationFields = {"GUID":"", "Name":""} | .SpaceFields = {"GUID":"", "Name":"", "AllowSSH":false}' "$CF_HOME/.cf/config.json")" > "$CF_HOME/.cf/config.json"
   }
 
+  test::create_org() {
+    local org=${1:-}
+  
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+  
+    quiet cf::create_org "$org"
+  }
+
+  test::delete_org() {
+    local org=${1:-}
+
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+
+    quiet cf::delete_org "$org"
+  }
+
   test::create_org_and_space() {
     local org=${1:-}
     local space=${2:-}
 
-    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
     [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
-    quiet cf::create_org "$org"
+    test::create_org "$org"
     quiet cf::create_space "$org" "$space"
   }
 
@@ -205,11 +220,10 @@ EOF
     local org=${1:-}
     local space=${2:-}
 
-    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
     [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
 
     quiet cf::delete_space "$org" "$space"
-    quiet cf::delete_org "$org"
+    test::delete_org "$org"
   }
 
   test::is_app_started() {

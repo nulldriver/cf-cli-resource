@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 2.26.1 - Unreleased
 
+### Added
+
+- Added `create-shared-domain` and `delete-shared-domain` commands
+
 ### Changed
 
 - Updated to [cf7 cli v7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)

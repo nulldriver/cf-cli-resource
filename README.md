@@ -267,6 +267,39 @@ Delete a private domain
     domain: example.com
 ```
 
+### `create-shared-domain`
+
+Create a domain that can be used by all orgs (admin-only)
+
+| Params             | Usage      | CLI Version | Description
+| ---                | ---        | ---         | ---
+| `domain`           | *Required* | All         | The shared domain to create
+| `internal`         | *Optional* | All         | (boolean) Applications that use internal routes communicate directly on the container network
+
+```yaml
+- put: cloud-foundry
+  params:
+    command: create-shared-domain
+    domain: example.com
+```
+
+### `delete-shared-domain`
+
+Delete a shared domain
+
+| Params             | Usage      | CLI Version | Description
+| ---                | ---        | ---         | ---
+| `org`              | *Required* | All         | The organization to target (*Optional if set in the source config*)
+| `domain`           | *Required* | All         | The shared domain to create
+
+```yaml
+- put: cloud-foundry
+  params:
+    command: delete-shared-domain
+    org: myorg
+    domain: example.com
+```
+
 ### `create-route`
 
 Create a route for later use

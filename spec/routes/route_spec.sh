@@ -43,24 +43,6 @@ Describe 'routes'
     Assert cf::has_private_domain "$org" "$domain"
   End
 
-  It 'can create private domain again using deprecated command'
-    create_domain() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: create-domain
-        #|  domain: $domain
-      )
-      put "$config"
-    }
-    When call create_domain
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "Domain $domain already exists"
-    Assert cf::has_private_domain "$org" "$domain"
-  End
-
   It 'can create a http route'
     create_http_route() {
       local config=$(
@@ -192,28 +174,6 @@ Describe 'routes'
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting"
     The error should include "OK"
-    Assert not cf::has_private_domain "$org" "$domain"
-  End
-
-  It 'can delete a private domain using deprecated command'
-    delete_domain() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: delete-domain
-        #|  domain: $domain
-      )
-      put "$config"
-    }
-    When call delete_domain
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    if cf::is_cf6; then
-      The error should include "Domain $domain not found"
-    else
-      The error should include "Domain '$domain' does not exist."
-    fi
     Assert not cf::has_private_domain "$org" "$domain"
   End
 End
