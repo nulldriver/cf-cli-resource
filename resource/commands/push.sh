@@ -1,26 +1,7 @@
-json_array_push() {
-  local array=${1:?array null or not set}
-  local value=${2:-}
-  if [ -n "$value" ]; then
-    echo "$array" | jq --arg value "$value" '. + [ $value ]'
-  else
-    echo "$array"
-  fi
-}
-
-is_json() {
-  local json=${1:?json null or not set}
-  echo "$json" | jq . 1>/dev/null 2>&1
-}
-
-json_to_yaml() {
-  local json=${1:?json null or not set}
-  echo "$json" | yq read - --prettyPrint
-}
 
 app_name=$(get_option '.app_name')
 # backwards compatibility for deprecated 'buildpack' param (https://github.com/nulldriver/cf-cli-resource/issues/87)
-buildpacks=$(get_option '.buildpacks' "$(json_array_push '[]' "$(get_option '.buildpack')")")
+buildpacks=$(get_option '.buildpacks' "$(util::json_array_push '[]' "$(get_option '.buildpack')")")
 startup_command=$(get_option '.startup_command')
 docker_image=$(get_option '.docker_image')
 docker_username=$(get_option '.docker_username')
@@ -46,10 +27,10 @@ if [ -z "${manifest// }" ]; then
   manifest_file=
 elif [ -f "$manifest" ]; then
   manifest_file=$manifest
-elif is_json "$manifest"; then
+elif util::is_json "$manifest"; then
   manifest_file="manifest-generated-from-pipeline.yml"
   logger::info "generating manifest from yaml: $manifest_file"
-  echo "$(json_to_yaml "$manifest")" > "$manifest_file"
+  echo "$(util::json_to_yaml "$manifest")" > "$manifest_file"
 else
   logger::error "Invalid application manifest: must be valid file or yaml"
   exit 1
@@ -64,11 +45,11 @@ if [ -n "$environment_variables" ]; then
     logger::info "environment_variables: generating manifest: $manifest_file"
     touch "$manifest_file"
     if [ -n "$app_name" ]; then
-      yq new "applications[+].name" "$app_name" > "$manifest_file"
+      name=$app_name yq -n '.applications[0].name = env(name)' > "$manifest_file"
     fi
   fi
   logger::info "environment_variables: adding env to manifest: $manifest_file"
-  cf::set_manifest_environment_variables "$manifest_file" "$environment_variables" "$app_name"
+  util::set_manifest_environment_variables "$manifest_file" "$environment_variables" "$app_name"
 fi
 
 args=()

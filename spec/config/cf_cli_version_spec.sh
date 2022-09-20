@@ -57,6 +57,21 @@ Describe 'config'
     The error should include "cf cli v7 not found: Please ensure the v7 executable is named 'cf7' and is available on the PATH"
   End
 
+  It can 'error if cf cli v8 not found'
+    put_without_cf_v8_binary_found() {
+      local config=$(
+        %text
+        #|source:
+        #|  cf_cli_version: 8
+      )
+      PATH=$(get_path_without_cf_binaries)
+      put "$config"
+    }
+    When call put_without_cf_v8_binary_found
+    The status should eq $E_CF_CLI_BINARY_NOT_FOUND
+    The error should include "cf cli v8 not found: Please ensure the v8 executable is named 'cf8' and is available on the PATH"
+  End
+
   It can 'error if unsupported cf cli version specified'
     put_with_unsupported_cf_binary_specified() {
       local config=$(
@@ -113,6 +128,20 @@ Describe 'config'
     The error should include "cf7 version 7"
   End
 
+  It can 'use cf cli v8'
+    put_using_cf_v8_binary() {
+      local config=$(
+        %text
+        #|source:
+        #|  cf_cli_version: 8
+      )
+      put "$config"
+    }
+    When call put_using_cf_v8_binary
+    The status should be failure
+    The error should include "cf8 version 8"
+  End
+
   It can 'mock cf cli v6'
     Mock cf
       echo "cf version 6 (mock)"
@@ -131,14 +160,14 @@ Describe 'config'
   End
 
   It can 'mock cf cli v7'
-    Mock cf
+    Mock cf7
       echo "cf version 7 (mock)"
     End
     put_using_cf_v7_binary() {
       local config=$(
         %text
         #|source:
-        #|  cf_cli_version: 6
+        #|  cf_cli_version: 7
       )
       put "$config"
     }
@@ -147,4 +176,20 @@ Describe 'config'
     The error should include "cf version 7 (mock)"
   End
 
+  It can 'mock cf cli v8'
+    Mock cf8
+      echo "cf version 8 (mock)"
+    End
+    put_using_cf_v8_binary() {
+      local config=$(
+        %text
+        #|source:
+        #|  cf_cli_version: 8
+      )
+      put "$config"
+    }
+    When call put_using_cf_v8_binary
+    The status should be failure
+    The error should include "cf version 8 (mock)"
+  End
 End

@@ -5,6 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.26.1 - Unreleased
+
+### Added
+
+- Added `create-shared-domain` and `delete-shared-domain` commands
+
+### Changed
+
+- Updated to [cf7 cli v7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)
+- Updated to [cf7 cli v8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)
+- Updated `yq` cli to version `v4.26.1`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
+- Updated to alpine `v3.15`
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)  |
+| cf8 cli    |  [8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)  |
+
+## 2.26.0 - 2022-05-12
+
+### Added
+
+- Introduced support for `cf8` cli! This is enabled by configuring `cf_cli_version: 8` globally on the resource source configuration.
+- These commands now support the `wait: true` param when used with `cf_cli_version: 8`:
+  - `bind-route-service`
+  - `bind-service`
+  - `create-service-key`
+  - `delete-service-key`
+  - `unbind-route-service`
+  - `unbind-service`
+- Added `create-private-domain` command (see notes in Changed section regarding deprecation of `create-domain` command)
+- Added `delete-private-domain` command (see notes in Changed section regarding deprecation of `delete-domain` command)
+- `restart` command now supports `strategy: rolling` and `no_wait: true` params when using `cf_cli_version` version `7` or `8`
+- `delete-user` command now supports the `origin` param for specifying an external identity provider when using `cf_cli_version` version `7` or `8`
+- `map-route` command now supports the `app_protocol` param for specifying the protocol for the route destination (only applied to HTTP routes)
+
+### Changed
+
+- The `wait_for_service: true` param has been deprecated in favor of `wait: true` for commands: `create-service`, `update-service`, and `delete-service` for consistency with the new `v8` cli param.
+- The `create-domain` and `delete-domain` commands have been deprecated in favor of the new `create-private-domain` and `delete-private-domain` commands. Backstory: The cf cli `v6` provides the `create/delete-domain` and `create/delete-shared-domain` commands.  Starting with cf cli `v7`, the `create/delete-domain` commands became aliases for the more descriptive `create/delete-private-domain` commands. Note that when using cf cli `v6` we still use `cf create-domain ...` or `cf delete-domain ...` under the covers.
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| cf8 cli    |  [8.3.0](https://github.com/cloudfoundry/cli/releases/tag/v8.3.0)  |
+
+## 2.25.0 - 2022-05-02
+
+### Added
+
+- `bind-service` command now supports the `binding_name` param for specifying the name to expose the service instance to the app.
+- `restage` command now supports `strategy: rolling` and `no_wait: true` params when using `cf_cli_version: 7`
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
+
+## 2.24.2 - 2022-04-30
+
+### Changed
+
+- Improved test isolation by removing dependency on `$CCR_SOURCE` global variable and using new `test::*` methods for test authentication and commands dependent on targeting an org and space.
+
+### Fixed
+
+- Fixed an issue where setting `locked: false` or `enabled: false` on `create-buildpack` and `update-buildpack` would only work if you quoted the `false` boolean value (ex: `enabled: "false"`).  This has been fixed so either style (quoted or un-quoted) will work.
+
+### Packaged Dependencies
+
+| Dependency |                              Version                               |
+| ---------- | :----------------------------------------------------------------: |
+| cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
+| cf7 cli    |  [7.4.0](https://github.com/cloudfoundry/cli/releases/tag/v7.4.0)  |
+| yq         |    [3.4.1](https://github.com/mikefarah/yq/releases/tag/3.4.1)     |
+
 ## 2.24.1 - 2022-03-01
 
 ### Added

@@ -22,7 +22,7 @@ if [ ! -f "$manifest" ]; then
 fi
 
 if [ -n "$environment_variables" ]; then
-  cf::set_manifest_environment_variables "$manifest" "$environment_variables" "$current_app_name"
+  util::set_manifest_environment_variables "$manifest" "$environment_variables" "$current_app_name"
 fi
 
 args=()

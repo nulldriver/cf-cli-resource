@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  title: Health
+  description: Fetch health information about a service instance
+  version: 0.1.0
+paths:
+  /info:
+    get:
+      summary: Returns health information for the service instance
+      responses:
+        '200':
+          description: Health
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    alive:
+                        type: boolean
+                        description: is the service instance healthy

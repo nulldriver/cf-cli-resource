@@ -5,6 +5,7 @@ params:
   CCR_TEST_JOBS: ((ccr-test-jobs))
   CCR_CF_CLI_VERSION: ((ccr-cf-cli-version))
   CCR_CF_API: ((ccr-cf-api))
+  CCR_CF_APPS_DOMAIN: ((ccr-cf-apps-domain))
   CCR_CF_USERNAME: ((cf.username))
   CCR_CF_PASSWORD: ((cf.password))
   CCR_DOCKER_PRIVATE_IMAGE: ((ccr-docker-domain))/test-app

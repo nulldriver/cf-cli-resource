@@ -11,6 +11,7 @@ base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 source "$base_dir/resource/lib/logger.sh"
 source "$base_dir/resource/lib/error-codes.sh"
+source "$base_dir/resource/lib/util.sh"
 
 working_dir=${1:-}
 
@@ -118,7 +119,7 @@ fi
 if [ -n "$command_file" ]; then
   if [ -r "$command_file" ]; then
     logger::info "Populating params from file (overwriting params in pipeline definition): $command_file"
-    params=$(yq read --tojson "$command_file")
+    params=$(util::yaml_to_json "$command_file")
   else
     logger::error "invalid payload (can not find command_file: $command_file)"
     exit $E_COMMAND_FILE_NOT_FOUND
@@ -140,7 +141,10 @@ logger::info "$(cf::cf version)"
 get_option() {
   local key=${1:?config key null or not set}
   local default=${2:-}
-  echo "$OPTIONS" | jq -r --arg default "$default" "$key // \$default"
+  echo "$OPTIONS" | jq -r \
+    --arg key "${key:1}" \
+    --arg default "$default" \
+    'if has($key) and (.[$key] != null) then .[$key] else $default end'
 }
 
 echo "$params" | jq -c '.commands[]' | while read -r OPTIONS; do

@@ -1,0 +1,4 @@
+Username,Password,Org,Space,OrgManager,BillingManager,OrgAuditor,SpaceManager,SpaceDeveloper,SpaceAuditor
+cfclitest-$uuid-1,wasabi,$org,$space,x,x,x,x,x,x
+cfclitest-$uuid-2,wasabi,$org,$space,,x,x,,x,x
+cfclitest-$uuid-3,ldap,$org,$space,,,x,,x,

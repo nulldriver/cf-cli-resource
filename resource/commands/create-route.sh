@@ -7,12 +7,12 @@ path=$(get_option '.path')
 logger::info "Executing $(logger::highlight "$command"): $domain"
 
 args=()
-if cf::is_cf7; then
-  cf::target "$org" "${other_space:-$space}"
-  args+=("$domain")
-else
+if cf::is_cf6; then
   cf::target "$org" "$space"
   args+=("${other_space:-$space}" "$domain")
+else
+  cf::target "$org" "${other_space:-$space}"
+  args+=("$domain")
 fi
 
 [ -n "$hostname" ] && args+=(--hostname "$hostname")

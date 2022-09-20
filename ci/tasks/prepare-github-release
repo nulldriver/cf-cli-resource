@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+version=$(cat version/version)
+
+echo v$version > release-output/release-name
+echo v$version > release-output/release-tag
+
+git -C cf-cli-resource rev-parse HEAD > release-output/commitish
+
+# Generate release notes from CHANGELOG.md
+capture=false
+content=
+while read line; do
+
+  # Matches variations of start line: ## [2.0.0] - some other text
+  if ! $capture && echo $line | grep -oEq "^##\s\[{0,}$version]{0,}\s{0,}.*$"; then
+    capture=true
+  fi
+
+  # Matches variations of stop line: ## [1.0.0] - some other text
+  if $capture && [ -n "$content" ] && echo $line | grep -oEq "^##\s\[{0,}.*]{0,}\s{0,}.*$"; then
+    capture=false
+  fi
+
+  # Matches markdown links at bottom of file: [1.0.0]: https://...
+  if $capture && [ -n "$content" ] && echo $line | grep -oEq "^\[.*$"; then
+    capture=false
+  fi
+
+  [ $capture = true ] && content+="$line"$'\n'
+
+done <cf-cli-resource/CHANGELOG.md
+
+echo "$content" > release-output/RELEASE_NOTES.md
+
+echo "Release Notes:"
+echo "-------------"
+cat release-output/RELEASE_NOTES.md

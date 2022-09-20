@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "-----> Detecting"
+
+# We don't actually want this no-op buildpack to detect anything
+echo "no"
+exit 1

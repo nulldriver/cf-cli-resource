@@ -3,29 +3,19 @@
 set -euo pipefail
 
 Describe 'config'
-  Include resource/lib/cf-functions.sh
 
   setup() {
     org=$(generate_test_name_with_spaces)
     space=$(generate_test_name_with_spaces)
     fixture=$(load_fixture "command_files")
 
-    source=$(
-      %text:expand
-      #|source:
-      #|  api: $CCR_CF_API
-      #|  username: $CCR_CF_USERNAME
-      #|  password: $CCR_CF_PASSWORD
-      #|  cf_cli_version: ${CCR_CF_CLI_VERSION:-$DEFAULT_CF_CLI_VERSION}
-      #|  org: $org
-      #|  space: $space
-    )
+    source=$(get_source_config "$org" "$space") || error_and_exit "[ERROR] error loading source json config"
 
-    quiet login_for_test_assertions
+    test::login
   }
 
   teardown() {
-    quiet logout_for_test_assertions
+    test::logout
   }
 
   BeforeAll 'setup'

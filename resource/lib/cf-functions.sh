@@ -18,6 +18,8 @@ if [ "${CCR_CF_CLI_VERSION}" = "6" ]; then
   CF_CLI=cf
 elif [ "${CCR_CF_CLI_VERSION}" = "7" ]; then
   CF_CLI=cf7
+elif [ "${CCR_CF_CLI_VERSION}" = "8" ]; then
+  CF_CLI=cf8
 else
   logger::error "unsupported cf cli version: $CCR_CF_CLI_VERSION"
   exit $E_UNSUPPORTED_CF_CLI_VERSION
@@ -32,8 +34,12 @@ function cf::cf() {
   "$CF_CLI" "$@"
 }
 
-function cf::is_cf7() {
-  [[ "$(cf::cf version)" = "$CF_CLI version 7"* ]]
+function cf::is_cf6() {
+  [[ "$(cf::cf version)" = "$CF_CLI version 6"* ]]
+}
+
+function cf::is_cf8() {
+  [[ "$(cf::cf version)" = "$CF_CLI version 8"* ]]
 }
 
 function cf::curl() {
@@ -197,7 +203,14 @@ function cf::create_users_from_file() {
 
 function cf::delete_user() {
   local username=${1:?username null or not set}
-  cf::cf delete-user -f "$username"
+  local origin=${2:-}
+
+  local args=(-f "$username")
+  if ! cf::is_cf6 && [ -n "$origin" ]; then
+    args+=(--origin "$origin")
+  fi
+
+  cf::cf delete-user "${args[@]}"
 }
 
 function cf::get_private_domain_guid() {
@@ -257,7 +270,7 @@ function cf::check_route() {
   [ -n "$host" ] && url+="/host/$host"
   [ -n "$path" ] && url+="?path=%2F$path"
 
-  grep -q '204 No Content' <(cf::curl "$url" -i)
+  grep -q '204 No Content' <(cf::curl "$url" -i 2>&1)
 }
 
 cf::is_app_mapped_to_route() {
@@ -281,15 +294,14 @@ cf::has_private_domain() {
   cf::curl "/v2/organizations/$org_guid/private_domains?q=name:$domain" | jq -e '.total_results == 1' >/dev/null
 }
 
-function cf::create_domain() {
-  local org=${1:?org null or not set}
-  local domain=${2:?domain null or not set}
-  cf::cf create-domain "$org" "$domain"
-}
-
-function cf::delete_domain() {
+cf::has_shared_domain() {
   local domain=${1:?domain null or not set}
-  cf::cf delete-domain -f "$domain"
+  local output
+  if ! output=$(cf::curl "/v2/shared_domains?q=name:$domain"); then
+    echo "$output" && exit 1
+  fi
+
+  echo $output | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf::delete_route() {
@@ -302,19 +314,6 @@ function cf::delete_route() {
   [ -n "$path" ]     && args+=(--path "$path")
 
   cf::cf delete-route -f "${args[@]}"
-}
-
-function cf::map_route() {
-  local app_name=${1:?app_name null or not set}
-  local domain=${2:?domain null or not set}
-  local hostname=${3:-}
-  local path=${4:-}
-
-  local args=("$app_name" "$domain")
-  [ -n "$hostname" ] && args+=(--hostname "$hostname")
-  [ -n "$path" ]     && args+=(--path "$path")
-
-  cf::cf map-route "${args[@]}"
 }
 
 function cf::unmap_route() {
@@ -351,6 +350,13 @@ function cf::service_exists() {
   local service_instance=${1:?service_instance null or not set}
   local service_instance_guid=$(cf::get_service_instance_guid "$service_instance")
   [ -n "$service_instance_guid" ]
+}
+
+function cf::get_user_provided_vcap_service() {
+  local app_name=${1:?app_name null or not set}
+  local service_instance=${2:?service_instance null or not set}
+
+  cf::curl "/v2/apps/$(cf::get_app_guid "$app_name")/env" | jq --arg service_instance "$service_instance" '.system_env_json.VCAP_SERVICES."user-provided"[] | select(.name == $service_instance)'
 }
 
 function cf::create_or_update_user_provided_service_credentials() {
@@ -427,49 +433,23 @@ function cf::get_service_instance_plan() {
   echo $output | jq -r '.entity.name'
 }
 
-function cf::create_service() {
-  local service=${1:?service null or not set}
-  local plan=${2:?plan null or not set}
-  local service_instance=${3:?service_instance null or not set}
-  local broker=${4:-}
-  local configuration=${5:-}
-  local tags=${6:-}
-
-  local args=("$service" "$plan" "$service_instance")
-  [ -n "$broker" ]        && args+=(-b "$broker")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-  [ -n "$tags" ]          && args+=(-t "$tags")
-
-  cf::cf create-service "${args[@]}"
-}
-
 function cf::update_service() {
   local service_instance=${1:?service_instance null or not set}
   local plan=${2:-}
   local configuration=${3:-}
   local tags=${4:-}
+  local wait=${5:-}
 
   local args=("$service_instance")
   [ -n "$plan" ]          && args+=(-p "$plan")
   [ -n "$configuration" ] && args+=(-c "$configuration")
   [ -n "$tags" ]          && args+=(-t "$tags")
 
-  cf::cf update-service "${args[@]}"
-}
-
-function cf::create_or_update_service() {
-  local service=${1:?service null or not set}
-  local plan=${2:?plan null or not set}
-  local service_instance=${3:?service_instance null or not set}
-  local broker=${4:-}
-  local configuration=${5:-}
-  local tags=${6:-}
-
-  if cf::service_exists "$service_instance"; then
-    cf::update_service "$service_instance" "$plan" "$configuration" "$tags"
-  else
-    cf::create_service "$service" "$plan" "$service_instance" "$broker" "$configuration" "$tags"
+  if cf::is_cf8 && [ "true" = "$wait" ]; then
+    args+=(--wait)
   fi
+
+  cf::cf update-service "${args[@]}"
 }
 
 function cf::share_service() {
@@ -492,11 +472,6 @@ function cf::unshare_service() {
   [ -n "$other_org" ] && args+=(-o "$other_org")
 
   cf::cf unshare-service -f "${args[@]}"
-}
-
-function cf::delete_service() {
-  local service_instance=${1:?service_instance null or not set}
-  cf::cf delete-service "$service_instance" -f
 }
 
 function cf::wait_for_service_instance() {
@@ -558,23 +533,6 @@ function cf::wait_for_delete_service_instance() {
   done
 }
 
-function cf::create_service_key() {
-  local service_instance=${1:?service_instance null or not set}
-  local service_key=${2:?service_key null or not set}
-  local configuration=${3:-}
-
-  local args=("$service_instance" "$service_key")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-
-  cf::cf create-service-key "${args[@]}"
-}
-
-function cf::delete_service_key() {
-  local service_instance=${1:?service_instance null or not set}
-  local service_key=${2:?service_key null or not set}
-  cf::cf delete-service-key "$service_instance" "$service_key" -f
-}
-
 function cf::get_service_key_guid() {
   local service_instance=${1:?service_instance null or not set}
   local service_key=${2:?service_key null or not set}
@@ -596,7 +554,7 @@ function cf::service_key_exists() {
   [ -n "$(cf::get_service_key_guid "$service_instance" "$service_key")" ]
 }
 
-function cf::create_service_broker() {
+function cf::create_or_update_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   local username=${2:?username null or not set}
   local password=${3:?password null or not set}
@@ -618,23 +576,6 @@ function cf::create_service_broker() {
 function cf::delete_service_broker() {
   local service_broker=${1:?service_broker null or not set}
   cf::cf delete-service-broker "$service_broker" -f
-}
-
-function cf::bind_service() {
-  local app_name=${1:?app_name null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  local configuration=${3:-}
-
-  local args=("$app_name" "$service_instance")
-  [ -n "$configuration" ] && args+=(-c "$configuration")
-
-  cf::cf bind-service "${args[@]}"
-}
-
-function cf::unbind_service() {
-  local app_name=${1:?app_name null or not set}
-  local service_instance=${2:?service_instance null or not set}
-  cf::cf unbind-service "$app_name" "$service_instance"
 }
 
 function cf::is_app_bound_to_service() {
@@ -705,34 +646,6 @@ function cf::stop() {
   local app_name=${1:?app_name null or not set}
 
   cf::cf stop "$app_name"
-}
-
-function cf::restart() {
-  local app_name=${1:?app_name null or not set}
-  local staging_timeout=${2:-0}
-  local startup_timeout=${3:-0}
-
-  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
-  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
-
-  cf::cf restart "$app_name"
-
-  unset CF_STAGING_TIMEOUT
-  unset CF_STARTUP_TIMEOUT
-}
-
-function cf::restage() {
-  local app_name=${1:?app_name null or not set}
-  local staging_timeout=${2:-0}
-  local startup_timeout=${3:-0}
-
-  [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout
-  [ "$startup_timeout" -gt "0" ] && export CF_STARTUP_TIMEOUT=$startup_timeout
-
-  cf::cf restage "$app_name"
-
-  unset CF_STAGING_TIMEOUT
-  unset CF_STARTUP_TIMEOUT
 }
 
 function cf::delete() {
@@ -917,17 +830,17 @@ function cf::is_feature_flag_disabled() {
 
 function cf::has_buildpack() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.total_results == 1' >/dev/null
 }
 
 function cf::is_buildpack_enabled() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.enabled == true' >/dev/null
 }
 
 function cf::is_buildpack_locked() {
   local buildpack=${1:?buildpack null or not set}
-  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true'
+  cf::curl "/v2/buildpacks" -X GET -H "Content-Type: application/x-www-form-urlencoded" -d "q=name:$buildpack" | jq -e '.resources[].entity.locked == true' >/dev/null
 }
 
 function cf::get_buildpack_stack() {
@@ -948,36 +861,3 @@ function cf::get_buildpack_position() {
 function cf::get_buildpack_max_position() {
   cf::curl "/v2/buildpacks" | jq -r '[.resources[].entity.position] | max'
 }
-
-function cf::set_manifest_environment_variables() (
-  local manifest=${1:?manifest null or not set}
-  local environment_variables=${2:?environment_variables null or not set}
-  local app_name=${3:-}
-
-  get_keys() {
-    echo "$environment_variables" | jq -r 'keys[]'
-  }
-
-  get_value() {
-    local key=${1:?key null or not set}
-    echo "$environment_variables" | jq -r --arg key "$key" '.[$key]'
-  }
-
-  has_app_name() {
-    [ -n "$app_name" ] && [ -n "$(yq read "$manifest" "applications.name==$app_name")" ]
-  }
-
-  has_one_app() {
-    [ "1" == "$(yq read "$manifest" "applications" -l)" ]
-  }
-
-  for key in $(get_keys); do
-    if has_app_name; then
-      yq write -i "$manifest" -- "applications(name==$app_name).env.$key" "$(get_value "$key")"
-    elif has_one_app; then
-      yq write -i "$manifest" -- "applications[0].env.$key" "$(get_value "$key")"
-    else
-      yq write -i "$manifest" -- "env.$key" "$(get_value "$key")"
-    fi
-  done
-)

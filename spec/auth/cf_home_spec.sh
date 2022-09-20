@@ -3,19 +3,18 @@
 set -euo pipefail
 
 Describe 'auth'
-  Include resource/lib/cf-functions.sh
 
   setup() {
-    initialize_source_config_for_cf_home
-
     cf_home=$(login_with_cf_home)
     org=$(generate_test_name_with_spaces)
 
-    quiet login_for_test_assertions
+    source=$(get_source_config_for_cf_home) || error_and_exit "[ERROR] error loading source json config"
+
+    test::login
   }
 
   teardown() {
-    quiet logout_for_test_assertions
+    test::logout
   }
 
   BeforeAll 'setup'
@@ -24,13 +23,15 @@ Describe 'auth'
   Context 'logged in with cf_home'
     It 'can create an org'
       create_org() {
-        local params=$(
+        local config=$(
           %text:expand
-          #|command: create-org
-          #|org: $org
-          #|cf_home: $cf_home
+          #|$source
+          #|params:
+          #|  command: create-org
+          #|  org: $org
+          #|  cf_home: $cf_home
         )
-        put_with_params "$(yaml_to_json "$params")"
+        put "$config"
       }
       When call create_org
       The status should be success
@@ -41,13 +42,15 @@ Describe 'auth'
 
     It 'can delete an org'
       delete_org() {
-        local params=$(
+        local config=$(
           %text:expand
-          #|command: delete-org
-          #|org: $org
-          #|cf_home: $cf_home
+          #|$source
+          #|params:
+          #|  command: delete-org
+          #|  org: $org
+          #|  cf_home: $cf_home
         )
-        put_with_params "$(yaml_to_json "$params")"
+        put "$config"
       }
       When call delete_org
       The status should be success

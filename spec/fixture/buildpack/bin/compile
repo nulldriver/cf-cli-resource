@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+BUILDPACK_DIR=$(dirname $(readlink -f ${BASH_SOURCE%/*}))
+
+echo "-----> Compiling"
+
+$BUILDPACK_DIR/bin/supply
+$BUILDPACK_DIR/bin/finalize

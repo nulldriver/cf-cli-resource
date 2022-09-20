@@ -108,6 +108,9 @@ Describe 'config'
     Mock cf7
       exit 0
     End
+    Mock cf8
+      exit 0
+    End
 
     It can 'error if command not set'
       put_without_command() {

@@ -1,722 +1,172 @@
 ---
-test-params: &test-params
-  CCR_CF_SYSTEM_DOMAIN: {{cf-system-domain}}
-  CCR_CF_APPS_DOMAIN: {{cf-apps-domain}}
-  CCR_CF_SKIP_CERT_CHECK: {{cf-skip-cert-check}}
-  CCR_CF_USERNAME: ((cf.username))
-  CCR_CF_PASSWORD: ((cf.password))
-  CCR_CF_CLIENT_ID: ((cf_client_id))
-  CCR_CF_CLIENT_SECRET: ((cf_client_secret))
-  CCR_SYNC_SERVICE: {{sync-service}}
-  CCR_SYNC_PLAN_1: {{sync-plan-1}}
-  CCR_SYNC_PLAN_2: {{sync-plan-2}}
-  CCR_SYNC_CONFIGURATION_1: {{sync-configuration-1}}
-  CCR_SYNC_CONFIGURATION_2: {{sync-configuration-2}}
-  CCR_ASYNC_SERVICE: {{async-service}}
-  CCR_ASYNC_PLAN_1: {{async-plan-1}}
-  CCR_ASYNC_PLAN_2: {{async-plan-2}}
-  CCR_ASYNC_CONFIGURATION_1: {{async-configuration-1}}
-  CCR_ASYNC_CONFIGURATION_2: {{async-configuration-2}}
-  CCR_SHARE_SERVICE: {{share-service}}
-  CCR_SHARE_PLAN: {{share-plan}}
-  CCR_SHARE_CONFIGURATION: {{share-configuration}}
-  CCR_DOCKER_PRIVATE_IMAGE: {{docker-private-image}}
-  CCR_DOCKER_PRIVATE_USERNAME: ((docker-private.username))
-  CCR_DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
-  CCR_SERVICE_KEY_SERVICE: {{service-key-service}}
-  CCR_SERVICE_KEY_PLAN: {{service-key-plan}}
-
-test-params-cf7: &test-params-cf7
-  <<: *test-params
-  CCR_CF_CLI_VERSION: 7
-
-test-jobs: &test-jobs
-- app-tests
-- auth-tests
-- buildpack-tests
-- command-file-tests
-- network-policy-tests
-- route-tests
-- service-broker-tests
-- service-tests
-- user-tests
-- validation-tests
-
 groups:
+- name: main
+  jobs:
+  - build
+  - test-cf-cli-v6
+  - test-cf-cli-v7
+  - test-cf-cli-v8
+  - scan-image
+  - shipit
+  - bump-patch
+- name: manage
+  jobs:
+  - bump-*
+  - setup
+  - cleanup-failed-tests
 - name: all
   jobs:
   - build
-  - app-tests
-  - auth-tests
-  - buildpack-tests
-  - command-file-tests
-  - network-policy-tests
-  - route-tests
-  - service-broker-tests
-  - service-tests
-  - user-tests
-  - validation-tests
-  - app-tests-cf7
-  - auth-tests-cf7
-  - buildpack-tests-cf7
-  - command-file-tests-cf7
-  - network-policy-tests-cf7
-  - route-tests-cf7
-  - service-broker-tests-cf7
-  - service-tests-cf7
-  - user-tests-cf7
-  - validation-tests-cf7
+  - test-*
+  - scan-image
+  - shipit
+  - bump-*
   - setup
   - cleanup-failed-tests
-  - shipit
-  - patch
-  - major
-  - minor
-- name: develop
-  jobs:
-  - build
-  - app-tests
-  - auth-tests
-  - buildpack-tests
-  - command-file-tests
-  - network-policy-tests
-  - route-tests
-  - service-broker-tests
-  - service-tests
-  - user-tests
-  - validation-tests
-- name: cf7
-  jobs:
-  - app-tests-cf7
-  - auth-tests-cf7
-  - buildpack-tests-cf7
-  - command-file-tests-cf7
-  - network-policy-tests-cf7
-  - route-tests-cf7
-  - service-broker-tests-cf7
-  - service-tests-cf7
-  - user-tests-cf7
-  - validation-tests-cf7
-- name: setup
-  jobs:
-  - setup
-  - cleanup-failed-tests
-- name: publish
-  jobs:
-  - shipit
-  - patch
-  - major
-  - minor
 
 jobs:
-- name: setup
-  public: true
-  serial: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      passed: [build]
-    - get: test-app-docker-public
-      params: {format: oci}
-  - in_parallel:
-    - task: setup
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: setup
-    - put: test-app-docker-private
-      params:
-        image: test-app-docker-public/image.tar
-
-- name: cleanup-failed-tests
-  public: true
-  serial: true
-  plan:
-  - get: project
-    resource: cf-cli-resource
-    passed: [build]
-  - get: cf-cli-resource-image-rc
-    passed: [build]
-  - task: cleanup-failed-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: cleanup-failed-tests
-
 - name: build
+  serial: true
   public: true
-  serial_groups: [version]
+  plan:
+  - get: cf-cli-resource
+    trigger: true
+  - task: build
+    privileged: true
+    file: cf-cli-resource/ci/tasks/build-image.yml
+    input_mapping:
+      project: cf-cli-resource
+  - put: resource-image-dev
+    params:
+      image: image/image.tar
+    get_params: {skip_download: true}
+
+- name: test-cf-cli-v6
+  serial: true
+  public: true
   plan:
   - in_parallel:
     - get: cf-cli-resource
+      passed: [build]
       trigger: true
-    - get: version
-      params: {pre: rc}
-  - task: build-oci-image
-    privileged: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 5
+      ccr-cf-cli-version: 6
+
+- name: test-cf-cli-v7
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+      trigger: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 5
+      ccr-cf-cli-version: 7
+
+- name: test-cf-cli-v8
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+      trigger: true
+    - get: resource-image-dev
+      passed: [build]
+      trigger: true
+  - task: test
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/run-shellspec.yml
+    vars:
+      ccr-test-jobs: 5
+      ccr-cf-cli-version: 8
+
+- name: scan-image
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
+    - get: resource-image-dev
+      resource: resource-image-dev
+      passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
+      params: {format: oci}
+      trigger: true
+    - get: trivy
+      trigger: true
+    - get: trivy-db
+      trigger: true
+      params:
+        globs:
+        - trivy-offline.db.tgz
+  - task: scan
+    image: trivy
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source: {repository: vito/oci-build-task}
       inputs:
       - name: cf-cli-resource
-        path: .
-      outputs:
-      - name: image
+      - name: resource-image-dev
+        path: image
+      - name: trivy-db
       run:
-        path: build
-  - put: version
-    params: {file: version/version}
-  - put: cf-cli-resource-image-rc
-    params:
-      image: image/image.tar
-      additional_tags: version/version
+        path: sh
+        args:
+        - -c
+        - |
+          mkdir db
+          tar -xzf trivy-db/trivy-offline.db.tgz -C ./db
 
-- name: app-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - in_parallel:
-    - task: run-app-push-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-app-push-tests
-    - task: run-app-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-app-tests
-    - task: run-app-zero-downtime-push-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-app-zero-downtime-push-tests
-    - task: run-docker-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-docker-tests
-    - task: run-manifest-manipulation-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-manifest-manipulation-tests
-    - task: run-task-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-task-tests
-
-- name: app-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [app-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [app-tests]
-  - in_parallel:
-    - task: run-app-push-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-app-push-tests
-    - task: run-app-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-app-tests
-    - task: run-app-zero-downtime-push-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-app-zero-downtime-push-tests
-    - task: run-docker-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-docker-tests
-    - task: run-manifest-manipulation-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-manifest-manipulation-tests
-    - task: run-task-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-task-tests
-
-- name: auth-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - in_parallel:
-    - task: run-auth-client-credentials-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-auth-client-credentials-tests
-    - task: run-auth-origin-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-auth-origin-tests
-
-- name: auth-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [auth-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [auth-tests]
-  - in_parallel:
-    - task: run-auth-client-credentials-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-auth-client-credentials-tests
-    - task: run-auth-origin-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-auth-origin-tests
-
-- name: buildpack-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-buildpack-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-buildpack-tests
-
-- name: buildpack-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [buildpack-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [buildpack-tests]
-  - task: run-buildpack-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-buildpack-tests
-
-- name: command-file-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-file-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-file-tests
-
-- name: command-file-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [command-file-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [command-file-tests]
-  - task: run-file-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-file-tests
-
-- name: network-policy-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-network-policy-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-network-policy-tests
-
-- name: network-policy-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [network-policy-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [network-policy-tests]
-  - task: run-network-policy-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-network-policy-tests
-
-- name: route-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - in_parallel:
-    - task: run-route-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-route-service-tests
-    - task: run-route-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-route-tests
-
-- name: route-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [route-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [route-tests]
-  - in_parallel:
-    - task: run-route-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-route-service-tests
-    - task: run-route-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-route-tests
-
-- name: service-broker-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-service-broker-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-service-broker-tests
-
-- name: service-broker-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [service-broker-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [service-broker-tests]
-  - task: run-service-broker-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-service-broker-tests
-
-- name: service-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - in_parallel:
-    - task: run-asynchronous-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-asynchronous-service-tests
-    - task: run-share-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-share-service-tests
-    - task: run-service-key-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-service-key-tests
-    - task: run-synchronous-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-synchronous-service-tests
-    - task: run-user-provided-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params
-        TEST_SCRIPT: run-user-provided-service-tests
-
-- name: service-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [service-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [service-tests]
-  - in_parallel:
-    - task: run-asynchronous-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-asynchronous-service-tests
-    - task: run-share-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-share-service-tests
-    - task: run-service-key-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-service-key-tests
-    - task: run-synchronous-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-synchronous-service-tests
-    - task: run-user-provided-service-tests
-      file: project/ci/task.yml
-      image: cf-cli-resource-image-rc
-      params:
-        <<: *test-params-cf7
-        TEST_SCRIPT: run-user-provided-service-tests
-
-- name: user-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-user-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-user-tests
-
-- name: user-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [user-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [user-tests]
-  - task: run-user-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-user-tests
-
-- name: validation-tests
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [build]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [build]
-    - get: version
-      passed: [build]
-  - task: run-validation-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params
-      TEST_SCRIPT: run-validation-tests
-
-- name: validation-tests-cf7
-  public: true
-  plan:
-  - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: [validation-tests]
-    - get: cf-cli-resource-image-rc
-      trigger: true
-      passed: [validation-tests]
-  - task: run-validation-tests
-    file: project/ci/task.yml
-    image: cf-cli-resource-image-rc
-    params:
-      <<: *test-params-cf7
-      TEST_SCRIPT: run-validation-tests
+          trivy \
+            --cache-dir $(pwd) \
+            image \
+            --severity "HIGH,CRITICAL" \
+            --ignore-unfixed \
+            --exit-code 1 \
+            --input image/image.tar \
+            --skip-files opt/cf-cli-7.5.0/cf7 \
+            --skip-files opt/cf-cli-8.4.0/cf8
 
 - name: shipit
   public: true
   serial_groups: [version]
   plan:
   - in_parallel:
-    - get: project
-      resource: cf-cli-resource
-      passed: *test-jobs
-    - get: cf-cli-resource-image-rc
-      passed: *test-jobs
+    - get: cf-cli-resource
+      passed: [scan-image]
+    - get: resource-image-dev
+      passed: [scan-image]
       params: {format: oci}
     - get: version
-      passed: *test-jobs
       params: {bump: final}
-    - get: pipeline-tasks
   - load_var: version-number
     file: version/version
-  - task: generate-github-release
-    file: pipeline-tasks/generate-github-release/task.yml
-    output_mapping: {task-output: generate-github-release-output}
-  - task: generate-commitish
-    file: pipeline-tasks/generate-commitish/task.yml
-    output_mapping: {task-output: generate-commitish-output}
-  - task: generate-release-notes
-    file: pipeline-tasks/generate-release-notes-from-changelog/task.yml
-    input_mapping: {task-input: project}
-    output_mapping: {task-output: generate-release-notes-output}
+  - task: prepare-github-release
+    file: cf-cli-resource/ci/tasks/prepare-github-release.yml
   - put: github-release
     params:
-      name: generate-github-release-output/release-name
-      tag: generate-github-release-output/release-tag
-      commitish: generate-commitish-output/commitish
-      body: generate-release-notes-output/RELEASE_NOTES.md
+      name: release-output/release-name
+      tag: release-output/release-tag
+      commitish: release-output/commitish
+      body: release-output/RELEASE_NOTES.md
   - put: version
     params: {file: version/version}
-  - put: cf-cli-resource-image-final
-    inputs: [cf-cli-resource-image-rc, version]
+  - put: resource-image-final
+    inputs: [resource-image-dev, version]
     params:
-      image: cf-cli-resource-image-rc/image.tar
+      image: resource-image-dev/image.tar
       version: ((.:version-number))
       bump_aliases: true
   - put: notify
@@ -727,7 +177,7 @@ jobs:
       mode: concise
       alert_type: success
 
-- name: major
+- name: bump-major
   public: true
   serial_groups: [version]
   plan:
@@ -736,7 +186,7 @@ jobs:
   - put: version
     params: {file: version/version}
 
-- name: minor
+- name: bump-minor
   public: true
   serial_groups: [version]
   plan:
@@ -745,7 +195,7 @@ jobs:
   - put: version
     params: {file: version/version}
 
-- name: patch
+- name: bump-patch
   public: true
   serial_groups: [version]
   plan:
@@ -756,26 +206,95 @@ jobs:
   - put: version
     params: {file: version/version}
 
+- name: setup
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+      passed: [build]
+    - get: bookstore-service-broker
+  - task: build-test-app-image
+    privileged: true
+    file: cf-cli-resource/ci/tasks/build-image.yml
+    input_mapping:
+      project: cf-cli-resource
+    params:
+      CONTEXT: spec/fixture/static-app
+  - in_parallel:
+    - put: test-app-image
+      params:
+        image: image/image.tar
+      get_params: {skip_download: true}
+    - put: prepare-cloud-foundry
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: create-org
+        - command: create-space
+      get_params: {skip_download: true}
+  - in_parallel:
+    - put: sync-service-broker
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: push
+          app_name: bookstore-service-broker
+          path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+          manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+        - command: create-service-broker
+          service_broker: bookstore
+          username: admin
+          password: supersecret
+          url: https://bookstore-service-broker.((ccr-cf-apps-domain))
+        - command: enable-service-access
+          service_broker: bookstore
+    - put: async-service-broker
+      resource: cloud-foundry
+      params:
+        commands:
+        - command: push
+          app_name: bookstore-service-broker-async
+          path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
+          manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+        - command: create-service-broker
+          service_broker: bookstore-async
+          username: admin
+          password: supersecret
+          url: https://bookstore-service-broker-async.((ccr-cf-apps-domain))
+        - command: enable-service-access
+          service_broker: bookstore-async
+
+- name: cleanup-failed-tests
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-cli-resource
+    - get: resource-image-dev
+      passed: [build]
+  - task: cleanup
+    image: resource-image-dev
+    file: cf-cli-resource/ci/tasks/cleanup-failed-tests.yml
+    vars:
+      ccr-cf-cli-version: 8
+
 resources:
 - name: cf-cli-resource
   type: git
   icon: github
   source:
     uri: git@github.com:nulldriver/cf-cli-resource.git
-    branch: main
     private_key: ((git_key.private_key))
     ignore_paths:
     - .devcontainer
     - .gitignore
-    - .shellspec
     - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - README.md
     - examples
-    - pipeline-shellspec.yml
     - pipeline.yml
-    - spec
 
 - name: version
   type: semver
@@ -788,15 +307,16 @@ resources:
     file: version
     private_key: ((git_key.private_key))
 
-- name: cf-cli-resource-image-rc
+- name: resource-image-dev
   type: registry-image
   icon: docker
   source:
-    repository: nulldriver/cf-cli-resource-rc
+    repository: nulldriver/cf-cli-resource-dev
+    tag: dev
     username: ((docker.username))
     password: ((docker.password))
 
-- name: cf-cli-resource-image-final
+- name: resource-image-final
   type: registry-image
   icon: docker
   source:
@@ -804,11 +324,21 @@ resources:
     username: ((docker.username))
     password: ((docker.password))
 
-- name: pipeline-tasks
-  type: git
-  icon: github
+- name: trivy
+  type: registry-image
+  icon: docker
   source:
-    uri: https://github.com/Pivotal-Field-Engineering/pipeline-tasks.git
+    repository: aquasec/trivy
+    username: ((docker.username))
+    password: ((docker.password))
+
+- name: trivy-db
+  type: github-release
+  icon: database
+  source:
+    owner: aquasecurity
+    repository: trivy-db
+    access_token: ((github_access_token))
 
 - name: github-release
   type: github-release
@@ -818,29 +348,44 @@ resources:
     repository: cf-cli-resource
     access_token: ((github_access_token))
 
-- name: test-app-docker-public
-  type: registry-image
-  icon: docker
-  source:
-    repository: nulldriver/test-app
-
-- name: test-app-docker-private
-  type: registry-image
-  icon: docker
-  source:
-    repository: docker.nulldriver.com/test-app
-    username: ((docker-private.username))
-    password: ((docker-private.password))
-    tag: latest
-
 - name: notify
   type: slack-notifier
   icon: slack
   source:
     url: ((slack-webhook-url))
 
+- name: test-app-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: docker.nulldriver.com/test-app
+    tag: latest
+    username: ((docker-private.username))
+    password: ((docker-private.password))
+
+- name: bookstore-service-broker
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:nulldriver/bookstore-service-broker.git
+    private_key: ((git_key.private_key))
+
+- name: cloud-foundry
+  type: cf-cli-resource
+  source:
+    api: ((ccr-cf-api))
+    username: ((cf.username))
+    password: ((cf.password))
+    org: service-brokers
+    space: bookstore
+
 resource_types:
+- name: cf-cli-resource
+  type: registry-image
+  source:
+    repository: nulldriver/cf-cli-resource
+
 - name: slack-notifier
-  type: docker-image
+  type: registry-image
   source:
     repository: mockersf/concourse-slack-notifier
