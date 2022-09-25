@@ -11,8 +11,9 @@ RUN apk add --no-cache --update-cache ca-certificates \
   util-linux
 
 # Install yaml cli
-RUN curl -SL "https://github.com/mikefarah/yq/releases/download/v4.26.1/yq_linux_amd64" -o /usr/local/bin/yq \
-    && chmod +x /usr/local/bin/yq
+RUN curl -SL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o /usr/local/bin/yq \
+    && chmod +x /usr/local/bin/yq \
+    && yq --version
 
 # Install Cloud Foundry cli v6
 ARG CF_CLI_6_VERSION=6.53.0

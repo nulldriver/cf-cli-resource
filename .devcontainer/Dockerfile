@@ -36,8 +36,9 @@ RUN mkdir -p /opt/concourse-${CONCOURSE_VERSION} \
 RUN apk update \
     && apk add --no-cache util-linux
 
-RUN curl -SL "https://github.com/mikefarah/yq/releases/download/v4.26.1/yq_linux_amd64" -o /usr/local/bin/yq \
-    && chmod +x /usr/local/bin/yq
+RUN curl -SL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o /usr/local/bin/yq \
+    && chmod +x /usr/local/bin/yq \
+    && yq --version
 
 ARG CF_CLI_6_VERSION=6.53.0
 RUN mkdir -p /opt/cf-cli-${CF_CLI_6_VERSION} \
