@@ -1,7 +1,7 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.241.1/containers/alpine/.devcontainer/base.Dockerfile
+# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/alpine/.devcontainer/base.Dockerfile
 
-# [Choice] Alpine version: 3.15, 3.14, 3.13
-ARG VARIANT="3.15"
+# [Choice] Alpine version: 3.16, 3.15, 3.14, 3.13
+ARG VARIANT="3.16"
 FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 
 #
@@ -16,18 +16,6 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:0-alpine-${VARIANT}
 #
 RUN apk update \
     && apk add --no-cache gettext lastpass-cli tar
-
-ARG SHELLSPEC_VERSION=0.28.1
-RUN mkdir -p /opt \
-  && curl -SL "https://github.com/shellspec/shellspec/archive/${SHELLSPEC_VERSION}.tar.gz" \
-    | tar -zxC /opt \
-  && ln -s /opt/shellspec-${SHELLSPEC_VERSION}/shellspec /usr/local/bin/shellspec
-
-ARG CONCOURSE_VERSION=7.6.0
-RUN mkdir -p /opt/concourse-${CONCOURSE_VERSION} \
-  && curl -SL "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly-${CONCOURSE_VERSION}-linux-amd64.tgz" \
-    | tar -zxC /opt/concourse-${CONCOURSE_VERSION} \
-  && install /opt/concourse-${CONCOURSE_VERSION}/fly /usr/local/bin/fly
 
 #
 # Resource dependencies
@@ -57,3 +45,9 @@ RUN mkdir -p /opt/cf-cli-${CF_CLI_8_VERSION} \
     && curl -SL "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_8_VERSION}" \
       | tar -zxC /opt/cf-cli-${CF_CLI_8_VERSION} \
     && ln -s /opt/cf-cli-${CF_CLI_8_VERSION}/cf8 /usr/local/bin
+
+ARG SHELLSPEC_VERSION=0.28.1
+RUN mkdir -p /opt \
+  && curl -SL "https://github.com/shellspec/shellspec/archive/${SHELLSPEC_VERSION}.tar.gz" \
+    | tar -zxC /opt \
+  && ln -s /opt/shellspec-${SHELLSPEC_VERSION}/shellspec /usr/local/bin/shellspec
