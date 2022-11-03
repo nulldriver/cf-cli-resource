@@ -1,11 +1,11 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.241.1/containers/alpine
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/alpine
 {
 	"name": "Alpine",
 	"build": {
 		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Alpine version: 3.13, 3.14, 3.15
-		"args": { "VARIANT": "3.15" }
+		// Update 'VARIANT' to pick an Alpine version: 3.13, 3.14, 3.15, 3.16
+		"args": { "VARIANT": "3.16" }
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

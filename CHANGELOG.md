@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Updated to [cf7 cli v7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)
 - Updated to [cf7 cli v8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)
 - Updated `yq` cli to version `v4.26.1`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
-- Updated to alpine `v3.15`
+- Updated to alpine `v3.16`
 
 ### Packaged Dependencies
 
