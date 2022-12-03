@@ -239,7 +239,7 @@ EOF
 
     set +e
     cf::is_app_started "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -260,7 +260,7 @@ EOF
 
     set +e
     cf::is_app_stopped "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -281,7 +281,7 @@ EOF
 
     set +e
     cf::app_exists "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -304,7 +304,7 @@ EOF
 
     set +e
     cf::is_app_mapped_to_route "$app_name" "$domain"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -325,7 +325,7 @@ EOF
 
     set +e
     cf::service_exists "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -349,7 +349,7 @@ EOF
 
     set +e
     cf::is_app_bound_to_route_service "$app_name" "$service_instance" "$org" "$space" "$path"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -370,7 +370,7 @@ EOF
 
     set +e
     cf::get_app_stack "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -395,7 +395,7 @@ EOF
 
     set +e
     cf::has_env "$app_name" "$env_var_name" "$env_var_value"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -418,7 +418,7 @@ EOF
 
     set +e
     cf::get_env "$app_name" "$env_var_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -439,7 +439,7 @@ EOF
 
     set +e
     cf::get_app_buildpacks "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -460,7 +460,7 @@ EOF
 
     set +e
     cf::get_app_disk_quota "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -481,7 +481,7 @@ EOF
 
     set +e
     cf::get_app_instances "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -502,7 +502,7 @@ EOF
 
     set +e
     cf::get_app_memory "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -523,7 +523,7 @@ EOF
 
     set +e
     cf::get_app_startup_command "$app_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -544,7 +544,7 @@ EOF
 
     set +e
     cf::service_exists "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -567,7 +567,7 @@ EOF
 
     set +e
     cf::get_user_provided_vcap_service "$app_name" "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -586,7 +586,7 @@ EOF
 
     set +e
     cf::was_task_run "$app_name" "$task_name"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -607,7 +607,7 @@ EOF
 
     set +e
     cf::get_service_instance_plan "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -628,7 +628,7 @@ EOF
 
     set +e
     cf::get_service_instance_tags "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -651,7 +651,7 @@ EOF
 
     set +e
     cf::is_app_bound_to_service "$app_name" "$service_instance"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -674,7 +674,7 @@ EOF
 
     set +e
     cf::service_key_exists "$service_instance" "$service_key"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -695,7 +695,7 @@ EOF
 
     set +e
     cf::service_broker_exists "$service_broker"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -720,7 +720,7 @@ EOF
 
     set +e
     cf::is_marketplace_service_available "$service" "$plan" "$access_org"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
@@ -747,7 +747,7 @@ EOF
 
     set +e
     cf::network_policy_exists "$source_app_name" "$destination_app_name" "$protocol" "$port"
-    status=$?
+    local status=$?
     set -e
 
     test::untarget
