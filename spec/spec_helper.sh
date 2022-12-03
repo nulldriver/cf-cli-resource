@@ -25,7 +25,7 @@ spec_helper_configure() {
   (( "${BASH_VERSINFO[0]}" >= 4 )) || error_and_exit "[ERROR] bash v4 or higher is required (found version $BASH_VERSION)"
   command -v jq >/dev/null || error_and_exit "[ERROR] unable to locate jq binary (https://stedolan.github.io/jq/)"
   command -v yq >/dev/null || error_and_exit "[ERROR] unable to locate yq binary (https://github.com/mikefarah/yq)"
-  [[ "$(yq --version)" != *"version 4"* ]] && error_and_exit "[ERROR] yq v4 is required (found $(yq --version))"
+  [[ "$(yq --version)" != *"version v4"* ]] && error_and_exit "[ERROR] yq v4 is required (found $(yq --version))"
 
   # Negation helper function
   not() {
