@@ -140,7 +140,8 @@ jobs:
             --exit-code 1 \
             --input image/image.tar \
             --skip-files opt/cf-cli-7.5.0/cf7 \
-            --skip-files opt/cf-cli-8.4.0/cf8
+            --skip-files opt/cf-cli-8.4.0/cf8 \
+            --skip-files /usr/local/bin/yq
 
 - name: shipit
   public: true
