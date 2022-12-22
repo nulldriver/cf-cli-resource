@@ -54,11 +54,11 @@ util::set_manifest_environment_variables() (
   for key in $(get_keys); do
     local value=$(get_value "$key")
     if has_named_app; then
-      name=$app_name key=$key value=$value yq --inplace '(.applications[] | select(.name == env(name)) | .env[env(key)]) = env(value)' "$manifest"
+      name=$app_name key=$key value=$value yq --inplace '(.applications[] | select(.name == env(name)) | .env[env(key)]) = strenv(value)' "$manifest"
     elif has_one_unnamed_app; then
-      name=$app_name key=$key value=$value yq --inplace '(.applications[0].env[env(key)]) = env(value)' "$manifest"
+      name=$app_name key=$key value=$value yq --inplace '(.applications[0].env[env(key)]) = strenv(value)' "$manifest"
     else
-      key=$key value=$value yq --inplace '.env[env(key)] = env(value)' "$manifest"
+      key=$key value=$value yq --inplace '.env[env(key)] = strenv(value)' "$manifest"
     fi
   done
 )
