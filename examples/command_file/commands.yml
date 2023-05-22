@@ -1,0 +1,6 @@
+commands:
+- command: create-org
+  org: example-org
+- command: create-space
+  org: example-org
+  space: example-space

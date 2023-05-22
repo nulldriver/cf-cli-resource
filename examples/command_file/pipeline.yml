@@ -1,0 +1,55 @@
+---
+jobs:
+  - name: command_file-example
+    plan:
+      - get: source-code
+      # Example of commands file being loaded from a resource
+      - put: create-org-and-space
+        resource: cloud-foundry
+        params:
+          command_file: source-code/examples/command_file/commands.yml
+      # Example of commands file being created and loaded from a task
+      - task: delete-org-and-space
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: busybox
+          outputs:
+            - name: task-output
+          run:
+            path: sh
+            args:
+              - -excl
+              - |-
+                cat > task-output/commands.yml <<EOF
+                commands:
+                - command: delete-space
+                  org: command_file-example-org
+                  space: command_file-example-space
+                - command: delete-org
+                  org: command_file-example-org
+                EOF
+      - put: cloud-foundry
+        params:
+          command_file: task-output/commands.yml
+
+resources:
+  - name: cloud-foundry
+    type: cf-cli-resource
+    source:
+      api: ((cf_api))
+      username: ((cf.username))
+      password: ((cf.password))
+
+  - name: source-code
+    type: git
+    source:
+      uri: https://github.com/nulldriver/cf-cli-resource.git
+
+resource_types:
+  - name: cf-cli-resource
+    type: registry-image
+    source:
+      repository: nulldriver/cf-cli-resource
