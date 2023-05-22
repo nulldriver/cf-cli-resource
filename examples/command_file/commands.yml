@@ -1,6 +1,6 @@
 commands:
 - command: create-org
-  org: example-org
+  org: command_file-example-org
 - command: create-space
-  org: example-org
-  space: example-space
+  org: command_file-example-org
+  space: command_file-example-space
