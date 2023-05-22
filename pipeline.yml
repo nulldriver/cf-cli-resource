@@ -246,6 +246,7 @@ jobs:
           app_name: bookstore-service-broker
           path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
           manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+          domain: ((ccr-cf-apps-domain))
         - command: create-service-broker
           service_broker: bookstore
           username: admin
@@ -261,6 +262,7 @@ jobs:
           app_name: bookstore-service-broker-async
           path: bookstore-service-broker/build/libs/bookstore-service-broker-0.0.1.BUILD-SNAPSHOT.jar
           manifest: bookstore-service-broker/deploy/cloudfoundry/manifest.yml
+          domain: ((ccr-cf-apps-domain))
         - command: create-service-broker
           service_broker: bookstore-async
           username: admin
