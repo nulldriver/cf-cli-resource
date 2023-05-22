@@ -1,6 +1,7 @@
 ---
 jobs:
   - name: command_file-example
+    public: true
     plan:
       - get: source-code
       # Example of commands file being loaded from a resource
