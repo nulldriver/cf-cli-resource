@@ -8,7 +8,7 @@ params:
   CCR_CF_APPS_DOMAIN: ((ccr-cf-apps-domain))
   CCR_CF_USERNAME: ((cf.username))
   CCR_CF_PASSWORD: ((cf.password))
-  CCR_DOCKER_PRIVATE_IMAGE: ((ccr-docker-domain))/test-app
+  CCR_DOCKER_PRIVATE_IMAGE: ((docker-private-image-repository))
   CCR_DOCKER_PRIVATE_USERNAME: ((docker-private.username))
   CCR_DOCKER_PRIVATE_PASSWORD: ((docker-private.password))
   CCR_CF_CLIENT_ID: ((cf_client_id))
