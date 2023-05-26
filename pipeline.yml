@@ -225,19 +225,18 @@ jobs:
       project: cf-cli-resource
     params:
       CONTEXT: spec/fixture/static-app
+  - put: prepare-cloud-foundry
+    resource: cloud-foundry
+    params:
+      commands:
+      - command: create-org
+      - command: create-space
+    get_params: {skip_download: true}
   - in_parallel:
     - put: test-app-image
       params:
         image: image/image.tar
       get_params: {skip_download: true}
-    - put: prepare-cloud-foundry
-      resource: cloud-foundry
-      params:
-        commands:
-        - command: create-org
-        - command: create-space
-      get_params: {skip_download: true}
-  - in_parallel:
     - put: sync-service-broker
       resource: cloud-foundry
       params:
@@ -364,7 +363,7 @@ resources:
   type: registry-image
   icon: docker
   source:
-    repository: docker.nulldriver.com/test-app
+    repository: ((docker-private-image-repository))
     tag: latest
     username: ((docker-private.username))
     password: ((docker-private.password))
