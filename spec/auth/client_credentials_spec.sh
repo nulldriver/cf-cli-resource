@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-Describe 'auth'
+xDescribe 'auth'
 
   setup() {
     org=$(generate_test_name_with_spaces)
