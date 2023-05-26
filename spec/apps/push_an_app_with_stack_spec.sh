@@ -23,14 +23,8 @@ Describe 'apps'
   BeforeAll 'setup'
   AfterAll 'teardown'
 
-  # happy path testing seems impossible due to no discernable output that 
-  # indicates that an existing valid stack is being applied during the push.
-  # So, instead we test by specifying a valid stack (`cf stacks`) that we 
-  # actually don't have any compatible cells for in our ci environment (such 
-  # as 'windows').  In this scenario the push will fail, but we can still 
-  # query the cloud controller for the app's stack for our assertion.
   It 'can push an app with stack'
-    push_app_with_windows_stack() {
+    push_app_with_stack() {
       local fixture=$(load_fixture "static-app")
       local config=$(
         %text:expand
@@ -41,14 +35,13 @@ Describe 'apps'
         #|  path: $fixture/dist
         #|  memory: 64M
         #|  disk_quota: 64M
-        #|  stack: windows
+        #|  stack: cflinuxfs4
       )
       put "$config"
     }
-    When call push_app_with_windows_stack
-    The status should be failure
+    When call push_app_with_stack
+    The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Found no compatible cell"
-    Assert [ "windows" == "$(test::get_app_stack "$app_name" "$org" "$space")" ]
+    The error should include "stack:             cflinuxfs4"
   End
 End
