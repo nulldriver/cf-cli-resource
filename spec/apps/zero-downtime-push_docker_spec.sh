@@ -27,6 +27,24 @@ Describe 'apps'
   BeforeAll 'setup'
   AfterAll 'teardown'
 
+  It 'can enable docker feature flag'
+    enable_docker() {
+      local config=$(
+        %text:expand
+        #|$source
+        #|params:
+        #|  command: enable-feature-flag
+        #|  feature_name: diego_docker
+      )
+      put "$config"
+    }
+    When call enable_docker
+    The status should be success
+    The output should json '.version | keys == ["timestamp"]'
+    The error should include "OK"
+    Assert cf::is_feature_flag_enabled "diego_docker"
+  End
+
   It 'can simple push a docker image from a private registry when current_app_name not used'
     simple_push() {
       local fixture=$(load_fixture "static-app")

@@ -27,24 +27,6 @@ Describe 'apps'
   BeforeAll 'setup'
   AfterAll 'teardown'
 
-  It 'can disable docker feature flag'
-    disable_docker() {
-      local config=$(
-        %text:expand
-        #|$source
-        #|params:
-        #|  command: disable-feature-flag
-        #|  feature_name: diego_docker
-      )
-      put "$config"
-    }
-    When call disable_docker
-    The status should be success
-    The output should json '.version | keys == ["timestamp"]'
-    The error should include "OK"
-    Assert cf::is_feature_flag_disabled "diego_docker"
-  End
-
   It 'can enable docker feature flag'
     enable_docker() {
       local config=$(
