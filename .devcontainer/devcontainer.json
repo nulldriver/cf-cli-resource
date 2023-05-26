@@ -1,18 +1,25 @@
 {
-	"name": "Alpine",
+	"name": "cf-cli-resource",
 	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			"VARIANT": "3.16"
+		"dockerfile": "../Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+			"packages": "lastpass-cli"
+		},
+		"ghcr.io/nulldriver/devcontainer-features/fly-cli:1": {
+			"url": "https://ci.nulldriver.com"
 		}
 	},
 	"mounts": [
-		"type=bind,source=${localEnv:HOME}/.lpass,target=/home/vscode/.lpass",
+		"type=bind,source=${localEnv:HOME}/.lpass,target=/home/vscode/.lpass"
 	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"redhat.vscode-yaml"
+				"ms-azuretools.vscode-docker",
+				"esbenp.prettier-vscode"
 			]
 		}
 	}

@@ -1,14 +1,13 @@
-FROM alpine:3.16
+FROM ubuntu:latest
 
 ADD resource/ /opt/resource/
 
-# Install dependencies (gettext provides envsubst; util-linux provides uuidgen)
-RUN apk add --no-cache --update-cache ca-certificates \
-  bash \
-  curl \
-  gettext \
-  jq \
-  util-linux
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies (gettext-base provides envsubst)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gettext-base jq uuid-runtime \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN curl -SL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq \
