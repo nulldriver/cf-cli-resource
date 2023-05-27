@@ -12,4 +12,4 @@ outputs:
 - name: trivy-db
 
 run:
-  path: cf-cli-resource/tasks/extract-trivy-db
+  path: cf-cli-resource/ci/tasks/extract-trivy-db
