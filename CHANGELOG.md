@@ -23,8 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 | Dependency |                              Version                               |
 | ---------- | :----------------------------------------------------------------: |
 | cf cli     | [6.53.0](https://github.com/cloudfoundry/cli/releases/tag/v6.53.0) |
-| cf7 cli    |  [7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)  |
-| cf8 cli    |  [8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)  |
+| cf7 cli    |  [7.6.0](https://github.com/cloudfoundry/cli/releases/tag/v7.6.0)  |
+| cf8 cli    |  [8.6.1](https://github.com/cloudfoundry/cli/releases/tag/v8.6.1)  |
 
 ## 2.26.0 - 2022-05-12
 
