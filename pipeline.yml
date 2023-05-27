@@ -99,49 +99,53 @@ jobs:
       ccr-cf-cli-version: 8
 
 - name: scan-image
+  serial: true
   plan:
   - in_parallel:
     - get: cf-cli-resource
-      passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
     - get: resource-image-dev
-      resource: resource-image-dev
       passed: [test-cf-cli-v6, test-cf-cli-v7, test-cf-cli-v8]
       params: {format: oci}
       trigger: true
     - get: trivy
       trigger: true
-    - get: trivy-db
-      trigger: true
-      params:
-        globs:
-        - trivy-offline.db.tgz
-  - task: scan
+  - task: extract-trivy-db
+    file: cf-cli-resource/ci/tasks/extract-trivy-db.yml
     image: trivy
-    config:
-      platform: linux
-      inputs:
-      - name: cf-cli-resource
-      - name: resource-image-dev
-        path: image
-      - name: trivy-db
-      run:
-        path: sh
-        args:
-        - -c
-        - |
-          mkdir db
-          tar -xzf trivy-db/trivy-offline.db.tgz -C ./db
+  - task: scan-image
+    file: cf-cli-resource/ci/tasks/scan-image.yml
+    image: trivy
+    input_mapping:
+      image: resource-image-dev
+    params:
+      IGNORE_POLICY_FILE: cf-cli-resource/ci/trivy-ignore.rego
+  # - task: scan
+  #   image: trivy
+  #   config:
+  #     platform: linux
+  #     inputs:
+  #     - name: cf-cli-resource
+  #     - name: resource-image-dev
+  #       path: image
+  #     - name: trivy-db
+  #     run:
+  #       path: sh
+  #       args:
+  #       - -c
+  #       - |
+  #         mkdir db
+  #         tar -xzf trivy-db/trivy-offline.db.tgz -C ./db
 
-          trivy \
-            --cache-dir $(pwd) \
-            image \
-            --severity "HIGH,CRITICAL" \
-            --ignore-unfixed \
-            --exit-code 1 \
-            --input image/image.tar \
-            --skip-files opt/cf-cli-7.5.0/cf7 \
-            --skip-files opt/cf-cli-8.4.0/cf8 \
-            --skip-files /usr/local/bin/yq
+  #         trivy \
+  #           --cache-dir $(pwd) \
+  #           image \
+  #           --severity "HIGH,CRITICAL" \
+  #           --ignore-unfixed \
+  #           --exit-code 1 \
+  #           --input image/image.tar \
+  #           --skip-files opt/cf-cli-7.5.0/cf7 \
+  #           --skip-files opt/cf-cli-8.4.0/cf8 \
+  #           --skip-files /usr/local/bin/yq
 
 - name: shipit
   public: true
@@ -336,14 +340,6 @@ resources:
     repository: aquasec/trivy
     username: ((docker.username))
     password: ((docker.password))
-
-- name: trivy-db
-  type: github-release
-  icon: database
-  source:
-    owner: aquasecurity
-    repository: trivy-db
-    access_token: ((github_access_token))
 
 - name: github-release
   type: github-release
