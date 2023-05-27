@@ -1,0 +1,3 @@
+#!/bin/bash
+
+fly -t ci login -c https://ci.nulldriver.com -n resources
