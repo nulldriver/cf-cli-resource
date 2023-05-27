@@ -13,10 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Updated to [cf7 cli v7.5.0](https://github.com/cloudfoundry/cli/releases/tag/v7.5.0)
-- Updated to [cf7 cli v8.4.0](https://github.com/cloudfoundry/cli/releases/tag/v8.4.0)
-- Updated `yq` cli to version `v4.26.1`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
-- Updated to alpine `v3.16`
+- Updated to [cf7 cli v7.6.0](https://github.com/cloudfoundry/cli/releases/tag/v7.6.0)
+- Updated to [cf7 cli v8.6.1](https://github.com/cloudfoundry/cli/releases/tag/v8.6.1)
+- Updated `yq` cli to version `v4`! This was actually not a simple update from `v3` as `v4` is [quite different from previous versions.](https://mikefarah.gitbook.io/yq/upgrading-from-v3)
+- Changed to ubuntu:latest (jammy) for resource image.  This increased the container image from 104MB to 166MB, but this allows for a cleaner development environment as the devcontainer.json now uses the same resource Dockerfile while adding additional development tools using devcontainer "features".
 
 ### Packaged Dependencies
 
