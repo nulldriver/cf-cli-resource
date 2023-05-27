@@ -14,4 +14,4 @@ params:
   IGNORE_POLICY_FILE:
 
 run:
-  path: cf-cli-resource/tasks/scan-image
+  path: cf-cli-resource/ci/tasks/scan-image
