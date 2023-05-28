@@ -754,4 +754,25 @@ EOF
 
     return $status
   }
+
+  test::is_space_ssh_allowed() {
+    local org=${1:-}
+    local space=${2:-}
+
+    [ -z "${org}" ] && error_and_exit "${FUNCNAME[0]} - org null or not set"
+    [ -z "${space}" ] && error_and_exit "${FUNCNAME[0]} - space null or not set"
+
+    quiet cf::target "$org" "$space"
+
+    local output status
+    if ! output=$(cf::cf space-ssh-allowed "$space"); then
+      status=${PIPESTATUS[0]}
+      logger::error "$output"
+      return $status
+    fi
+
+    test::untarget
+
+    [[ "$output" == *"ssh support is enabled"* ]]
+  }
 }

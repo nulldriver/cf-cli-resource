@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 2.26.1 - Unreleased
+## 2.27.0 - Unreleased
 
 ### Added
 
 - Added `create-shared-domain` and `delete-shared-domain` commands
+- Added `allow-space-ssh` and `disallow-space-ssh`, thanks to a PR by [wanddynosios](https://github.com/wanddynosios)
 
 ### Changed
 

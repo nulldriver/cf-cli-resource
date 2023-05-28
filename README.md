@@ -229,6 +229,40 @@ Delete a space
     space: myspace
 ```
 
+### `allow-space-ssh`
+
+Allow SSH access for the space
+
+| Params             | Usage      | CLI Version | Description
+| ---                | ---        | ---         | ---
+| `org`              | *Required* | All         | The organization to target (*Optional if set in the source config*)
+| `space`            | *Required* | All         | The space to allow SSH access (*Optional if set in the source config*)
+
+```yaml
+- put: cloud-foundry
+  params:
+    command: allow-space-ssh
+    org: myorg
+    space: myspace
+```
+
+### `disallow-space-ssh`
+
+Disallow SSH access for the space
+
+| Params             | Usage      | CLI Version | Description
+| ---                | ---        | ---         | ---
+| `org`              | *Required* | All         | The organization to target (*Optional if set in the source config*)
+| `space`            | *Required* | All         | The space to disallow SSH access (*Optional if set in the source config*)
+
+```yaml
+- put: cloud-foundry
+  params:
+    command: disallow-space-ssh
+    org: myorg
+    space: myspace
+```
+
 ### `create-private-domain`
 
 Create a private domain for a specific org
