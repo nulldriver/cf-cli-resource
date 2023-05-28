@@ -75,7 +75,12 @@ Describe 'util'
       %text
       #|{
       #|  "KEY1": "value 1",
-      #|  "KEY2": "another value"
+      #|  "KEY2": "another value",
+      #|  "KEY3": {
+      #|      "KEY4": {
+      #|        "KEY5": "yet another value"
+      #|      }
+      #|    }
       #|}
     )
 
@@ -95,6 +100,12 @@ Describe 'util'
       #|    env:
       #|      KEY1: value 1
       #|      KEY2: another value
+      #|      KEY3: |-
+      #|        {
+      #|          "KEY4": {
+      #|            "KEY5": "yet another value"
+      #|          }
+      #|        }
     )
 
     When call util::set_manifest_environment_variables "$fixture/manifest_with_app_name.yml" "$environment_variables" "myapp"

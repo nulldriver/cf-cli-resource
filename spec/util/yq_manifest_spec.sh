@@ -77,4 +77,14 @@ plus another line at the end."
     The status should be success
     The output should equal '[ list, of, things ]'
   End
+
+  It 'can read json'
+    When call yq '.applications[0].env.JSON' "$fixture/manifest.yml"
+    The status should be success
+    The output should equal '{
+  "KEY1": {
+    "KEY2": "some value"
+  }
+}'
+  End
 End
