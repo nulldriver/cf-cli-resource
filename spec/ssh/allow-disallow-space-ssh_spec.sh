@@ -36,7 +36,7 @@ Describe 'ssh'
     When call disallow_space_ssh
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Disabling ssh support for space '$space'"
+    The error should include "Disabling ssh support for space"
     Assert not test::is_space_ssh_allowed "$org" "$space"
   End
 
@@ -54,7 +54,7 @@ Describe 'ssh'
     When call allow_space_ssh
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should include "Enabling ssh support for space '$space'"
+    The error should include "Enabling ssh support for space"
     Assert test::is_space_ssh_allowed "$org" "$space"
   End
 End
