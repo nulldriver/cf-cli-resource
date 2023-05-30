@@ -29,11 +29,8 @@ jobs:
   serial: true
   public: true
   plan:
-  - in_parallel:
-    - get: cf-cli-resource
-      trigger: true
-    - get: os-image
-      trigger: true
+  - get: cf-cli-resource
+    trigger: true
   - task: build
     privileged: true
     file: cf-cli-resource/ci/tasks/build-image.yml
@@ -352,13 +349,6 @@ resources:
     password: ((cf.password))
     org: service-brokers
     space: bookstore
-
-- name: os-image
-  type: registry-image
-  icon: docker
-  source:
-    repository: alpine
-    tag: 3.16
 
 resource_types:
 - name: cf-cli-resource
