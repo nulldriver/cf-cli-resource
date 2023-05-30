@@ -119,33 +119,6 @@ jobs:
       image: resource-image-dev
     params:
       IGNORE_POLICY_FILE: cf-cli-resource/ci/trivy-ignore.rego
-  # - task: scan
-  #   image: trivy
-  #   config:
-  #     platform: linux
-  #     inputs:
-  #     - name: cf-cli-resource
-  #     - name: resource-image-dev
-  #       path: image
-  #     - name: trivy-db
-  #     run:
-  #       path: sh
-  #       args:
-  #       - -c
-  #       - |
-  #         mkdir db
-  #         tar -xzf trivy-db/trivy-offline.db.tgz -C ./db
-
-  #         trivy \
-  #           --cache-dir $(pwd) \
-  #           image \
-  #           --severity "HIGH,CRITICAL" \
-  #           --ignore-unfixed \
-  #           --exit-code 1 \
-  #           --input image/image.tar \
-  #           --skip-files opt/cf-cli-7.5.0/cf7 \
-  #           --skip-files opt/cf-cli-8.4.0/cf8 \
-  #           --skip-files /usr/local/bin/yq
 
 - name: shipit
   public: true
@@ -298,7 +271,6 @@ resources:
     ignore_paths:
     - .devcontainer
     - .gitignore
-    - CHANGELOG.md
     - LICENSE
     - NOTICE.md
     - README.md
