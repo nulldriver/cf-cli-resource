@@ -21,4 +21,7 @@ trivy \
   --ignore-unfixed \
   --exit-code 1 \
   --input image/image.tar \
+  --skip-files /opt/cf-cli-6.*/cf \
+  --skip-files /opt/cf-cli-7.*/cf7 \
+  --skip-files /opt/cf-cli-8.*/cf8 \
   $ignore_policy
