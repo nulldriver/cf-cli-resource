@@ -52,7 +52,7 @@ Describe 'buildpacks'
         #|params:
         #|  command: update-buildpack
         #|  buildpack: $buildpack
-        #|  assign_stack: cflinuxfs3
+        #|  assign_stack: cflinuxfs4
       )
       put "$config"
     }
@@ -60,7 +60,7 @@ Describe 'buildpacks'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Assigning stack"
-    Assert [ "cflinuxfs3" == "$(cf::get_buildpack_stack "$buildpack")" ]
+    Assert [ "cflinuxfs4" == "$(cf::get_buildpack_stack "$buildpack")" ]
   End
 
   It 'can update a buildpack path'
@@ -189,7 +189,7 @@ Describe 'buildpacks'
         #|params:
         #|  command: delete-buildpack
         #|  buildpack: $buildpack
-        #|  stack: cflinuxfs3
+        #|  stack: cflinuxfs4
       )
       put "$config"
     }

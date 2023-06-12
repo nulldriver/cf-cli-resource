@@ -1267,7 +1267,7 @@ Update a buildpack
   params:
     command: update-buildpack
     buildpack: java_buildpack_offline
-    assign_stack: cflinuxfs3
+    assign_stack: cflinuxfs4
 ```
 
 ### `delete-buildpack`
@@ -1284,7 +1284,7 @@ Delete a buildpack
   params:
     command: delete-buildpack
     buildpack: java_buildpack_offline
-    stack: cflinuxfs3
+    stack: cflinuxfs4
 ```
 
 ### `run-task`
