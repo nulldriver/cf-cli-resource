@@ -40,6 +40,8 @@ Describe 'services'
         #|  path: $fixture
         #|  memory: 256M
         #|  disk_quota: 256M
+        #|  buildpacks:
+        #|  - https://github.com/cloudfoundry/nodejs-buildpack.git#v1.8.15 # last version that supports node 16.x
       )
       put "$config"
     }
