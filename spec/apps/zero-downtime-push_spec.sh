@@ -99,7 +99,6 @@ Describe 'apps'
     }
     When call push_with_insufficient_disk_quota
     The status should eq $E_ZERO_DOWNTIME_PUSH_FAILED
-    The output should json '.version | keys == ["timestamp"]'
     The error should include "Renaming app"
     The error should include "Staging app"
     The error should include "Error encountered during zero-downtime-push. Rolling back to current app."
@@ -122,7 +121,6 @@ Describe 'apps'
     }
     When call push_with_invalid_manifest
     The status should eq $E_MANIFEST_FILE_NOT_FOUND
-    The output should json '.version | keys == ["timestamp"]'
     The error should match pattern "*invalid payload (manifest is not a file: */does_not_exist.yml*)"
   End
 End

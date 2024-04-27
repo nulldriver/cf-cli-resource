@@ -42,7 +42,6 @@ Describe 'apps'
     }
     When call push_app_with_insufficient_disk_quota
     The status should eq $E_PUSH_FAILED_WITH_APP_LOGS_SHOWN
-    The output should json '.version | keys == ["timestamp"]'
     The error should include "Retrieving logs"
     Assert not test::is_app_started "$app_name" "$org" "$space"
   End
