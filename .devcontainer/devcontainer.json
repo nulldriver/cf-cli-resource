@@ -5,16 +5,12 @@
 	},
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-			"packages": "lastpass-cli"
-		},
 		"ghcr.io/nulldriver/devcontainer-features/fly-cli:1": {
 			"url": "https://ci.nulldriver.com"
-		}
+		},
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/nulldriver/devcontainer-features/credhub-cli:1": {}
 	},
-	"mounts": [
-		"type=bind,source=${localEnv:HOME}/.lpass,target=/home/vscode/.lpass"
-	],
 	"customizations": {
 		"vscode": {
 			"extensions": [

@@ -22,6 +22,11 @@
 /dist/
 /nbdist/
 
+# Shellspec
+file
+
 # Secrets
-pipeline-secrets.yml
-env.sh
+.env*
+.flaskenv*
+!.env.project
+!.env.vault

@@ -2,6 +2,7 @@
 --shell bash
 --fail-fast
 --random specfiles
+--env-from .env
 
 ## Default kcov (coverage) options
 # --kcov-options "--include-path=. --path-strip-level=1"
