@@ -1,0 +1,5 @@
+#!/bin/bash
+
+base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
+fly -t ci set-pipeline -p cf-cli-resource -c "$base_dir/pipeline.yml"
