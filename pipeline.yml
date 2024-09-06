@@ -270,6 +270,7 @@ resources:
     ignore_paths:
     - .devcontainer
     - .gitignore
+    - bin
     - LICENSE
     - NOTICE.md
     - README.md
