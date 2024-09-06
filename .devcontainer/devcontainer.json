@@ -4,13 +4,21 @@
 		"dockerfile": "../Dockerfile"
 	},
 	"features": {
-		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+			"packages": "openssh-client"
+		},
 		"ghcr.io/nulldriver/devcontainer-features/fly-cli:1": {
 			"url": "https://ci.nulldriver.com"
 		},
 		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/nulldriver/devcontainer-features/credhub-cli:1": {}
+		"ghcr.io/nulldriver/devcontainer-features/credhub-cli:1": {},
 	},
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/bin"
+	},
+	"runArgs": [
+		"-v", "/run/host-services/ssh-auth.sock:/ssh-auth.sock", "-e", "SSH_AUTH_SOCK=/ssh-auth.sock"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
