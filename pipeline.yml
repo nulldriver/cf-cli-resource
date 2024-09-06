@@ -31,6 +31,8 @@ jobs:
   plan:
   - get: cf-cli-resource
     trigger: true
+  - get: os-image
+    trigger: true
   - task: build
     privileged: true
     file: cf-cli-resource/ci/tasks/build-image.yml
@@ -273,6 +275,14 @@ resources:
     - README.md
     - examples
     - pipeline.yml
+
+# This should be the same image used in the Dockerfile
+- name: os-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: ubuntu
+    tag: latest
 
 - name: version
   type: semver
