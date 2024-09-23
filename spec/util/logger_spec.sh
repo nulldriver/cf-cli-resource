@@ -3,7 +3,7 @@
 set -euo pipefail
 
 Describe 'logger.sh'
-    Include /workspaces/cf-cli-resource/resource/lib/logger.sh
+    Include resource/lib/logger.sh
 
     unset NO_COLOR
     logger::export_colors
