@@ -9,7 +9,7 @@ if [ -n "$env_var_name" ]; then
   environment_variables=$(jq -n --arg key "$env_var_name" --arg value "$env_var_value" '{ ($key): $value }')
 fi
 
-logger::info "Executing $(logger::highlight "$command"): $app_name"
+logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$app_name"
 
 : "${environment_variables:?environment_variables param not set}"
 

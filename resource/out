@@ -68,7 +68,7 @@ if [ -n "$cf_home" ]; then
   export CF_HOME=$cf_home
 
   if ! cf::is_logged_in; then
-    logger::error "not logged in to cf (check $CF_HOME/config.json)"
+    logger::error "not logged in to cf (check #yellow(%s/config.json))" "$CF_HOME"
     exit $E_NOT_LOGGED_IN
   fi
 
@@ -118,10 +118,10 @@ fi
 
 if [ -n "$command_file" ]; then
   if [ -r "$command_file" ]; then
-    logger::info "Populating params from file (overwriting params in pipeline definition): $command_file"
+    logger::info "Populating params from file (overwriting params in pipeline definition): #yellow(%s)" "$command_file"
     params=$(util::yaml_to_json "$command_file")
   else
-    logger::error "invalid payload (can not find command_file: $command_file)"
+    logger::error "invalid payload (can not find command_file: #yellow(%s))" "$command_file"
     exit $E_COMMAND_FILE_NOT_FOUND
   fi
 fi
@@ -135,8 +135,6 @@ if ! echo $params | jq -e 'has("commands")' >/dev/null; then
   logger::error 'invalid payload (missing command)'
   exit $E_COMMAND_NOT_SET
 fi
-
-logger::info "$(cf::cf version)"
 
 get_option() {
   local key=${1:?config key null or not set}
@@ -163,7 +161,7 @@ echo "$params" | jq -c '.commands[]' | while read -r OPTIONS; do
     if [ -f "$command_script" ]; then
       source "$command_script"
     else
-      logger::error "invalid payload (unknown command: $command)"
+      logger::error "invalid payload (unknown command: #yellow(%s))" "$command"
       exit $E_UNKNOWN_COMMAND
     fi
   )

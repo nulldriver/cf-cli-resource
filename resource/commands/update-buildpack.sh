@@ -6,7 +6,7 @@ assign_stack=$(get_option '.assign_stack')
 path=$(get_option '.path')
 position=$(get_option '.position')
 
-logger::info "Executing $(logger::highlight "$command"): $buildpack"
+logger::info "Executing #magenta(%s) on buildpack #yellow(%s)" "$command" "$buildpack"
 
 args=("$buildpack")
 [ "$enabled" == "true"  ] && args+=(--enable)

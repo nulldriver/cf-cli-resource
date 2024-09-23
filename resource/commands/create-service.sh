@@ -13,7 +13,7 @@ update_service=$(get_option '.update_service')
 # backwards compatibility for deprecated 'wait_for_service' param
 wait=${wait:-$wait_for_service}
 
-logger::info "Executing $(logger::highlight "$command"): $service_instance"
+logger::info "Executing #magenta(%s) on service instance #yellow(%s)" "$command" "$service_instance"
 
 cf::target "$org" "$space"
 

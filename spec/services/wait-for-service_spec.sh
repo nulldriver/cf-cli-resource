@@ -44,13 +44,8 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Creating service instance $service_instance"
-    if cf::is_cf8; then
-      The error should include 'Waiting for the operation to complete'
-      The error should include "Service instance $service_instance created."
-    else
-      The error should match pattern "*Waiting for service: *$service_instance*"
-      The error should match pattern "*Service is ready: *$service_instance*"
-    fi
+    The error should include 'Waiting for the operation to complete'
+    The error should include "Service instance $service_instance created."
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "standard" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
     Assert [ "list, of, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
@@ -70,8 +65,8 @@ Describe 'services'
     When call wait_for_service
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
-    The error should match pattern "*Waiting for service: *$service_instance*"
-    The error should match pattern "*Service is ready: *$service_instance*"
+    The error should include 'Waiting for the operation to complete'
+    The error should include "Service instance $service_instance created."
     Assert test::service_exists "$service_instance" "$org" "$space"
   End
 
@@ -97,13 +92,8 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Updating service instance $service_instance"
-    if cf::is_cf8; then
-      The error should include 'Waiting for the operation to complete'
-      The error should include "Update of service instance $service_instance complete."
-    else
-      The error should match pattern "*Waiting for service: *$service_instance*"
-      The error should match pattern "*Service is ready: *$service_instance*"
-    fi
+    The error should include 'Waiting for the operation to complete'
+    The error should include "Update of service instance $service_instance complete."
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "pro" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
     Assert [ "some, other, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
@@ -129,13 +119,8 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Updating service instance $service_instance"
-    if cf::is_cf8; then
-      The error should include 'Waiting for the operation to complete'
-      The error should include "Update of service instance $service_instance complete."
-    else
-      The error should match pattern "*Waiting for service: *$service_instance*"
-      The error should match pattern "*Service is ready: *$service_instance*"
-    fi
+    The error should include 'Waiting for the operation to complete'
+    The error should include "Update of service instance $service_instance complete."
     Assert test::service_exists "$service_instance" "$org" "$space"
     Assert [ "pro" == "$(test::get_service_instance_plan "$service_instance" "$org" "$space")" ]
     Assert [ "some, other, tags" == "$(test::get_service_instance_tags "$service_instance" "$org" "$space")" ]
@@ -157,13 +142,8 @@ Describe 'services'
     The status should be success
     The output should json '.version | keys == ["timestamp"]'
     The error should include "Deleting service"
-    if cf::is_cf8; then
-      The error should include 'Waiting for the operation to complete'
-      The error should include "Service instance $service_instance deleted."
-    else
-      The error should match pattern "*Waiting for service deletion: *$service_instance*"
-      The error should match pattern "*Service deleted: *$service_instance*"
-    fi
+    The error should include 'Waiting for the operation to complete'
+    The error should include "Service instance $service_instance deleted."
     Assert not test::service_exists "$service_instance" "$org" "$space"
   End
 End

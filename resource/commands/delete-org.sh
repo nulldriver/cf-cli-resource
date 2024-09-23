@@ -1,4 +1,4 @@
 
-logger::info "Executing $(logger::highlight "$command"): $org"
+logger::info "Executing #magenta(%s) on org #yellow(%s)" "$command" "$org"
 
 cf::delete_org "$org"

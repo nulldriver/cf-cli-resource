@@ -16,6 +16,9 @@ spec_helper_configure() {
   source 'resource/lib/cf-functions.sh'
   source 'resource/lib/util.sh'
 
+  # Disable logger.sh colorized output for test output matching
+  export NO_COLOR=1
+
   error_and_exit() {
     echo "$1" >&3
     exit 1

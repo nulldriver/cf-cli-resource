@@ -5,7 +5,7 @@ hostname=$(get_option '.hostname')
 path=$(get_option '.path')
 app_protocol=$(get_option '.app_protocol')
 
-logger::info "Executing $(logger::highlight "$command"): $domain"
+logger::info "Executing #magenta(%s) on domain #yellow(%s)" "$command" "$domain"
 
 cf::target "$org" "$space"
 

@@ -121,6 +121,6 @@ Describe 'apps'
     }
     When call push_with_invalid_manifest
     The status should eq $E_MANIFEST_FILE_NOT_FOUND
-    The error should match pattern "*invalid payload (manifest is not a file: */does_not_exist.yml*)"
+    The error should match pattern "*invalid payload (manifest is not a file: */does_not_exist.yml)"
   End
 End

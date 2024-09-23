@@ -14,10 +14,10 @@ stack=$(get_option '.stack')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
-logger::info "Executing $(logger::highlight "$command")"
+logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$current_app_name"
 
 if [ ! -f "$manifest" ]; then
-  logger::error "invalid payload (manifest is not a file: $(logger::highlight "$manifest"))"
+  logger::error "invalid payload (manifest is not a file: #yellow(%s))" "$manifest"
   exit $E_MANIFEST_FILE_NOT_FOUND
 fi
 
@@ -42,7 +42,7 @@ done
 
 for vars_file in $(echo $vars_files | jq -r '.[]'); do
   if [ ! -f "$vars_file" ]; then
-    logger::error "invalid payload (vars_file is not a file: $(logger::highlight "$vars_file"))"
+    logger::error "invalid payload (vars_file is not a file: #yellow(%s))" "$vars_file"
     exit 1
   fi
   args+=(--vars-file "$vars_file")

@@ -5,7 +5,7 @@ no_wait=$(get_option '.no_wait')
 staging_timeout=$(get_option '.staging_timeout' 0)
 startup_timeout=$(get_option '.startup_timeout' 0)
 
-logger::info "Executing $(logger::highlight "$command"): $app_name"
+logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$app_name"
 
 cf::target "$org" "$space"
 

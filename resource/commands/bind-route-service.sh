@@ -6,7 +6,7 @@ path=$(get_option '.path')
 configuration=$(get_option '.configuration')
 wait=$(get_option '.wait')
 
-logger::info "Executing $(logger::highlight "$command"): $service_instance"
+logger::info "Executing #magenta(%s) on service instance #yellow(%s)" "$command" "$service_instance"
 
 cf::target "$org" "$space"
 

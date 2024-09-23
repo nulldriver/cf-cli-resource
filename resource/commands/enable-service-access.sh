@@ -5,10 +5,10 @@ broker=$(get_option '.broker')
 plan=$(get_option '.plan')
 access_org=$(get_option '.access_org')
 
-logger::info "Executing $(logger::highlight "$command"): $service"
-
 # backwards compatibility for deprecated 'service_broker' param (https://github.com/nulldriver/cf-cli-resource/issues/21)
 service=${service:-$service_broker}
+
+logger::info "Executing #magenta(%s) on service #yellow(%s)" "$command" "$service"
 
 args=("$service")
 [ -n "$broker" ] && args+=(-b "$broker")

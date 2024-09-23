@@ -3,7 +3,7 @@ new_username=$(get_option '.username')
 new_password=$(get_option '.password')
 new_origin=$(get_option '.origin')
 
-logger::info "Executing $(logger::highlight "$command"): $new_username"
+logger::info "Executing #magenta(%s) on username #yellow(%s)" "$command" "$new_username"
 
 if [ -n "$new_password" ]; then
   cf::create_user_with_password "$new_username" "$new_password"

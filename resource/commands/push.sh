@@ -29,7 +29,7 @@ elif [ -f "$manifest" ]; then
   manifest_file=$manifest
 elif util::is_json "$manifest"; then
   manifest_file="manifest-generated-from-pipeline.yml"
-  logger::info "generating manifest from yaml: $manifest_file"
+  logger::info "generating manifest from yaml: #yellow(%s)" "$manifest_file"
   echo "$(util::json_to_yaml "$manifest")" > "$manifest_file"
 else
   logger::error "Invalid application manifest: must be valid file or yaml"
@@ -38,17 +38,17 @@ fi
 
 if [ -n "$environment_variables" ]; then
   if [ -n "$manifest_file" ]; then
-    logger::info "environment_variables: backing up original manifest to: $manifest_file.bak"
+    logger::info "environment_variables: backing up original manifest to: %s.bak" "$manifest_file"
     cp "$manifest_file" "$manifest_file.bak"
   else
     manifest_file="manifest-generated-for-environment-variables.yml"
-    logger::info "environment_variables: generating manifest: $manifest_file"
+    logger::info "environment_variables: generating manifest: %s" "$manifest_file"
     touch "$manifest_file"
     if [ -n "$app_name" ]; then
       name=$app_name yq -n '.applications[0].name = env(name)' > "$manifest_file"
     fi
   fi
-  logger::info "environment_variables: adding env to manifest: $manifest_file"
+  logger::info "environment_variables: adding env to manifest: %s" "$manifest_file"
   util::set_manifest_environment_variables "$manifest_file" "$environment_variables" "$app_name"
 fi
 
@@ -82,7 +82,8 @@ for vars_file in $(echo $vars_files | jq -r '.[]'); do
   args+=(--vars-file "$vars_file")
 done
 
-logger::info "Executing $(logger::highlight "$command"): $app_name"
+logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$app_name"
+
 cf::target "$org" "$space"
 
 [ "$staging_timeout" -gt "0" ] && export CF_STAGING_TIMEOUT=$staging_timeout

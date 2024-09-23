@@ -4,7 +4,7 @@ service_key=$(get_option '.service_key')
 configuration=$(get_option '.configuration')
 wait=$(get_option '.wait')
 
-logger::info "Executing $(logger::highlight "$command"): $service_key"
+logger::info "Executing #magenta(%s) on service key #yellow(%s)" "$command" "$service_key"
 
 cf::target "$org" "$space"
 

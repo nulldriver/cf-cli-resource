@@ -1,7 +1,7 @@
 
 domain=$(get_option '.domain')
 
-logger::info "Executing $(logger::highlight "$command"): $domain"
+logger::info "Executing #magenta(%s) on domain #yellow(%s)" "$command" "$domain"
 
 cf::target "$org"
 

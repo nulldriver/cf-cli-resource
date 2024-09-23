@@ -5,7 +5,7 @@ password=$(get_option '.password')
 url=$(get_option '.url')
 is_space_scoped=$(get_option '.space_scoped' 'false')
 
-logger::info "Executing $(logger::highlight "$command"): $service_broker"
+logger::info "Executing #magenta(%s) on service broker #yellow(%s)" "$command" "$service_broker"
 
 if [ "true" = "$is_space_scoped" ]; then
   cf::target "$org" "$space"

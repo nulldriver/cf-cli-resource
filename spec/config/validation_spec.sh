@@ -103,13 +103,20 @@ Describe 'config'
 
   Context 'using mock cf'
     Mock cf
-      exit 0
+      case "$1" in
+      version)
+        echo "cf version 0.0.0+fake.0"
+        ;;
+      *)
+        exit 0
+        ;;
+      esac
     End
     Mock cf7
-      exit 0
+      cf "$@"
     End
     Mock cf8
-      exit 0
+      cf "$@"
     End
 
     It can 'error if command not set'
@@ -164,7 +171,7 @@ Describe 'config'
       }
       When call put_with_invalid_manifest
       The status should eq $E_MANIFEST_FILE_NOT_FOUND
-      The error should match pattern "*invalid payload (manifest is not a file: *does_not_exist.yml*)"
+      The error should end with "invalid payload (manifest is not a file: does_not_exist.yml)"
     End
 
     It can 'error if unknown command set'

@@ -168,7 +168,7 @@ function cf::create_users_from_file() {
   local file=${1:?file null or not set}
 
   if [ ! -f "$file" ]; then
-    logger::error "file not found: $(logger::highlight "$file")"
+    logger::error "file not found: #yellow(%s)" "$file"
     exit 1
   fi
 
@@ -179,7 +179,7 @@ function cf::create_users_from_file() {
     (( linenum++ ))
 
     if [ -z "$Username" ]; then
-      logger::warn "no Username specified, unable to process line number: $(logger::highlight "$linenum")"
+      logger::warn "no Username specified, unable to process line number: #yellow(%s)" "$linenum"
       continue
     fi
 
@@ -480,30 +480,42 @@ function cf::wait_for_service_instance() {
 
   local guid=$(cf::get_service_instance_guid "$service_instance")
   if [ -z "$guid" ]; then
-    logger::error "Service instance does not exist: $(logger::highlight "$service_instance")"
+    logger::error "Service instance does not exist: #yellow(%s)" "$service_instance"
     exit 1
   fi
 
   local start=$(date +%s)
 
-  logger::info "Waiting for service: $(logger::highlight "$service_instance")"
+  logger::info "Waiting for the operation to complete"
   while true; do
     # Get the service instance info in JSON from CC and parse out the async 'state'
-    local state=$(cf::curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.state)
+    local response=$(cf::curl "/v2/service_instances/$guid")
+    local state=$(echo "$response" | jq -r .entity.last_operation.state)
 
     if [ "$state" = "succeeded" ]; then
-      logger::info "Service is ready: $(logger::highlight "$service_instance")"
+      local type=$(echo "$response" | jq -r .entity.last_operation.type);
+      case "$type" in
+        "create")
+          logger::info "Service instance %s created." "$service_instance"
+          ;;
+        "update")
+          logger::info "Update of service instance %s complete." "$service_instance"
+          ;;
+        *)
+          logger::info "Service instance %s operation %s completed." "$service_instance" "$type"
+          ;;
+      esac
       return
     elif [ "$state" = "failed" ]; then
-      local description=$(logger::highlight "$(cf::curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)")
-      logger::error "Failed to provision service: $(logger::highlight "$service_instance"), error: $(logger::highlight "$description")"
+      local description=$(cf::curl "/v2/service_instances/$guid" | jq -r .entity.last_operation.description)
+      logger::error "Failed to provision service: #yellow(%s), error: #yellow(%s)" "$service_instance" "$description"
       exit 1
     fi
 
     local now=$(date +%s)
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
-      logger::error "Timed out waiting for service instance to provision: $(logger::highlight "$service_instance")"
+      logger::error "Timed out waiting for service instance to provision: #yellow(%s)" "$service_instance"
       exit 1
     fi
     sleep 5
@@ -516,17 +528,17 @@ function cf::wait_for_delete_service_instance() {
 
   local start=$(date +%s)
 
-  logger::info "Waiting for service deletion: $(logger::highlight "$service_instance")"
+  logger::info "Waiting for the operation to complete"
   while true; do
     if ! (cf::service_exists "$service_instance"); then
-      logger::info "Service deleted: $(logger::highlight "$service_instance")"
+      logger::info "Service instance %s deleted." "$service_instance"
       return
     fi
 
     local now=$(date +%s)
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
-      logger::error "Timed out waiting for service instance to delete: $(logger::highlight "$service_instance")"
+      logger::error "Timed out waiting for service instance to delete: #yellow(%s)" "$service_instance"
       exit 1
     fi
     sleep 5

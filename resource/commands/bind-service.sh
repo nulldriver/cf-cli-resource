@@ -5,7 +5,7 @@ configuration=$(get_option '.configuration')
 binding_name=$(get_option '.binding_name')
 wait=$(get_option '.wait')
 
-logger::info "Executing $(logger::highlight "$command"): $service_instance"
+logger::info "Executing #magenta(%s) on service instance #yellow(%s)" "$command" "$service_instance"
 
 cf::target "$org" "$space"
 

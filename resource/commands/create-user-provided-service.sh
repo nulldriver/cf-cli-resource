@@ -4,7 +4,7 @@ credentials=$(get_option '.credentials')
 syslog_drain_url=$(get_option '.syslog_drain_url')
 route_service_url=$(get_option '.route_service_url')
 
-logger::info "Executing $(logger::highlight "$command"): $service_instance"
+logger::info "Executing #magenta(%s) on service instance #yellow(%s)" "$command" "$service_instance"
 
 cf::target "$org" "$space"
 

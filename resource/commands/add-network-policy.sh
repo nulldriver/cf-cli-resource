@@ -6,7 +6,7 @@ destination_space=$(get_option '.destination_space')
 protocol=$(get_option '.protocol')
 port=$(get_option '.port')
 
-logger::info "Executing $(logger::highlight "$command"): $source_app"
+logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$source_app"
 
 cf::target "$org" "$space"
 
