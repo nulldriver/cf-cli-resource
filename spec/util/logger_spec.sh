@@ -3,23 +3,162 @@
 set -euo pipefail
 
 Describe 'logger.sh'
-    Include resource/lib/logger.sh
+  Include resource/lib/logger.sh
+  Include resource/lib/color.sh
 
-    unset NO_COLOR
-    logger::export_colors
+  BeforeAll 'unset NO_COLOR'
 
-    It 'prints info message with blue color'
-        When call logger::info "This is an info message with #yellow(%s) and #green(%s)." "text (with) parenthesis" "(another) text"
-        The output should equal "${GREEN}INFO${RESET} This is an info message with ${YELLOW}text (with) parenthesis${RESET} and ${GREEN}(another) text${RESET}."
+  Describe 'logger::set_level'
+    It 'sets the log level to DEBUG'
+      When call logger::set_level DEBUG
+      The variable LOGGER_LEVEL should equal 0
     End
 
-    It 'prints warn message with red color'
-        When call logger::warn "This is an info message with #yellow(%s) and #green(%s)." "text (with) parenthesis" "(another) text"
-        The output should equal "${RED}WARN${RESET} This is an info message with ${YELLOW}text (with) parenthesis${RESET} and ${GREEN}(another) text${RESET}."
+    It 'sets the log level to INFO'
+      When call logger::set_level INFO
+      The variable LOGGER_LEVEL should equal 1
     End
 
-    It 'prints error message with bold red color'
-        When call logger::error "This is an info message with #yellow(%s) and #green(%s)." "text (with) parenthesis" "(another) text"
-        The output should equal "${BOLD_RED}ERROR${RESET} This is an info message with ${YELLOW}text (with) parenthesis${RESET} and ${GREEN}(another) text${RESET}."
+    It 'sets the log level to WARN'
+      When call logger::set_level WARN
+      The variable LOGGER_LEVEL should equal 2
     End
+
+    It 'sets the log level to ERROR'
+      When call logger::set_level ERROR
+      The variable LOGGER_LEVEL should equal 3
+    End
+
+    It 'sets the log level to NONE'
+      When call logger::set_level NONE
+      The variable LOGGER_LEVEL should equal 4
+    End
+
+    It 'returns an error for an unknown log level'
+      When run logger::set_level UNKNOWN
+      The status should be failure
+      The output should include 'Unknown log level: UNKNOWN'
+    End
+  End
+
+  Describe 'logger::debug'
+    It 'logs a debug message'
+      BeforeCall 'logger::set_level "DEBUG"'
+      When call logger::debug "This is a debug message"
+      The output should eq "${COLOR_FG_BOLD_BLUE}DEBUG${COLOR_RESET} This is a debug message"
+    End
+
+    It 'does not log a debug message when the log level is INFO'
+      BeforeCall 'logger::set_level "INFO"'
+      When call logger::debug "This is a debug message"
+      The output should eq ""
+    End
+  End
+
+  Describe 'logger::info'
+    It 'logs an info message'
+      When call logger::info "This is an info message"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is an info message"
+    End
+
+    It 'does not log an info message when the log level is WARN'
+      BeforeCall 'logger::set_level "WARN"'
+      When call logger::info "This is an info message"
+      The output should eq ""
+    End
+  End
+
+  Describe 'logger::warn'
+    It 'logs a warn message'
+      When call logger::warn "This is a warn message"
+      The output should eq "${COLOR_FG_BOLD_YELLOW}WARN${COLOR_RESET} This is a warn message"
+    End
+
+    It 'does not log a warn message when the log level is ERROR'
+      BeforeCall 'logger::set_level "ERROR"'
+      When call logger::warn "This is a warn message"
+      The output should eq ""
+    End
+  End
+
+  Describe 'logger::error'
+    It 'logs an error message'
+      When call logger::error "This is an error message"
+      The output should eq "${COLOR_FG_BOLD_RED}ERROR${COLOR_RESET} This is an error message"
+    End
+
+    It 'does not log an error message when the log level is NONE'
+      BeforeCall 'logger::set_level "NONE"'
+      When call logger::error "This is an error message"
+      The output should eq ""
+    End
+  End
+
+  Describe 'log colorization'
+    It 'colorizes a message with black text'
+      When call logger::info "This is a #black(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BLACK}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with red text'
+      When call logger::info "This is a #red(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_RED}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with green text'
+      When call logger::info "This is a #green(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_GREEN}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with yellow text'
+      When call logger::info "This is a #yellow(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_YELLOW}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with blue text'
+      When call logger::info "This is a #blue(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BLUE}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with magenta text'
+      When call logger::info "This is a #magenta(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_MAGENTA}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with cyan text'
+      When call logger::info "This is a #cyan(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_CYAN}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with white text'
+      When call logger::info "This is a #white(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_WHITE}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold black text'
+      When call logger::info "This is a #boldBlack(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_BLACK}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold red text'
+      When call logger::info "This is a #boldRed(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_RED}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold green text'
+      When call logger::info "This is a #boldGreen(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_GREEN}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold yellow text'
+      When call logger::info "This is a #boldYellow(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_YELLOW}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold blue text'
+      When call logger::info "This is a #boldBlue(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_BLUE}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold magenta text'
+      When call logger::info "This is a #boldMagenta(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_MAGENTA}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold cyan text'
+      When call logger::info "This is a #boldCyan(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_CYAN}colorized${COLOR_RESET} message"
+    End
+    It 'colorizes a message with bold white text'
+      When call logger::info "This is a #boldWhite(%s) message" "colorized"
+      The output should eq "${COLOR_FG_BOLD_GREEN}INFO${COLOR_RESET} This is a ${COLOR_FG_BOLD_WHITE}colorized${COLOR_RESET} message"
+    End
+  End
+
 End
