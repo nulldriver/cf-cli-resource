@@ -29,11 +29,6 @@ Describe 'logger.sh'
       The variable LOGGER_LEVEL should equal 3
     End
 
-    It 'sets the log level to NONE'
-      When call logger::set_level NONE
-      The variable LOGGER_LEVEL should equal 4
-    End
-
     It 'returns an error for an unknown log level'
       When run logger::set_level UNKNOWN
       The status should be failure
@@ -85,12 +80,6 @@ Describe 'logger.sh'
     It 'logs an error message'
       When call logger::error "This is an error message"
       The output should eq "${COLOR_FG_BOLD_RED}ERROR${COLOR_RESET} This is an error message"
-    End
-
-    It 'does not log an error message when the log level is NONE'
-      BeforeCall 'logger::set_level "NONE"'
-      When call logger::error "This is an error message"
-      The output should eq ""
     End
   End
 

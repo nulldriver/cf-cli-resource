@@ -11,7 +11,6 @@ LOGGER_DEBUG=0
 LOGGER_INFO=1
 LOGGER_WARN=2
 LOGGER_ERROR=3
-LOGGER_NONE=4
 
 # Set default log level
 LOGGER_LEVEL=$LOGGER_INFO
@@ -31,9 +30,6 @@ logger::set_level() {
       ;;
     ERROR)
       LOGGER_LEVEL=$LOGGER_ERROR
-      ;;
-    NONE)
-      LOGGER_LEVEL=$LOGGER_NONE
       ;;
     *)
       echo "Unknown log level: $level"
