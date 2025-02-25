@@ -4,6 +4,7 @@ task_command=$(get_option '.task_command')
 task_name=$(get_option '.task_name')
 memory=$(get_option '.memory')
 disk_quota=$(get_option '.disk_quota')
+wait=$(get_option '.wait')
 
 logger::info "Executing #magenta(%s) on app #yellow(%s)" "$command" "$app_name"
 
@@ -20,5 +21,9 @@ fi
 [ -n "$task_name" ] && args+=(--name "$task_name")
 [ -n "$memory" ] && args+=(-m "$memory")
 [ -n "$disk_quota" ] && args+=(-k "$disk_quota")
+
+if ! cf::is_cf6 && [ "true" = "$wait" ]; then
+  args+=(--wait)
+fi
 
 cf::cf run-task "${args[@]}"

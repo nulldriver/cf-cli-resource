@@ -1300,6 +1300,7 @@ Run a one-off task on an app
 | `task_name`        | *Optional* | All         | Name to give the task (generated if omitted)
 | `memory`           | *Optional* | All         | Memory limit (e.g. 256M, 1024M, 1G)
 | `disk_quota`       | *Optional* | All         | Disk limit (e.g. 256M, 1024M, 1G)
+| `wait`             | *Optional* | 7, 8        | Wait for the operation to complete
 
 ```yaml
 - put: cloud-foundry
